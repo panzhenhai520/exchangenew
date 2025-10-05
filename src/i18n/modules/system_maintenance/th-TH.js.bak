@@ -1,0 +1,429 @@
+export default {
+  // การจัดการสาขา
+  branch_management: {
+    title: 'การจัดการสาขา',
+    subtitle: 'จัดการสาขาและบริษัทในเครือของระบบ',
+    branch_list: 'รายการสาขา',
+    branch_info: 'การจัดการข้อมูลสาขา',
+    current_branch: 'สาขาปัจจุบัน',
+    add_branch: 'เพิ่มสาขา',
+    edit_branch: 'แก้ไขสาขา',
+    branch_code: 'รหัสสาขา',
+    branch_name: 'ชื่อสาขา',
+    address: 'ที่อยู่',
+    manager_name: 'ผู้จัดการ',
+    phone_number: 'หมายเลขโทรศัพท์',
+    base_currency: 'สกุลเงินหลัก',
+    is_active: 'สถานะการใช้งาน',
+    status: {
+      active: 'ใช้งาน',
+      inactive: 'ไม่ใช้งาน'
+    },
+    actions: {
+      edit: 'แก้ไข',
+      delete: 'ลบ',
+      view: 'ดู'
+    },
+    form: {
+      branch_code_required: 'กรุณาใส่รหัสสาขา',
+      branch_name_required: 'กรุณาใส่ชื่อสาขา',
+      address_required: 'กรุณาใส่ที่อยู่',
+      manager_required: 'กรุณาใส่ชื่อผู้จัดการ',
+      phone_required: 'กรุณาใส่หมายเลขโทรศัพท์',
+      base_currency_required: 'กรุณาเลือกสกุลเงินหลัก'
+    },
+    messages: {
+      save_success: 'บันทึกสาขาสำเร็จ',
+      save_failed: 'บันทึกสาขาล้มเหลว',
+      delete_success: 'ลบสาขาสำเร็จ',
+      delete_failed: 'ลบสาขาล้มเหลว',
+      code_exists: 'รหัสสาขามีอยู่แล้ว',
+      invalid_code: 'รูปแบบรหัสสาขาไม่ถูกต้อง'
+    }
+  },
+
+  // การจัดการผู้ใช้
+  user_management: {
+    title: 'การจัดการผู้ใช้',
+    subtitle: 'จัดการผู้ใช้ บทบาท และสิทธิ์ของระบบ',
+    user_list: 'รายการผู้ใช้',
+    add_user: 'เพิ่มผู้ใช้',
+    edit_user: 'แก้ไขผู้ใช้',
+    user_info: 'ข้อมูลผู้ใช้',
+    login_code: 'รหัสเข้าสู่ระบบ',
+    name: 'ชื่อ',
+    role: 'บทบาท',
+    branch: 'สาขา',
+    status: 'สถานะ',
+    password: 'รหัสผ่าน',
+    id_card_number: 'เลขบัตรประชาชน',
+    phone_number: 'หมายเลขโทรศัพท์',
+    mobile_number: 'หมายเลขมือถือ',
+    address: 'ที่อยู่',
+    email: 'อีเมล',
+    status_options: {
+      active: 'เปิดใช้งาน',
+      inactive: 'ปิดใช้งาน',
+      locked: 'ล็อค',
+      suspended: 'ระงับ'
+    },
+    actions: {
+      edit: 'แก้ไข',
+      reset_password: 'รีเซ็ตรหัสผ่าน',
+      disable: 'ปิดใช้งาน',
+      enable: 'เปิดใช้งาน',
+      delete: 'ลบผู้ใช้',
+      view_permissions: 'ดูสิทธิ์',
+      hide_permissions: 'ซ่อนสิทธิ์'
+    },
+    form: {
+      login_code_required: 'กรุณาใส่ชื่อผู้ใช้',
+      name_required: 'กรุณาใส่ชื่อ',
+      role_required: 'กรุณาเลือกบทบาทผู้ใช้',
+      branch_required: 'กรุณาเลือกสาขา',
+      password_required: 'กรุณาตั้งรหัสผ่านเริ่มต้น',
+      password_min_length: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+      email_invalid: 'รูปแบบอีเมลไม่ถูกต้อง',
+      phone_invalid: 'รูปแบบหมายเลขโทรศัพท์ไม่ถูกต้อง',
+      mobile_invalid: 'รูปแบบหมายเลขมือถือไม่ถูกต้อง',
+      id_card_invalid: 'รูปแบบเลขบัตรประชาชนไม่ถูกต้อง'
+    },
+    messages: {
+      create_success: 'สร้างผู้ใช้สำเร็จ',
+      update_success: 'อัปเดตผู้ใช้สำเร็จ',
+      delete_success: 'ลบผู้ใช้สำเร็จ',
+      reset_password_success: 'รีเซ็ตรหัสผ่านสำเร็จ',
+      operation_failed: 'การดำเนินการล้มเหลว'
+    },
+    no_permissions: 'ผู้ใช้นี้ไม่มีสิทธิ์',
+    personal_info: 'ข้อมูลส่วนตัว',
+    no_personal_info: 'ไม่มีข้อมูลส่วนตัว',
+    never_login: 'ไม่เคยเข้าสู่ระบบ',
+    no_users_found: 'ไม่พบผู้ใช้'
+  },
+
+  // การจัดการบทบาท
+  role_management: {
+    title: 'การจัดการบทบาทและสิทธิ์',
+    subtitle: 'จัดการบทบาทและสิทธิ์ของระบบ',
+    role_list: 'รายการบทบาท',
+    add_role: 'เพิ่มบทบาท',
+    edit_role: 'แก้ไขบทบาท',
+    role_name: 'ชื่อบทบาท',
+    description: 'คำอธิบาย',
+    permissions: 'สิทธิ์',
+    permission_count: 'จำนวนสิทธิ์',
+    permission_preview: 'ตัวอย่างสิทธิ์',
+    protected_role: 'ป้องกัน',
+    system_admin: 'ผู้ดูแลระบบ',
+    no_description: 'ไม่มีคำอธิบาย',
+    actions: {
+      edit: 'แก้ไข',
+      delete: 'ลบ',
+      view: 'ดู',
+      create: 'สร้าง'
+    },
+    form: {
+      role_name_required: 'กรุณาใส่ชื่อบทบาท',
+      role_name_max_length: 'ชื่อบทบาทไม่สามารถเกิน 50 ตัวอักษร',
+      no_permissions_warning: 'ไม่ได้เลือกสิทธิ์ใดๆ คุณแน่ใจหรือไม่ที่จะสร้างบทบาทนี้?',
+      protected_role_name: 'ชื่อบทบาทผู้ดูแลระบบไม่สามารถแก้ไขได้',
+      select_all: 'เลือกทั้งหมด',
+      clear_all: 'ล้างทั้งหมด',
+      selected_count: 'เลือกสิทธิ์ {count} รายการ'
+    },
+    messages: {
+      create_success: 'สร้างบทบาทสำเร็จ',
+      update_success: 'อัปเดตบทบาทสำเร็จ',
+      delete_success: 'ลบบทบาทสำเร็จ',
+      delete_failed: 'ลบล้มเหลว',
+      protected_role_delete: 'บทบาทผู้ดูแลระบบได้รับการป้องกันและไม่สามารถลบได้',
+      confirm_delete: 'คุณแน่ใจหรือไม่ที่จะลบบทบาท "{name}"?',
+      load_data_failed: 'ไม่สามารถโหลดข้อมูลได้',
+      load_roles_failed: 'ไม่สามารถโหลดบทบาทได้',
+      load_permissions_failed: 'ไม่สามารถโหลดสิทธิ์ได้',
+      save_role_failed: 'ไม่สามารถบันทึกบทบาทได้',
+      delete_role_failed: 'ไม่สามารถลบบทบาทได้',
+      network_error: 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่าย',
+      server_error: 'ข้อผิดพลาดภายในเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง',
+      permission_denied: 'คุณไม่มีสิทธิ์เพียงพอในการดำเนินการนี้',
+      login_expired: 'การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง',
+      request_error: 'ข้อผิดพลาดพารามิเตอร์คำขอ',
+      unknown_error: 'ข้อผิดพลาดที่ไม่ทราบสาเหตุ'
+    }
+  },
+
+  // การบำรุงรักษาสกุลเงิน
+  currency_maintenance: {
+    title: 'การบำรุงรักษาสกุลเงิน',
+    subtitle: 'จัดการประเภทสกุลเงินที่ระบบรองรับ',
+    currency_list: 'รายการสกุลเงิน',
+    add_template: 'เพิ่มเทมเพลต',
+    init_templates: 'เริ่มต้นเทมเพลต',
+    currency_code: 'รหัสสกุลเงิน',
+    currency_name: 'ชื่อสกุลเงิน',
+    country: 'ประเทศ',
+    symbol: 'สัญลักษณ์',
+    is_active: 'เปิดใช้งาน',
+    actions: {
+      edit: 'แก้ไข',
+      delete: 'ลบ',
+      view: 'ดู'
+    },
+    messages: {
+      init_success: 'เริ่มต้นเทมเพลตสกุลเงินสำเร็จ',
+      save_success: 'บันทึกสกุลเงินสำเร็จ',
+      delete_success: 'ลบสกุลเงินสำเร็จ',
+      operation_failed: 'การดำเนินการล้มเหลว'
+    }
+  },
+
+  // การจัดการข้อกำหนด
+  specification_management: {
+    title: 'การจัดการข้อกำหนด',
+    subtitle: 'จัดการข้อกำหนดทางธุรกิจและการตั้งค่าของระบบ',
+    tabs: {
+      print_settings: 'การตั้งค่าการพิมพ์',
+      receipt_files: 'ไฟล์ใบเสร็จที่พิมพ์แล้ว',
+      other_settings: 'การตั้งค่าอื่นๆ'
+    },
+    print_settings: {
+      title: 'การตั้งค่าการพิมพ์',
+      printer_name: 'ชื่อเครื่องพิมพ์',
+      paper_size: 'ขนาดกระดาษ',
+      orientation: 'ทิศทาง',
+      margin: 'ขอบ',
+      font_size: 'ขนาดตัวอักษร'
+    },
+    receipt_files: {
+      title: 'ไฟล์ใบเสร็จที่พิมพ์แล้ว',
+      year: 'ปี',
+      month: 'เดือน',
+      file_count: 'จำนวนไฟล์',
+      total_size: 'ขนาดรวม',
+      last_modified: 'แก้ไขล่าสุด'
+    },
+    other_settings: {
+      title: 'การตั้งค่าอื่นๆ',
+      system_name: 'ชื่อระบบ',
+      company_name: 'ชื่อบริษัท',
+      contact_info: 'ข้อมูลติดต่อ'
+    }
+  },
+
+  // การล้างข้อมูลธุรกิจ
+  data_clear: {
+    title: 'ล้างข้อมูลธุรกิจ',
+    subtitle: 'พื้นที่การดำเนินการอันตราย - ต้องมีสิทธิ์การจัดการระบบ',
+    permission_denied: 'สิทธิ์ไม่เพียงพอ: คุณไม่มีสิทธิ์การจัดการระบบในการดำเนินการนี้',
+    clear_success: 'ล้างสำเร็จ! ข้อมูลธุรกิจถูกล้างสำเร็จแล้ว คุณสามารถเริ่มต้นใหม่ได้',
+    clear_time: 'เวลาล้าง',
+    current_branch: 'สาขาปัจจุบัน',
+    branch_status: 'สถานะสาขา',
+    clear_reason: 'เหตุผลการล้าง',
+    security_password: 'รหัสผ่านความปลอดภัย',
+    final_confirm: 'การยืนยันขั้นสุดท้าย',
+    confirm_clear: 'ยืนยันการล้าง',
+    danger_warning: '⚠️ คำเตือนการดำเนินการอันตราย',
+    danger_description: 'การดำเนินการนี้จะลบข้อมูลต่อไปนี้อย่างถาวร:',
+    data_to_clear: [
+      'บันทึกธุรกรรมทั้งหมด',
+      'บันทึกการปรับยอดคงเหลือทั้งหมด',
+      'ข้อมูลประวัติการปิดวันทั้งหมด',
+      'ข้อมูลธุรกิจที่เกี่ยวข้องทั้งหมด'
+    ],
+    operation_irreversible: 'การดำเนินการนี้ไม่สามารถย้อนกลับได้ กรุณาพิจารณาอย่างรอบคอบ!',
+    usage_scenarios: 'สถานการณ์การใช้งาน',
+    scenarios: [
+      'การเริ่มต้นระบบ',
+      'การทำความสะอาดข้อมูลทดสอบ',
+      'การแก้ไขข้อผิดพลาดร้ายแรง',
+      'การเปิดสาขาใหม่'
+    ],
+    operation_consequences: 'ผลลัพธ์การดำเนินการ',
+    consequences: [
+      'สถานะสาขารีเซ็ตเป็นสถานะเริ่มต้น',
+      'สามารถเริ่มต้นการตั้งค่าใหม่ได้',
+      'ข้อมูลธุรกิจทั้งหมดรีเซ็ตเป็นศูนย์',
+      'บันทึกการดำเนินการเก็บไว้ในบันทึกระบบ'
+    ],
+    form: {
+      reason_required: 'กรุณาใส่เหตุผลการล้าง (อย่างน้อย 10 ตัวอักษร)',
+      password_required: 'กรุณาใส่รหัสผ่านความปลอดภัย',
+      confirm_required: 'กรุณายืนยันการดำเนินการล้าง'
+    },
+    messages: {
+      clear_success: 'ล้างข้อมูลธุรกิจของสาขาปัจจุบันสำเร็จ!',
+      clear_failed: 'ล้างข้อมูลธุรกิจล้มเหลว',
+      invalid_password: 'รหัสผ่านความปลอดภัยไม่ถูกต้อง',
+      reason_too_short: 'เหตุผลการล้างต้องมีอย่างน้อย 10 ตัวอักษร'
+    },
+    data_clear_operation: 'การดำเนินการล้างข้อมูล',
+    current_branch_info: 'ข้อมูลสาขาปัจจุบัน',
+    clear_status: 'สถานะการล้าง',
+    can_clear: 'สามารถล้างได้',
+    cannot_clear: 'ไม่สามารถล้างได้',
+    data_stats: 'สถิติข้อมูล',
+    transactions: 'ธุรกรรม',
+    adjustments: 'การปรับ',
+    eod_reports: 'รายงานปิดวัน',
+    blocking_reason: 'เหตุผลที่บล็อก',
+    clearing: 'กำลังล้าง...',
+    clear_current_branch: 'ล้างข้อมูลธุรกิจของสาขาปัจจุบัน'
+  },
+
+  // หน้าบำรุงรักษาระบบ
+  system_maintenance: {
+    title: 'บำรุงรักษาระบบ',
+    subtitle: 'จัดการการตั้งค่าระบบและข้อมูลพื้นฐาน',
+    // การจัดการสาขา
+    branch_management: {
+      title: 'การจัดการสาขา',
+      subtitle: 'จัดการสาขาและบริษัทในเครือของระบบ',
+      branch_list: 'รายการสาขา',
+      branch_info: 'การจัดการข้อมูลสาขา',
+      current_branch: 'สาขาปัจจุบัน',
+      add_branch: 'เพิ่มสาขา',
+      edit_branch: 'แก้ไขสาขา',
+      branch_code: 'รหัสสาขา',
+      branch_name: 'ชื่อสาขา',
+      address: 'ที่อยู่',
+      manager_name: 'ผู้จัดการ',
+      phone_number: 'หมายเลขโทรศัพท์',
+      base_currency: 'สกุลเงินหลัก',
+      is_active: 'สถานะการใช้งาน',
+      status: {
+        active: 'ใช้งาน',
+        inactive: 'ไม่ใช้งาน'
+      },
+      actions: {
+        edit: 'แก้ไข',
+        delete: 'ลบ',
+        view: 'ดู'
+      },
+      form: {
+        branch_code_required: 'กรุณาใส่รหัสสาขา',
+        branch_name_required: 'กรุณาใส่ชื่อสาขา',
+        address_required: 'กรุณาใส่ที่อยู่',
+        manager_required: 'กรุณาใส่ชื่อผู้จัดการ',
+        phone_required: 'กรุณาใส่หมายเลขโทรศัพท์',
+        base_currency_required: 'กรุณาเลือกสกุลเงินหลัก'
+      },
+      messages: {
+        save_success: 'บันทึกสาขาสำเร็จ',
+        save_failed: 'บันทึกสาขาล้มเหลว',
+        delete_success: 'ลบสาขาสำเร็จ',
+        delete_failed: 'ลบสาขาล้มเหลว',
+        code_exists: 'รหัสสาขามีอยู่แล้ว',
+        invalid_code: 'รูปแบบรหัสสาขาไม่ถูกต้อง'
+      }
+    },
+    // การจัดการบทบาท
+    role_management: {
+      title: 'การจัดการบทบาทและสิทธิ์',
+      subtitle: 'จัดการบทบาทและสิทธิ์ของระบบ',
+      role_list: 'รายการบทบาท',
+      add_role: 'เพิ่มบทบาท',
+      edit_role: 'แก้ไขบทบาท',
+      role_name: 'ชื่อบทบาท',
+      description: 'คำอธิบาย',
+      permissions: 'สิทธิ์',
+      permission_count: 'จำนวนสิทธิ์',
+      permission_preview: 'ตัวอย่างสิทธิ์',
+      protected_role: 'ป้องกัน',
+      system_admin: 'ผู้ดูแลระบบ',
+      no_description: 'ไม่มีคำอธิบาย',
+      actions: {
+        edit: 'แก้ไข',
+        delete: 'ลบ',
+        view: 'ดู',
+        create: 'สร้าง'
+      },
+      form: {
+        role_name_required: 'กรุณาใส่ชื่อบทบาท',
+        role_name_max_length: 'ชื่อบทบาทไม่สามารถเกิน 50 ตัวอักษร',
+        no_permissions_warning: 'ไม่ได้เลือกสิทธิ์ใดๆ คุณแน่ใจหรือไม่ที่จะสร้างบทบาทนี้?',
+        protected_role_name: 'ชื่อบทบาทผู้ดูแลระบบไม่สามารถแก้ไขได้',
+        select_all: 'เลือกทั้งหมด',
+        clear_all: 'ล้างทั้งหมด',
+        selected_count: 'เลือกสิทธิ์ {count} รายการ'
+      },
+      messages: {
+        create_success: 'สร้างบทบาทสำเร็จ',
+        update_success: 'อัปเดตบทบาทสำเร็จ',
+        delete_success: 'ลบบทบาทสำเร็จ',
+        delete_failed: 'ลบล้มเหลว',
+        protected_role_delete: 'บทบาทผู้ดูแลระบบได้รับการป้องกันและไม่สามารถลบได้',
+        confirm_delete: 'คุณแน่ใจหรือไม่ที่จะลบบทบาท "{name}"?',
+        load_data_failed: 'ไม่สามารถโหลดข้อมูลได้',
+        load_roles_failed: 'ไม่สามารถโหลดบทบาทได้',
+        load_permissions_failed: 'ไม่สามารถโหลดสิทธิ์ได้',
+        save_role_failed: 'ไม่สามารถบันทึกบทบาทได้',
+        delete_role_failed: 'ไม่สามารถลบบทบาทได้',
+        network_error: 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่าย',
+        server_error: 'ข้อผิดพลาดภายในเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง',
+        permission_denied: 'คุณไม่มีสิทธิ์เพียงพอในการดำเนินการนี้',
+        login_expired: 'การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง',
+        request_error: 'ข้อผิดพลาดพารามิเตอร์คำขอ',
+        unknown_error: 'ข้อผิดพลาดที่ไม่ทราบสาเหตุ'
+      }
+    },
+    // ตาราง
+    table: {
+      serial_number: 'ลำดับ',
+      actions: 'การดำเนินการ',
+      loading: 'กำลังโหลด...',
+      no_data: 'ไม่มีข้อมูล',
+      cannot_load: 'ไม่สามารถโหลดข้อมูลได้',
+      cannot_get_branch: 'ไม่สามารถรับข้อมูลสาขาปัจจุบันได้',
+      edit_only: 'แก้ไขเท่านั้น',
+      has_business_data: 'สาขานี้มีข้อมูลธุรกิจและไม่สามารถลบได้',
+      delete_branch: 'ลบสาขา'
+    },
+    // ฟอร์ม
+    form: {
+      required: 'จำเป็น',
+      select_currency: 'กรุณาเลือกสกุลเงินหลัก',
+      enable_status: 'สถานะการใช้งาน',
+      cancel: 'ยกเลิก',
+      save: 'บันทึก',
+      saving: 'กำลังบันทึก...',
+      understand: 'เข้าใจแล้ว'
+    },
+    // ความช่วยเหลือรหัสสาขา
+    branch_code_help: {
+      title: 'คำแนะนำรหัสสาขา',
+      existing_codes: 'รหัสสาขาที่มีอยู่:',
+      code_rules: 'กฎการตั้งรหัส:',
+      head_office: 'สำนักงานใหญ่ใช้ HO นำหน้า เช่น: HO001',
+      branch_office: 'สาขาใช้ตัวอักษรแรกของชื่อเมือง เช่น:',
+      sub_branch: 'สาขาย่อยเพิ่มหมายเลขลำดับต่อจากรหัสสาขา เช่น:',
+      examples: {
+        beijing: 'สาขาปักกิ่ง: BJ001',
+        shanghai: 'สาขาเซี่ยงไฮ้: SH001',
+        guangzhou: 'สาขากว่างโจว: GZ001',
+        beijing_sub1: 'สาขาย่อยที่ 1 ปักกิ่ง: BJ101',
+        beijing_sub2: 'สาขาย่อยที่ 2 ปักกิ่ง: BJ102'
+      },
+      code_format: 'รูปแบบที่แนะนำ: รหัสภูมิภาค + ตัวเลข 3 หลัก เช่น: BJ001'
+    },
+    // สิทธิ์
+    permissions: {
+      no_branch_manage: 'คุณไม่มีสิทธิ์เข้าถึงการจัดการสาขา ต้องการสิทธิ์ branch_manage หรือ system_manage',
+      no_branch_info: 'ไม่สามารถรับข้อมูลสาขาปัจจุบันได้ กรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบการตั้งค่าผู้ใช้'
+    },
+    // ข้อความการดำเนินการ
+    messages: {
+      branch_update_success: 'อัปเดตสาขาสำเร็จ',
+      branch_add_success: 'เพิ่มสาขาสำเร็จ',
+      branch_delete_success: 'ลบสาขาสำเร็จ',
+      fetch_branches_failed: 'ไม่สามารถดึงรายการสาขาได้',
+      fetch_currencies_failed: 'ไม่สามารถดึงรายการสกุลเงินได้',
+      save_failed: 'บันทึกล้มเหลว',
+      delete_failed: 'ลบล้มเหลว',
+      check_branch_data_failed: 'ไม่สามารถตรวจสอบข้อมูลสาขาได้',
+      cannot_delete_branch: 'ไม่สามารถลบสาขานี้ได้ เหตุผล:',
+      confirm_delete: 'คุณแน่ใจหรือไม่ที่จะลบสาขา "{name}"?\n\nหมายเหตุ: การดำเนินการนี้ไม่สามารถยกเลิกได้ กรุณาดำเนินการด้วยความระมัดระวัง!'
+    }
+  }
+} 

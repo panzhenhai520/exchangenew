@@ -1,0 +1,1393 @@
+<template>
+  <div class="container py-4">
+    <div class="row mb-4">
+      <div class="col">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="page-title-bold">
+            <font-awesome-icon :icon="['fas', 'users']" class="me-2" />
+            {{ $t('system_maintenance.user_management.title') }}
+          </h2>
+        </div>
+        <p class="text-center text-muted">
+          {{ $t('system_maintenance.user_management.subtitle') }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ $t('system_maintenance.user_management.user_list') }}</h5>
+            <button class="btn btn-sm btn-light" @click="showAddUserModal">
+              <i class="fas fa-plus me-1"></i> {{ $t('system_maintenance.user_management.add_user') }}
+            </button>
+          </div>
+          <div class="card-body">
+            <!-- 搜索和筛选区域 -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <input type="text" class="form-control" :placeholder="$t('queries.common.search') + '...'" v-model="searchQuery">
+                  <button class="btn btn-outline-secondary" type="button" @click="searchUsers">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" v-model="roleFilter">
+                  <option value="">{{ $t('queries.common.all') }}{{ $t('system_maintenance.user_management.role') }}</option>
+                  <option v-for="role in roles" :key="role.id" :value="role.name">{{ getRoleDisplayName(role.name) }}</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" v-model="statusFilter">
+                  <option value="">{{ $t('queries.common.all') }}{{ $t('system_maintenance.user_management.status') }}</option>
+                  <option value="active">{{ $t('system_maintenance.user_management.status_options.active') }}</option>
+                  <option value="inactive">{{ $t('system_maintenance.user_management.status_options.inactive') }}</option>
+                  <option value="locked">{{ $t('system_maintenance.user_management.status_options.locked') }}</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-primary w-100" @click="resetFilters">
+                  <i class="fas fa-undo me-1"></i> {{ $t('queries.common.reset') }}
+                </button>
+              </div>
+            </div>
+            
+            <!-- 用户表格 -->
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>{{ $t('system_maintenance.user_management.login_code') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.name') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.role') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.mobile_number') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.branch') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.status') }}</th>
+                    <th>{{ $t('system_maintenance.user_management.permissions') }}</th>
+                    <th>{{ $t('queries.log_query.table.time') }}</th>
+                    <th>{{ $t('queries.common.actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="user in filteredUsers" :key="user.id">
+                    <td>{{ user.login_code }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>
+                      <span :class="getRoleBadgeClass(user.role_name)">
+                        {{ getRoleDisplayName(user.role_name) }}
+                      </span>
+                    </td>
+                    <td>{{ user.mobile_number || $t('queries.common.no_data') }}</td>
+                    <td>{{ user.branch_name || $t('queries.common.no_data') }}</td>
+                    <td>
+                      <span :class="getStatusBadgeClass(user.status)">
+                        {{ getStatusDisplayName(user.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="permissions-display">
+                        <button 
+                          class="btn btn-sm btn-outline-info me-1" 
+                          @click="toggleUserPermissions(user)"
+                          :title="showPermissions[user.id] ? $t('system_maintenance.user_management.actions.hide_permissions') : $t('system_maintenance.user_management.actions.view_permissions')"
+                        >
+                          <i :class="showPermissions[user.id] ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                          {{ $t('system_maintenance.user_management.permissions') }} ({{ getUserPermissionCount(user) }})
+                        </button>
+                      </div>
+                      <!-- 权限详情展开区域 -->
+                      <div v-if="showPermissions[user.id]" class="permission-details mt-2">
+                        <!-- 用户实际拥有的权限 -->
+                        <div class="row mb-3">
+                          <div class="col-12">
+                            <small class="text-muted d-block mb-2">
+                              <i class="fas fa-shield-alt me-1"></i>{{ $t('system_maintenance.user_management.permissions') }}:
+                            </small>
+                            <div class="permission-icons mb-2">
+                              <span 
+                                v-for="perm in getUserActualPermissions(user)" 
+                                :key="perm.name"
+                                class="badge bg-success me-1 mb-1"
+                                :title="perm.description"
+                              >
+                                <i :class="perm.icon"></i> {{ perm.label }}
+                              </span>
+                              <span v-if="getUserActualPermissions(user).length === 0" class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>{{ $t('system_maintenance.user_management.no_permissions') }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- 个人信息分隔线 -->
+                        <hr class="my-2">
+                        <div class="row">
+                          <div class="col-12">
+                            <small class="text-muted d-block mb-2">
+                              <i class="fas fa-user-circle me-1"></i>{{ $t('system_maintenance.user_management.personal_info') }}:
+                            </small>
+                            <div class="personal-info">
+                              <div class="row g-2">
+                                <div class="col-md-6" v-if="user.id_card_number">
+                                  <small class="text-secondary">{{ $t('system_maintenance.user_management.id_card_number') }}:</small>
+                                  <span class="ms-1">{{ user.id_card_number }}</span>
+                                </div>
+                                <div class="col-md-6" v-if="user.email">
+                                  <small class="text-secondary">{{ $t('system_maintenance.user_management.email') }}:</small>
+                                  <span class="ms-1">{{ user.email }}</span>
+                                </div>
+                                <div class="col-md-6" v-if="user.phone_number">
+                                  <small class="text-secondary">{{ $t('system_maintenance.user_management.phone_number') }}:</small>
+                                  <span class="ms-1">{{ user.phone_number }}</span>
+                                </div>
+                                <div class="col-md-6" v-if="user.mobile_number">
+                                  <small class="text-secondary">{{ $t('system_maintenance.user_management.mobile_number') }}:</small>
+                                  <span class="ms-1">{{ user.mobile_number }}</span>
+                                </div>
+                                <div class="col-12" v-if="user.address">
+                                  <small class="text-secondary">{{ $t('system_maintenance.user_management.address') }}:</small>
+                                  <span class="ms-1">{{ user.address }}</span>
+                                </div>
+                                <div class="col-12" v-if="!user.id_card_number && !user.email && !user.phone_number && !user.mobile_number && !user.address">
+                                  <small class="text-muted">{{ $t('system_maintenance.user_management.no_personal_info') }}</small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ user.last_login ? new Date(user.last_login).toLocaleString() : $t('system_maintenance.user_management.never_login') }}</td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <button 
+                          class="btn btn-outline-primary btn-sm" 
+                          @click="editUser(user)" 
+                          :disabled="!canEditUser(user)"
+                          :title="!canEditUser(user) ? $t('system_maintenance.user_management.permission_restrictions.app_role_no_edit') : $t('system_maintenance.user_management.actions.edit')"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button 
+                          class="btn btn-outline-warning btn-sm" 
+                          @click="resetPassword(user)" 
+                          :disabled="!canEditUser(user)"
+                          :title="!canEditUser(user) ? $t('system_maintenance.user_management.permission_restrictions.app_role_no_reset_password') : $t('system_maintenance.user_management.actions.reset_password')"
+                        >
+                          <i class="fas fa-key"></i>
+                        </button>
+                        <button 
+                          class="btn btn-outline-info btn-sm" 
+                          @click="toggleUserStatus(user)" 
+                          :disabled="!canEditUser(user)"
+                          :title="!canEditUser(user) ? $t('system_maintenance.user_management.permission_restrictions.app_role_no_status_change') : (user.status === 'active' ? $t('system_maintenance.user_management.actions.disable') : $t('system_maintenance.user_management.actions.enable'))"
+                        >
+                          <i :class="user.status === 'active' ? 'fas fa-user-slash' : 'fas fa-user-check'"></i>
+                        </button>
+                        <button 
+                          class="btn btn-outline-danger btn-sm" 
+                          @click="confirmDeleteUser(user)" 
+                          :disabled="!canDeleteUser(user) || !canEditUser(user)"
+                          :title="!canEditUser(user) ? $t('system_maintenance.user_management.permission_restrictions.app_role_no_delete') : $t('system_maintenance.user_management.actions.delete')"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="filteredUsers.length === 0">
+                    <td colspan="9" class="text-center text-muted py-4">
+                      <i class="fas fa-users me-2"></i>
+                      {{ loading ? $t('queries.common.loading') : $t('system_maintenance.user_management.no_users_found') }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- 分页 -->
+            <nav v-if="totalPages > 1">
+              <ul class="pagination justify-content-center">
+                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{ $t('queries.common.previous') }}</a>
+                  </li>
+                <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
+                    <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                  </li>
+                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                    <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('queries.common.next') }}</a>
+                  </li>
+                </ul>
+              </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 添加/编辑用户模态框 -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true" ref="userModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ isEditMode ? $t('system_maintenance.user_management.edit_user') : $t('system_maintenance.user_management.add_user') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <!-- 基本信息行 -->
+    <div class="row">
+      <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="login_code" class="form-label">{{ $t('system_maintenance.user_management.login_code') }} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" id="login_code" v-model="currentUser.login_code" :disabled="isEditMode" :placeholder="$t('system_maintenance.user_management.placeholder.login_code')">
+          </div>
+            </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="name" class="form-label">{{ $t('system_maintenance.user_management.name') }} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-sm" id="name" v-model="currentUser.name" :placeholder="$t('system_maintenance.user_management.placeholder.name')">
+          </div>
+        </div>
+      </div>
+      
+              <!-- 角色和网点行 -->
+              <div class="row">
+      <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="role_id" class="form-label">{{ $t('system_maintenance.user_management.role') }} <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm" id="role_id" v-model="currentUser.role_id">
+                      <option value="">{{ $t('system_maintenance.user_management.placeholder.select_role') }}</option>
+                      <option v-for="role in availableRoles" :key="role.id" :value="role.id">{{ getRoleDisplayName(role.name) }}</option>
+                    </select>
+          </div>
+            </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="branch_id" class="form-label">
+                                              {{ $t('system_maintenance.user_management.branch') }} <span class="text-danger">*</span>
+                      <small v-if="!canSelectBranch" class="text-muted">({{ $t('system_maintenance.user_management.current_branch') }})</small>
+                      </label>
+                    <select 
+                      class="form-select form-select-sm" 
+                      id="branch_id" 
+                      v-model="currentUser.branch_id"
+                      :disabled="!canSelectBranch"
+                    >
+                                              <option value="">{{ $t('system_maintenance.user_management.placeholder.select_branch') }}</option>
+                      <option v-for="branch in availableBranches" :key="branch.id" :value="branch.id">{{ branch.branch_name }}</option>
+                    </select>
+                    <div v-if="!canSelectBranch" class="form-text text-info">
+                      <i class="fas fa-info-circle me-1"></i>
+                                              {{ $t('system_maintenance.user_management.can_only_create_for_current_branch') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+              <!-- 状态和密码行 -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="status" class="form-label">{{ $t('system_maintenance.user_management.account_status') }}</label>
+                    <select class="form-select form-select-sm" id="status" v-model="currentUser.status">
+                      <option value="active">{{ $t('system_maintenance.user_management.status_options.active') }}</option>
+                      <option value="inactive">{{ $t('system_maintenance.user_management.status_options.inactive') }}</option>
+                      <option value="locked">{{ $t('system_maintenance.user_management.status_options.locked') }}</option>
+                      <option value="suspended">{{ $t('system_maintenance.user_management.status_options.suspended') }}</option>
+                    </select>
+            </div>
+          </div>
+                <div class="col-md-6" v-if="!isEditMode">
+                  <div class="mb-3">
+                    <label for="password" class="form-label">{{ $t('system_maintenance.user_management.initial_password') }} <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control form-control-sm" id="password" v-model="currentUser.password" :placeholder="$t('system_maintenance.user_management.placeholder.set_initial_password')">
+        </div>
+      </div>
+    </div>
+    
+              <!-- 个人信息分隔线 -->
+              <hr class="my-3">
+              <h6 class="text-muted mb-3">
+                <i class="fas fa-user-circle me-2"></i>{{ $t('system_maintenance.user_management.personal_info') }} <small class="text-secondary">({{ $t('system_maintenance.user_management.optional') }})</small>
+              </h6>
+              
+              <!-- 身份证和邮箱行 -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="id_card_number" class="form-label">{{ $t('system_maintenance.user_management.id_card_number') }}</label>
+                    <input type="text" class="form-control form-control-sm" id="id_card_number" v-model="currentUser.id_card_number" :placeholder="$t('system_maintenance.user_management.placeholder.id_card_number')">
+          </div>
+                </div>
+                <div class="col-md-6">
+              <div class="mb-3">
+                    <label for="email" class="form-label">{{ $t('system_maintenance.user_management.email') }}</label>
+                    <input type="email" class="form-control form-control-sm" id="email" v-model="currentUser.email" :placeholder="$t('system_maintenance.user_management.placeholder.email')">
+              </div>
+                </div>
+              </div>
+              
+              <!-- 联系电话行 -->
+              <div class="row">
+                <div class="col-md-6">
+              <div class="mb-3">
+                    <label for="phone_number" class="form-label">{{ $t('system_maintenance.user_management.phone_number') }}</label>
+                    <input type="tel" class="form-control form-control-sm" id="phone_number" v-model="currentUser.phone_number" :placeholder="$t('system_maintenance.user_management.placeholder.phone_number')">
+              </div>
+                </div>
+                <div class="col-md-6">
+              <div class="mb-3">
+                    <label for="mobile_number" class="form-label">{{ $t('system_maintenance.user_management.mobile_number') }}</label>
+                    <input type="tel" class="form-control form-control-sm" id="mobile_number" v-model="currentUser.mobile_number" :placeholder="$t('system_maintenance.user_management.placeholder.mobile_number')">
+              </div>
+                </div>
+              </div>
+              
+              <!-- 联系地址行 -->
+              <div class="row">
+                <div class="col-12">
+              <div class="mb-3">
+                    <label for="address" class="form-label">{{ $t('system_maintenance.user_management.address') }}</label>
+                    <textarea class="form-control form-control-sm" id="address" v-model="currentUser.address" rows="2" :placeholder="$t('system_maintenance.user_management.placeholder.address')"></textarea>
+              </div>
+              </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ $t('common.cancel') }}</button>
+            <button type="button" class="btn btn-primary btn-sm" @click="saveUser" :disabled="saving">
+              <i class="fas fa-spinner fa-spin me-1" v-if="saving"></i>
+              {{ isEditMode ? $t('common.update') : $t('common.save') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 删除确认模态框 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true" ref="deleteModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ $t('system_maintenance.user_management.confirm_delete') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>{{ $t('system_maintenance.user_management.delete_check_title') }}</strong>
+            </div>
+            <p>{{ $t('system_maintenance.user_management.confirm_delete_message', { user: currentUser.login_code }) }}</p>
+            <p class="text-muted small">
+              <i class="fas fa-shield-alt me-1"></i>
+              {{ $t('system_maintenance.user_management.delete_check_description') }}
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.cancel') }}</button>
+            <button type="button" class="btn btn-danger" @click="deleteUser">{{ $t('common.delete') }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 重置密码模态框 -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true" ref="resetPasswordModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ $t('system_maintenance.user_management.reset_password') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>{{ $t('system_maintenance.user_management.confirm_reset_password') }}</strong>
+            </div>
+                          <p>{{ $t('system_maintenance.user_management.reset_password_for_user', { name: currentUser.name, code: currentUser.login_code }) }}</p>
+            <p class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+                              {{ $t('system_maintenance.user_management.password_will_be_reset_to') }}: <code>123456</code>
+            </p>
+            <p class="text-danger small">
+              <i class="fas fa-shield-alt me-1"></i>
+                              {{ $t('system_maintenance.user_management.recommend_change_password') }}
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.cancel') }}</button>
+            <button type="button" class="btn btn-warning" @click="confirmResetPassword">
+              <i class="fas fa-key me-1"></i>
+              {{ $t('system_maintenance.user_management.confirm_reset') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import userService from '@/services/api/userService'
+import branchService from '@/services/api/branchService'
+import * as bootstrap from 'bootstrap'
+
+export default {
+  name: 'UserManagementView',
+  data() {
+    return {
+      users: [],
+      roles: [],
+      branches: [],
+      permissions: [],
+      permissionGroups: [],
+      searchQuery: '',
+      roleFilter: '',
+      statusFilter: '',
+      currentPage: 1,
+      itemsPerPage: 10,
+      isEditMode: false,
+      loading: false,
+      saving: false,
+      showPermissions: {}, // 控制权限显示状态
+      currentUser: {
+        id: null,
+        login_code: '',
+        name: '',
+        role_id: null,
+        branch_id: null,
+        status: 'active',
+        password: '',
+        id_card_number: '',
+        phone_number: '',
+        mobile_number: '',
+        address: '',
+        email: ''
+      },
+      // 权限定义和图标
+      permissionDefinitions: {
+        // 系统管理
+        'system_manage': { label: '系统', icon: 'fas fa-cogs', description: '系统管理权限' },
+        'user_manage': { label: '用户', icon: 'fas fa-users', description: '用户管理权限' },
+        'role_manage': { label: '角色', icon: 'fas fa-user-tag', description: '角色管理权限' },
+        'branch_manage': { label: '网点', icon: 'fas fa-building', description: '网点管理权限' },
+        'currency_manage': { label: '币种', icon: 'fas fa-coins', description: '币种管理权限' },
+        'manage_all_branches': { label: '网点管理', icon: 'fas fa-building', description: '管理所有网点权限' },
+        
+        // 业务操作
+        'exchange_operate': { label: '兑换', icon: 'fas fa-exchange-alt', description: '执行兑换业务权限' },
+        'rate_manage': { label: '汇率', icon: 'fas fa-chart-line', description: '汇率管理权限' },
+        'balance_manage': { label: '余额', icon: 'fas fa-wallet', description: '余额管理权限' },
+        'end_of_day': { label: '日结', icon: 'fas fa-calendar-check', description: '执行日结权限' },
+        'transaction_execute': { label: '交易', icon: 'fas fa-handshake', description: '执行交易权限' },
+        'reverse_transaction': { label: '交易冲正', icon: 'fas fa-undo', description: '交易冲正权限' },
+        
+        // 查询权限
+        'report_view': { label: '报表', icon: 'fas fa-chart-bar', description: '报表查看权限' },
+        'log_view': { label: '日志', icon: 'fas fa-list-alt', description: '日志查看权限' },
+        'view_transactions': { label: '交易查询', icon: 'fas fa-search', description: '交易查询权限' },
+        'view_balances': { label: '余额查看', icon: 'fas fa-eye', description: '余额查看权限' },
+        'balance_query': { label: '余额查询', icon: 'fas fa-eye', description: '余额查询权限' },
+        'export_data': { label: '导出', icon: 'fas fa-download', description: '数据导出权限' },
+        
+        // 其他常见权限
+        'transaction_manage': { label: '交易管理', icon: 'fas fa-handshake', description: '交易管理权限' },
+        'system_logs': { label: '操作日志', icon: 'fas fa-file-alt', description: '操作日志查看权限' },
+        'audit_logs': { label: '审计日志', icon: 'fas fa-clipboard-list', description: '审计日志查看权限' },
+        'settings_manage': { label: '设置管理', icon: 'fas fa-cog', description: '系统设置管理权限' },
+        'backup_restore': { label: '备份恢复', icon: 'fas fa-database', description: '数据备份恢复权限' }
+      }
+    }
+  },
+  computed: {
+    filteredUsers() {
+      let result = [...this.users];
+      
+      // 应用搜索
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        result = result.filter(user => 
+          user.login_code.toLowerCase().includes(query) || 
+          user.name.toLowerCase().includes(query) ||
+          (user.email && user.email.toLowerCase().includes(query)) ||
+          (user.mobile_number && user.mobile_number.toLowerCase().includes(query))
+        );
+      }
+      
+      // 应用角色筛选
+      if (this.roleFilter) {
+        result = result.filter(user => user.role_name === this.roleFilter);
+      }
+      
+      // 应用状态筛选
+      if (this.statusFilter) {
+        result = result.filter(user => user.status === this.statusFilter);
+      }
+      
+      // 应用分页
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      
+      return result.slice(startIndex, endIndex);
+    },
+    totalPages() {
+      const filteredCount = this.users.length;
+      return Math.ceil(filteredCount / this.itemsPerPage);
+    },
+    // 判断当前用户是否可以选择网点
+    canSelectBranch() {
+      // 从localStorage获取当前用户信息
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('当前用户信息:', currentUser); // 调试日志
+      
+      // 超级管理员admin可以选择任意网点
+      if (currentUser.login_code === 'admin') {
+        console.log('admin用户，可以选择任意网点');
+        return true;
+      }
+      
+      // 检查是否有branch_manage权限（网点管理权限）
+      if (currentUser.permissions && Array.isArray(currentUser.permissions)) {
+        const hasBranchManage = currentUser.permissions.some(p => 
+          (p.name && p.name === 'branch_manage') || 
+          (p.permission_name && p.permission_name === 'branch_manage')
+        );
+        console.log('权限检查结果:', hasBranchManage, currentUser.permissions);
+        if (hasBranchManage) {
+          return true;
+        }
+      }
+      
+      // 检查角色是否为系统管理员
+      if (this.isSystemAdminRole(currentUser.role_name)) {
+        console.log('系统管理员角色，可以选择任意网点');
+        return true;
+      }
+      
+      console.log('普通用户，只能选择当前网点');
+      return false;
+    },
+    // 可用的网点列表
+    availableBranches() {
+      if (this.canSelectBranch) {
+        // 可以选择网点的用户看到所有网点
+        return this.branches;
+      } else {
+        // 不能选择网点的用户只能看到自己的网点
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        return this.branches.filter(branch => branch.id === currentUser.branch_id);
+      }
+    },
+    // 可用的角色列表（过滤掉App角色）
+    availableRoles() {
+      return this.roles.filter(role => role.name !== 'App');
+    },
+    // 判断用户是否可以被删除
+    canDeleteUser() {
+      return (user) => {
+        // admin用户不能被删除
+        if (user.login_code === 'admin') {
+          return false;
+        }
+        
+        // 系统管理员角色的用户需要特别保护
+        if (this.isSystemAdminRole(user.role_name) && user.login_code !== 'admin') {
+          // 只有admin可以删除其他系统管理员
+          const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+          return currentUser.login_code === 'admin';
+        }
+        
+        return true;
+      };
+    },
+    // 判断用户是否可以编辑
+    canEditUser() {
+      return (user) => {
+        // admin用户可以编辑所有用户
+        if (user.login_code === 'admin') {
+          return true;
+        }
+
+        // 系统管理员角色的用户可以编辑所有用户
+        if (this.isSystemAdminRole(user.role_name)) {
+          return true;
+        }
+
+        // 其他App角色用户不能编辑其他App角色用户
+        if (user.role_name === 'App') {
+          return false;
+        }
+
+        // 其他普通用户可以编辑
+        return true;
+      };
+    }
+  },
+  async mounted() {
+    await this.loadData()
+  },
+  methods: {
+    async loadData() {
+      this.loading = true
+      try {
+        await Promise.all([
+          this.loadUsers(),
+          this.loadRoles(),
+          this.loadBranches(),
+          this.loadPermissions()
+        ])
+      } catch (error) {
+        console.error('加载数据失败:', error)
+        this.$toast?.error('加载数据失败')
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadUsers() {
+      try {
+        console.log('开始加载用户数据...')
+        console.log('userService:', userService)
+        const response = await userService.getUsers()
+        console.log('用户API响应:', response)
+        
+        if (response && response.data) {
+          console.log('响应数据结构:', response.data)
+          if (response.data.success) {
+            this.users = response.data.users || []
+            console.log('加载的用户数据:', this.users)
+            console.log('用户数量:', this.users.length)
+            
+            // 检查用户数据结构
+            if (this.users.length > 0) {
+              console.log('=== 用户数据结构详细分析 ===');
+              this.users.forEach((user, index) => {
+                console.log(`用户 ${index + 1}:`, {
+                  id: user.id,
+                  login_code: user.login_code,
+                  name: user.name,
+                  role_id: user.role_id,
+                  role_name: user.role_name,
+                  branch_id: user.branch_id,
+                  status: user.status
+                });
+              });
+              console.log('=== 用户数据结构分析结束 ===');
+            }
+          } else {
+            console.error('用户API返回失败:', response.data.message)
+            this.$toast.error('加载用户失败: ' + (response.data.message || '未知错误'))
+          }
+        } else {
+          console.error('API响应格式错误:', response)
+          this.$toast.error('API响应格式错误')
+        }
+      } catch (error) {
+        console.error('加载用户失败:', error)
+        console.error('错误详情:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        })
+        
+        if (error.response?.status === 401) {
+          this.$toast.error('登录已过期，请重新登录')
+          // 可能需要跳转到登录页面
+        } else if (error.response?.status === 403) {
+          this.$toast.error('没有权限访问用户管理')
+        } else {
+          this.$toast.error('网络错误，请检查服务器连接')
+        }
+      }
+    },
+    async loadRoles() {
+      try {
+        console.log('开始加载角色数据...')
+        const response = await userService.getRoles()
+        console.log('角色API响应:', response)
+        if (response && response.data && response.data.success) {
+          this.roles = response.data.roles || []
+          console.log('加载的角色数据:', this.roles)
+          console.log('角色数量:', this.roles.length)
+          
+          // 详细检查角色数据结构
+          if (this.roles.length > 0) {
+            console.log('=== 角色数据结构详细分析 ===');
+            this.roles.forEach((role, index) => {
+              console.log(`角色 ${index + 1}:`, {
+                id: role.id,
+                name: role.name,
+                role_name: role.role_name,
+                description: role.description,
+                permissions_count: role.permissions ? role.permissions.length : 0,
+                permissions: role.permissions
+              });
+            });
+            console.log('=== 角色数据结构分析结束 ===');
+          }
+        } else {
+          console.error('角色API返回失败:', response?.data?.message)
+          this.$toast.error('加载角色失败: ' + (response?.data?.message || '未知错误'))
+        }
+      } catch (error) {
+        console.error('加载角色失败:', error)
+        this.$toast.error('加载角色数据失败')
+      }
+    },
+    async loadBranches() {
+      try {
+        console.log('开始加载网点数据...')
+        const response = await branchService.getBranches()
+        console.log('网点API响应:', response)
+        if (response && response.data && response.data.success) {
+          this.branches = response.data.branches || []
+          console.log('加载的网点数据:', this.branches)
+        } else {
+          console.error('网点API返回失败:', response?.data?.message)
+          this.$toast.error('加载网点失败: ' + (response?.data?.message || '未知错误'))
+        }
+      } catch (error) {
+        console.error('加载网点失败:', error)
+        this.$toast.error('加载网点数据失败')
+      }
+    },
+    async loadPermissions() {
+      try {
+        const response = await userService.getPermissions()
+        if (response.data.success) {
+          this.permissions = response.data.permissions
+          console.log('Loaded permissions:', this.permissions)
+        }
+      } catch (error) {
+        console.error('加载权限失败:', error)
+      }
+    },
+    
+    // 权限相关方法
+    toggleUserPermissions(user) {
+      // 使用 Vue.set 或直接赋值
+      if (this.$set) {
+        this.$set(this.showPermissions, user.id, !this.showPermissions[user.id])
+      } else {
+        this.showPermissions = {
+          ...this.showPermissions,
+          [user.id]: !this.showPermissions[user.id]
+        }
+      }
+    },
+    
+    getUserPermissionCount(user) {
+      // 获取用户实际拥有的权限数量
+      return this.getUserActualPermissions(user).length;
+    },
+    
+    hasPermission(user, permissionName) {
+      const role = this.roles.find(r => r.id === user.role_id || r.name === user.role_name)
+      if (!role || !role.permissions) return false
+      return role.permissions.some(p => p.name === permissionName || p.permission_name === permissionName)
+    },
+    
+    // 获取用户实际拥有的权限列表
+    getUserActualPermissions(user) {
+      console.log('获取用户权限 - 用户数据:', user);
+      console.log('可用角色:', this.roles);
+      
+      // 尝试多种方式匹配角色
+      let role = null;
+      
+      // 方式1：通过角色ID匹配
+      if (user.role_id) {
+        role = this.roles.find(r => r.id == user.role_id);
+        console.log('通过角色ID匹配:', user.role_id, role);
+      }
+      
+      // 方式2：通过角色名称匹配（支持多种字段名）
+      if (!role && user.role_name) {
+        role = this.roles.find(r => 
+          r.name === user.role_name || 
+          r.role_name === user.role_name ||
+          r.name === user.role_name
+        );
+        console.log('通过角色名称匹配:', user.role_name, role);
+      }
+      
+      // 方式3：通过角色名称包含匹配（容错）
+      if (!role && user.role_name) {
+        role = this.roles.find(r => 
+          (r.name && r.name.includes(user.role_name)) ||
+          (r.role_name && r.role_name.includes(user.role_name))
+        );
+        console.log('通过角色名称包含匹配:', user.role_name, role);
+      }
+      
+      if (!role || !role.permissions) {
+        console.log('未找到角色或角色无权限:', role);
+        return [];
+      }
+      
+      console.log('找到角色权限:', role.permissions);
+      
+      // 将角色权限转换为带有图标和标签的权限对象
+      return role.permissions.map(perm => {
+        const permName = perm.name || perm.permission_name;
+        const permDef = this.permissionDefinitions[permName];
+        return {
+          name: permName,
+          label: permDef ? permDef.label : permName,
+          icon: permDef ? permDef.icon : 'fas fa-cog',
+          description: perm.description || (permDef ? permDef.description : permName)
+        };
+      });
+    },
+    
+    // 角色和状态显示
+    getRoleDisplayName(role) {
+      if (!role) {
+        return this.$t('system_maintenance.user_management.role_names.unassigned') || '未分配';
+      }
+      
+      // 获取角色名称翻译映射
+      const roleNames = this.$t('system_maintenance.user_management.role_names');
+      
+      // 如果角色名称在翻译映射中存在，返回翻译后的名称
+      if (roleNames && roleNames[role]) {
+        return roleNames[role];
+      }
+      
+      // 如果没有找到翻译，返回原始名称
+      return role;
+    },
+    isSystemAdminRole(roleName) {
+      return roleName === '系统管理员';
+    },
+    getRoleBadgeClass(role) {
+      if (role && role.includes('管理员')) {
+        return 'badge bg-danger';
+      } else if (role && role.includes('操作员')) {
+        return 'badge bg-primary';
+      }
+      return 'badge bg-secondary';
+    },
+    getStatusDisplayName(status) {
+      const statusMap = {
+        'active': this.$t('system_maintenance.user_management.status_options.active'),
+        'inactive': this.$t('system_maintenance.user_management.status_options.inactive'),
+        'locked': this.$t('system_maintenance.user_management.status_options.locked'),
+        'suspended': this.$t('system_maintenance.user_management.status_options.suspended')
+      };
+      return statusMap[status] || '未知状态';
+    },
+    getStatusBadgeClass(status) {
+      const classMap = {
+        'active': 'badge bg-success',
+        'inactive': 'badge bg-warning',
+        'locked': 'badge bg-danger',
+        'suspended': 'badge bg-secondary'
+      };
+      return classMap[status] || 'badge bg-secondary';
+    },
+    
+    // 搜索和筛选
+    searchUsers() {
+      this.currentPage = 1;
+    },
+    resetFilters() {
+      this.searchQuery = '';
+      this.roleFilter = '';
+      this.statusFilter = '';
+      this.currentPage = 1;
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+    
+    // 用户操作
+    showAddUserModal() {
+      this.isEditMode = false;
+      
+      // 获取当前用户信息
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      this.currentUser = {
+        id: null,
+        login_code: '',
+        name: '',
+        role_id: null,
+        branch_id: this.canSelectBranch ? null : currentUser.branch_id, // 如果不能选择网点，默认设置为当前用户的网点
+        status: 'active',
+        password: '',
+        id_card_number: '',
+        phone_number: '',
+        mobile_number: '',
+        address: '',
+        email: ''
+      };
+      const modal = new bootstrap.Modal(document.getElementById('userModal'))
+      modal.show()
+    },
+    editUser(user) {
+      this.isEditMode = true;
+      this.currentUser = { 
+        ...user, 
+        password: '' // 不显示现有密码
+      };
+      const modal = new bootstrap.Modal(document.getElementById('userModal'))
+      modal.show()
+    },
+    async saveUser() {
+      // 基础验证
+      if (!this.currentUser.login_code.trim() || !this.currentUser.name.trim()) {
+        this.$toast.error(this.$t('system_maintenance.user_management.validation.fill_username_and_name'))
+        return
+      }
+
+      if (!this.currentUser.role_id) {
+        this.$toast.error(this.$t('system_maintenance.user_management.validation.select_role'))
+        return
+      }
+
+      if (!this.currentUser.branch_id) {
+        if (this.canSelectBranch) {
+          this.$toast.error(this.$t('system_maintenance.user_management.validation.select_branch'))
+        } else {
+                      this.$toast.error(this.$t('system_maintenance.user_management.validation.branch_info_error'))
+        }
+        return
+      }
+
+      if (!this.isEditMode && !this.currentUser.password.trim()) {
+        this.$toast.error(this.$t('system_maintenance.user_management.validation.set_initial_password'))
+        return
+      }
+
+      // 密码长度验证
+      if (!this.isEditMode && this.currentUser.password.length < 6) {
+        this.$toast.error(this.$t('system_maintenance.user_management.validation.password_min_length'))
+        return
+      }
+
+      // 个人信息验证（可选字段）
+      if (this.currentUser.email && this.currentUser.email.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(this.currentUser.email.trim())) {
+          this.$toast.error('邮箱格式不正确')
+          return
+        }
+      }
+
+      if (this.currentUser.phone_number && this.currentUser.phone_number.trim()) {
+        const phoneRegex = /^[+]?[0-9\-\s()]{7,20}$/
+        if (!phoneRegex.test(this.currentUser.phone_number.trim())) {
+          this.$toast.error('联系电话格式不正确')
+          return
+        }
+      }
+
+      if (this.currentUser.mobile_number && this.currentUser.mobile_number.trim()) {
+        const mobileRegex = /^[+]?[0-9\-\s()]{7,20}$/
+        if (!mobileRegex.test(this.currentUser.mobile_number.trim())) {
+          this.$toast.error('手机号码格式不正确')
+          return
+        }
+      }
+
+      if (this.currentUser.id_card_number && this.currentUser.id_card_number.trim()) {
+        const idCardRegex = /^[A-Za-z0-9]{6,20}$/
+        if (!idCardRegex.test(this.currentUser.id_card_number.trim())) {
+          this.$toast.error('身份证号码格式不正确')
+          return
+        }
+      }
+
+      this.saving = true
+      try {
+        console.log('保存用户数据:', this.currentUser)
+        let response
+      if (this.isEditMode) {
+          response = await userService.updateUser(this.currentUser.id, this.currentUser)
+        } else {
+          response = await userService.createUser(this.currentUser)
+        }
+        console.log('保存用户响应:', response)
+
+        if (response.data && response.data.success) {
+          this.$toast.success(this.isEditMode ? this.$t('system_maintenance.user_management.messages.update_success') : this.$t('system_maintenance.user_management.messages.create_success'))
+          
+          if (this.isEditMode) {
+            // 编辑模式：直接更新本地用户数据
+            const userIndex = this.users.findIndex(u => u.id === this.currentUser.id)
+            if (userIndex !== -1) {
+              // 获取角色和网点名称
+              const role = this.roles.find(r => r.id === this.currentUser.role_id)
+              const branch = this.branches.find(b => b.id === this.currentUser.branch_id)
+              
+              // 更新用户数据 - 使用直接赋值替代 $set
+              const updatedUser = {
+            ...this.currentUser,
+                role_name: role ? role.name : null,
+                branch_name: branch ? branch.branch_name : null
+              }
+              
+              // 使用 Vue.set 或直接替换数组元素
+              this.$set ? this.$set(this.users, userIndex, updatedUser) : (this.users[userIndex] = updatedUser)
+              
+              console.log('本地用户数据已更新:', this.users[userIndex])
+        }
+      } else {
+            // 新增模式：重新加载用户列表
+            await this.loadUsers()
+          }
+          
+          const modalInstance = bootstrap.Modal.getInstance(document.getElementById('userModal'))
+          if (modalInstance) {
+            modalInstance.hide()
+          }
+        } else {
+          const errorMessage = response.data ? response.data.message : '操作失败'
+          this.$toast.error(errorMessage)
+        }
+      } catch (error) {
+        console.error('保存用户失败:', error)
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$toast.error(error.response.data.message)
+        } else {
+          this.$toast.error('保存用户失败: ' + error.message)
+        }
+      } finally {
+        this.saving = false
+      }
+    },
+    async confirmDeleteUser(user) {
+      this.currentUser = { ...user };
+      
+      // 先检查用户是否有业务流水
+      try {
+        const businessCheck = await this.checkUserBusiness(user.id);
+        if (businessCheck.success && !businessCheck.can_delete) {
+          // 有业务流水，显示警告
+          const businessDetails = businessCheck.business_details || [];
+          const message = `该用户有业务流水记录，不能删除。\n\n业务详情:\n${businessDetails.join('\n')}\n\n建议停用该用户而不是删除。`;
+          
+          if (confirm(message + '\n\n是否仍要尝试删除？')) {
+            // 用户确认继续删除
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'))
+            modal.show()
+          }
+        } else {
+          // 没有业务流水，直接显示删除确认
+          const modal = new bootstrap.Modal(document.getElementById('deleteModal'))
+          modal.show()
+        }
+      } catch (error) {
+        console.error('检查用户业务失败:', error);
+        // 检查失败，直接显示删除确认
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'))
+        modal.show()
+      }
+    },
+    async deleteUser() {
+      try {
+        const response = await userService.deleteUser(this.currentUser.id)
+        if (response.data.success) {
+          this.$toast?.success(this.$t('system_maintenance.user_management.messages.delete_success'))
+          await this.loadUsers()
+          bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide()
+        } else {
+          this.$toast?.error(response.data.message || '删除失败')
+        }
+      } catch (error) {
+        console.error('删除用户失败:', error)
+        
+        // 处理业务检查错误
+        if (error.response?.status === 400 && error.response?.data?.business_count > 0) {
+          const businessDetails = error.response.data.business_details || []
+          const message = `该用户有业务流水记录，不能删除。\n业务详情:\n${businessDetails.join('\n')}\n\n建议停用该用户而不是删除。`
+          this.$toast?.error(message)
+        } else {
+          this.$toast?.error('删除用户失败: ' + (error.response?.data?.message || error.message))
+        }
+      }
+    },
+    resetPassword(user) {
+      this.currentUser = { ...user };
+      const modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'))
+      modal.show()
+    },
+    async confirmResetPassword() {
+      try {
+        const response = await userService.updateUser(this.currentUser.id, {
+          password: '123456'
+        })
+        if (response.data.success) {
+                      this.$toast?.success(this.$t('system_maintenance.user_management.password_reset_success', { name: this.currentUser.name }))
+          bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide()
+        } else {
+          this.$toast?.error(response.data.message || '密码重置失败')
+        }
+      } catch (error) {
+        console.error('密码重置失败:', error)
+        this.$toast?.error('密码重置失败: ' + (error.response?.data?.message || error.message))
+      }
+    },
+    async toggleUserStatus(user) {
+      const newStatus = user.status === 'active' ? 'inactive' : 'active'
+      try {
+        const response = await userService.updateUser(user.id, { status: newStatus })
+        if (response.data.success) {
+                      this.$toast?.success(this.$t('system_maintenance.user_management.status_update_success'))
+          
+          // 直接更新本地用户状态
+          const userIndex = this.users.findIndex(u => u.id === user.id)
+          if (userIndex !== -1) {
+            // 使用直接赋值更新状态
+            this.users[userIndex].status = newStatus
+            // 强制触发响应式更新
+            this.$forceUpdate()
+            console.log('用户状态已更新:', this.users[userIndex])
+          }
+        } else {
+                      this.$toast?.error(response.data.message || this.$t('system_maintenance.user_management.status_update_failed'))
+        }
+      } catch (error) {
+        console.error('状态更新失败:', error)
+                  this.$toast?.error(this.$t('system_maintenance.user_management.status_update_failed'))
+      }
+    },
+    getDeleteButtonTitle(user) {
+      if (!this.canDeleteUser(user)) {
+        return this.$t('system_maintenance.user_management.permission_restrictions.app_role_no_delete');
+      }
+      return this.$t('system_maintenance.user_management.actions.delete') + ' (' + this.$t('system_maintenance.user_management.delete_check_title') + ')';
+    },
+    
+    // 检查用户是否有业务流水（用于前端预检查）
+    async checkUserBusiness(userId) {
+      try {
+        // 调用后端API检查用户业务流水
+        const response = await userService.checkUserBusiness(userId);
+        return response.data;
+      } catch (error) {
+        console.error(this.$t('system_maintenance.user_management.messages.business_check_failed'), error);
+        return { success: false, can_delete: false };
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.permissions-display {
+  min-width: 120px;
+}
+
+.permission-details {
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+}
+
+.permission-icons .badge {
+  font-size: 0.75em;
+  margin-bottom: 0.25rem;
+  cursor: help;
+}
+
+.permission-icons .badge.bg-light {
+  opacity: 0.6;
+}
+
+/* 个人信息显示样式 */
+.personal-info {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.personal-info .text-secondary {
+  font-weight: 500;
+  color: #6c757d !important;
+}
+
+.personal-info .row.g-2 > * {
+  padding: 0.125rem 0.25rem;
+}
+
+.permission-details hr {
+  border-color: #e9ecef;
+  margin: 0.5rem 0;
+}
+
+/* 用户模态框紧凑样式 */
+#userModal .modal-body {
+  padding: 1rem 1.5rem;
+}
+
+#userModal .form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+#userModal .form-control-sm,
+#userModal .form-select-sm {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+#userModal .mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+
+#userModal .text-danger {
+  color: #dc3545 !important;
+}
+
+#userModal .form-text {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+#userModal .modal-footer {
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+#userModal .btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* 个人信息分隔线样式 */
+#userModal hr {
+  border-color: #e9ecef;
+  margin: 1rem 0 0.75rem 0;
+}
+
+#userModal h6.text-muted {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6c757d !important;
+  margin-bottom: 0.75rem;
+}
+
+#userModal h6.text-muted i {
+  color: #007bff;
+}
+
+#userModal .text-secondary {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* 个人信息字段样式 */
+#userModal textarea.form-control-sm {
+  resize: vertical;
+  min-height: 60px;
+}
+
+#userModal input[type="email"],
+#userModal input[type="tel"] {
+  font-family: inherit;
+}
+
+/* 表单验证样式 */
+#userModal .is-invalid {
+  border-color: #dc3545;
+}
+
+#userModal .is-valid {
+  border-color: #28a745;
+}
+
+/* 禁用删除按钮样式 */
+.btn-outline-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.btn-outline-danger:disabled:hover {
+  background-color: transparent;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+/* 手机号码列样式 */
+.table td:nth-child(4) {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+/* 手机号码未填写时的样式 */
+.table td:nth-child(4):contains('未填写') {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* 翻页按钮宽度调整，避免泰语文字折行 */
+.pagination .page-link {
+  min-width: 80px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.pagination .page-link:lang(th) {
+  min-width: 100px;
+}
+
+/* 状态标签样式优化 */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.5rem;
+}
+
+/* 操作按钮样式优化 */
+.btn-group .btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  min-width: 40px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-group .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn:active {
+  transform: translateY(0);
+}
+
+/* 操作按钮图标样式 */
+.btn-group .btn i {
+  font-size: 0.875rem;
+}
+
+/* 禁用状态下的操作按钮 */
+.btn-group .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-group .btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+</style>

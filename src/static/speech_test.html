@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音功能测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .voice-info {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .voice-item {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: white;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 语音功能测试页面</h1>
+        
+        <div class="test-section">
+            <h3>1. 语音合成支持检查</h3>
+            <button onclick="testSpeechSynthesisSupport()">检查语音合成支持</button>
+            <div id="support-status" class="status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 可用语音检查</h3>
+            <button onclick="testAvailableVoices()">检查可用语音</button>
+            <div id="voices-status" class="status"></div>
+            <div id="voices-info" class="voice-info"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 基本语音播报测试</h3>
+            <button onclick="testBasicSpeech()">测试中文语音</button>
+            <button onclick="testEnglishSpeech()">测试英文语音</button>
+            <button onclick="testThaiSpeech()">测试泰文语音</button>
+            <div id="basic-speech-status" class="status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 语音状态检查</h3>
+            <button onclick="checkSpeechStatus()">检查语音状态</button>
+            <div id="status-info" class="status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. 完整测试</h3>
+            <button onclick="runCompleteTest()">运行完整测试</button>
+            <div id="complete-test-status" class="status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>6. 控制台日志</h3>
+            <button onclick="clearLog()">清空日志</button>
+            <div id="log-output" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 重定向控制台输出到页面
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToLog(message, type = 'log') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logOutput.textContent += logEntry;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToLog(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToLog(args.join(' '), 'warn');
+        };
+        
+        function clearLog() {
+            document.getElementById('log-output').textContent = '';
+        }
+        
+        function updateStatus(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+        
+        // 1. 检查语音合成支持
+        function testSpeechSynthesisSupport() {
+            console.log('🔊 检查语音合成支持...');
+            
+            if ('speechSynthesis' in window) {
+                const speechSynthesis = window.speechSynthesis;
+                
+                let statusMessage = '✅ 浏览器支持语音合成 API\n';
+                
+                if (typeof speechSynthesis.speak === 'function') {
+                    statusMessage += '✅ speak 方法可用\n';
+                } else {
+                    statusMessage += '❌ speak 方法不可用\n';
+                }
+                
+                if (typeof speechSynthesis.cancel === 'function') {
+                    statusMessage += '✅ cancel 方法可用\n';
+                } else {
+                    statusMessage += '❌ cancel 方法不可用\n';
+                }
+                
+                if (typeof speechSynthesis.getVoices === 'function') {
+                    statusMessage += '✅ getVoices 方法可用';
+                } else {
+                    statusMessage += '❌ getVoices 方法不可用';
+                }
+                
+                updateStatus('support-status', statusMessage, 'success');
+            } else {
+                updateStatus('support-status', '❌ 浏览器不支持语音合成 API', 'error');
+            }
+        }
+        
+        // 2. 检查可用语音
+        function testAvailableVoices() {
+            console.log('🔊 检查可用语音...');
+            
+            const speechSynthesis = window.speechSynthesis;
+            const voices = speechSynthesis.getVoices();
+            
+            let statusMessage = `🔊 可用语音数量: ${voices.length}\n`;
+            
+            if (voices.length === 0) {
+                statusMessage += '⚠️ 没有找到可用的语音，可能需要等待语音加载';
+                updateStatus('voices-status', statusMessage, 'warning');
+                
+                // 尝试等待语音加载
+                speechSynthesis.onvoiceschanged = () => {
+                    const loadedVoices = speechSynthesis.getVoices();
+                    displayVoicesInfo(loadedVoices);
+                };
+                
+                speechSynthesis.getVoices();
+            } else {
+                displayVoicesInfo(voices);
+            }
+        }
+        
+        function displayVoicesInfo(voices) {
+            const supportedLanguages = [...new Set(voices.map(voice => voice.lang.split('-')[0]))];
+            const chineseVoices = voices.filter(voice => voice.lang.startsWith('zh'));
+            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+            
+            let statusMessage = `✅ 找到 ${voices.length} 个可用语音\n`;
+            statusMessage += `🔊 支持的语音语言: ${supportedLanguages.join(', ')}\n`;
+            statusMessage += `🔊 中文语音数量: ${chineseVoices.length}\n`;
+            statusMessage += `🔊 英文语音数量: ${englishVoices.length}`;
+            
+            updateStatus('voices-status', statusMessage, 'success');
+            
+            // 显示语音详情
+            const voicesInfo = document.getElementById('voices-info');
+            voicesInfo.innerHTML = `
+                <h4>中文语音:</h4>
+                ${chineseVoices.map(v => `<div class="voice-item">${v.name} (${v.lang})</div>`).join('')}
+                <h4>英文语音:</h4>
+                ${englishVoices.map(v => `<div class="voice-item">${v.name} (${v.lang})</div>`).join('')}
+            `;
+        }
+        
+        // 3. 基本语音播报测试
+        function testBasicSpeech() {
+            testSpeechUtterance('测试中文语音播报功能，如果您听到这句话，说明语音播报功能正常');
+            updateStatus('basic-speech-status', '🔊 正在播放中文语音测试...', 'success');
+        }
+        
+        function testEnglishSpeech() {
+            testSpeechUtterance('Test English speech synthesis. If you can hear this, the speech function is working properly.', 'en-US');
+            updateStatus('basic-speech-status', '🔊 正在播放英文语音测试...', 'success');
+        }
+        
+        function testThaiSpeech() {
+            testSpeechUtterance('ทดสอบการพูดภาษาไทย หากคุณได้ยินข้อความนี้ แสดงว่าฟังก์ชันการพูดทำงานได้ปกติ', 'th-TH');
+            updateStatus('basic-speech-status', '🔊 正在播放泰文语音测试...', 'success');
+        }
+        
+        function testSpeechUtterance(text, lang = 'zh-CN') {
+            try {
+                const speechSynthesis = window.speechSynthesis;
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance();
+                utterance.text = text;
+                utterance.lang = lang;
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                
+                utterance.onstart = () => {
+                    console.log('✅ 语音播报开始');
+                    updateStatus('basic-speech-status', '✅ 语音播报开始', 'success');
+                };
+                
+                utterance.onend = () => {
+                    console.log('✅ 语音播报结束');
+                    updateStatus('basic-speech-status', '✅ 语音播报结束', 'success');
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('❌ 语音播报错误:', event.error);
+                    updateStatus('basic-speech-status', `❌ 语音播报错误: ${event.error}`, 'error');
+                };
+                
+                speechSynthesis.speak(utterance);
+                
+            } catch (error) {
+                console.error('❌ 语音播报测试失败:', error);
+                updateStatus('basic-speech-status', `❌ 语音播报测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 4. 检查语音状态
+        function checkSpeechStatus() {
+            const speechSynthesis = window.speechSynthesis;
+            
+            const status = {
+                speaking: speechSynthesis.speaking,
+                pending: speechSynthesis.pending,
+                paused: speechSynthesis.paused
+            };
+            
+            let statusMessage = `🔊 语音合成状态:\n`;
+            statusMessage += `正在播放: ${status.speaking ? '是' : '否'}\n`;
+            statusMessage += `有待播放: ${status.pending ? '是' : '否'}\n`;
+            statusMessage += `已暂停: ${status.paused ? '是' : '否'}`;
+            
+            updateStatus('status-info', statusMessage, 'success');
+        }
+        
+        // 5. 完整测试
+        function runCompleteTest() {
+            console.log('🔊 ===== 开始完整语音功能测试 =====');
+            updateStatus('complete-test-status', '🔊 开始完整测试...', 'success');
+            
+            // 检查支持
+            testSpeechSynthesisSupport();
+            
+            // 检查语音
+            setTimeout(() => {
+                testAvailableVoices();
+            }, 1000);
+            
+            // 测试语音播报
+            setTimeout(() => {
+                testBasicSpeech();
+            }, 2000);
+            
+            // 检查状态
+            setTimeout(() => {
+                checkSpeechStatus();
+                updateStatus('complete-test-status', '✅ 完整测试完成', 'success');
+            }, 5000);
+        }
+        
+        // 页面加载时自动运行基本检查
+        window.onload = function() {
+            console.log('🔊 语音功能测试页面已加载');
+            testSpeechSynthesisSupport();
+        };
+    </script>
+</body>
+</html> 

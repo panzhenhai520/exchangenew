@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "Bash(dir)",
+      "Bash(tasklist:*)",
+      "Bash(npm run serve:*)",
+      "Bash(copy dual_direction_pdf_generator.py dual_direction_pdf_generator.py.backup)",
+      "Bash(copy exchange_pdf_generator.py exchange_pdf_generator.py.backup)",
+      "Bash(copy:*)",
+      "Bash(dir:*)",
+      "Read(//d/Code/ExchangeNew/Re/**)",
+      "Bash(cp:*)",
+      "Read(//d/Code/ExchangeNew/src/test_output/**)",
+      "Read(//d/Code/ExchangeNew/src/services/pdf/**)",
+      "Read(//d/Code/ExchangeNew/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

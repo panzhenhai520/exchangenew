@@ -1,0 +1,112 @@
+{
+  "USD": {
+    "zh": "美元",
+    "en": "US Dollar",
+    "th": "ดอลลาร์สหรัฐ"
+  },
+  "EUR": {
+    "zh": "欧元",
+    "en": "Euro",
+    "th": "ยูโร"
+  },
+  "GBP": {
+    "zh": "英镑",
+    "en": "British Pound",
+    "th": "ปอนด์อังกฤษ"
+  },
+  "JPY": {
+    "zh": "日元",
+    "en": "Japanese Yen",
+    "th": "เยนญี่ปุ่น"
+  },
+  "THB": {
+    "zh": "泰铢",
+    "en": "Thai Baht",
+    "th": "บาทไทย"
+  },
+  "CNY": {
+    "zh": "人民币",
+    "en": "Chinese Yuan",
+    "th": "หยวนจีน"
+  },
+  "CHF": {
+    "zh": "瑞士法郎",
+    "en": "Swiss Franc",
+    "th": "ฟรังก์สวิส"
+  },
+  "HKD": {
+    "zh": "港币",
+    "en": "Hong Kong Dollar",
+    "th": "ดอลลาร์ฮ่องกง"
+  },
+  "CAD": {
+    "zh": "加元",
+    "en": "Canadian Dollar",
+    "th": "ดอลลาร์แคนาดา"
+  },
+  "SGD": {
+    "zh": "新加坡元",
+    "en": "Singapore Dollar",
+    "th": "ดอลลาร์สิงคโปร์"
+  },
+  "RUB": {
+    "zh": "卢布",
+    "en": "Russian Ruble",
+    "th": "รูเบิลรัสเซีย"
+  },
+  "NZD": {
+    "zh": "新西兰元",
+    "en": "New Zealand Dollar",
+    "th": "ดอลลาร์นิวซีแลนด์"
+  },
+  "AUD": {
+    "zh": "澳元",
+    "en": "Australian Dollar",
+    "th": "ดอลลาร์ออสเตรเลีย"
+  },
+  "KRW": {
+    "zh": "韩元",
+    "en": "South Korean Won",
+    "th": "วอนเกาหลีใต้"
+  },
+  "INR": {
+    "zh": "印度卢比",
+    "en": "Indian Rupee",
+    "th": "รูปีอินเดีย"
+  },
+  "SEK": {
+    "zh": "瑞典克朗",
+    "en": "Swedish Krona",
+    "th": "โครนาสวีเดน"
+  },
+  "SAR": {
+    "zh": "沙特里亚尔",
+    "en": "Saudi Riyal",
+    "th": "ริยัลซาอุดิอาระเบีย"
+  },
+  "NOK": {
+    "zh": "挪威克朗",
+    "en": "Norwegian Krone",
+    "th": "โครนานอร์เวย์"
+  },
+  "DKK": {
+    "zh": "丹麦克朗",
+    "en": "Danish Krone",
+    "th": "โครนาเดนมาร์ก"
+  },
+  "ZAR": {
+    "zh": "南非兰特",
+    "en": "South African Rand",
+    "th": "แรนด์แอฟริกาใต้"
+  },
+  "BND": {
+    "zh": "文莱元",
+    "en": "Brunei Dollar",
+    "th": "ดอลลาร์บรูไน"
+  },
+  "BHD": {
+    "zh": "巴林第纳尔",
+    "en": "Bahraini Dinar",
+    "th": "ดีนาร์บาห์เรน"
+  }
+}

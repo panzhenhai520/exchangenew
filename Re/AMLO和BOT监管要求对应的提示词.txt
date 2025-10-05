@@ -1,0 +1,169 @@
+外币兑换系统开发描述文档
+
+一、文档概述
+1.1本文档基于泰国BOT（泰国银行）外汇管制和AMLO（泰国反洗钱办公室）法规，描述外币兑换系统的数据库设计、功能扩展、多语言支持和多网点要求。系统需支持中文、英文、泰文三种语言，所有UI文本通过src/i18n/modules/新模块下的配置文件管理（键值结构化），后端枚举/状态使用多语言键，前端渲染时动态转换。生成的AMLO报告（1-01、1-02、1-03）和BOT报告（BuyFX、SellFX、Provider、FCD）需支持三种语言版本，数据库字段名称需包含中/英/泰文标签。
+1.2 多网点要求：所有新增表/报告/查询需包含“网点ID”（branch_id, INT, 必填）字段。查询/统计时，默认过滤当前登录用户所属网点，支持跨网点管理员权限切换。
+1.3 安全与合规补充：所有敏感数据（如客户证件号、金额）需加密存储（使用AES算法）。
+1.4 添加审计日志表（audit_log），记录报告生成/上报/审核操作（操作员、时间、IP）。
+1.5 开发注意：报告生成模块设计为独立组件（RepForm模块），支持动态字段提取，便于复用。
+1.6 阈值自定义支持逻辑运算（AND/OR/大于/小于/等于），使用规则引擎（如Drools或自定义SQL）实现。
+
+二、基础数据结构设计
+2.1 报告字段表（report_fields）
+基于AMLO报告的 PDF（1-01、1-02、1-03）和BOT截图（BuyFX、SellFX、Provider、FCD）的7张报表分析，新增report_fields表，用于统一管理这7张报告需要的字段。其中，姓名、身份证号， 护照号码，兑换金额等适用于多个报告；BOT报告重点字段包括许可证号、序列号、参考号；AMLO报告重点包括职业、地址、交易目的。
+表结构设计参考，具体你还需要进一步深入分析AMLO和BOT报告（MySQL）：
+
+CREATE TABLE report_fields (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    field_name VARCHAR(50) NOT NULL COMMENT '字段英文名, e.g., customer_name',
+    field_type ENUM('VARCHAR', 'INT', 'DATE', 'DECIMAL', 'BOOLEAN') NOT NULL COMMENT '类型',
+    field_length INT DEFAULT NULL COMMENT '长度, e.g., 255 for VARCHAR',
+    field_cn_name VARCHAR(100) COMMENT '中文名, e.g., 姓名',
+    field_en_name VARCHAR(100) COMMENT '英文名, e.g., Name',
+    field_th_name VARCHAR(100) COMMENT '泰文名, e.g., ชื่อ-นามสกุล',
+    fill_order INT NOT NULL COMMENT '填写顺序, e.g., 1 for first field',
+    is_required BOOLEAN DEFAULT FALSE COMMENT '是否必填',
+    report_type ENUM('AMLO-1-01', 'AMLO-1-02', 'AMLO-1-03', 'BOT_BuyFX', 'BOT_SellFX', 'BOT_Provider', 'BOT_FCD') NOT NULL COMMENT '报告类型',
+    UNIQUE KEY unique_field_report (field_name, report_type)  -- 避免重复
+);
+
+示例
+
+- 姓名 (customer_name, VARCHAR, 100, 姓名, Name, ชื่อ-นามสกุล, 1, TRUE, 'AMLO-1-01') – 适用于所有报告。
+- 证件号 (id_number, VARCHAR, 20, 证件号, ID Number, เลขที่, 2, TRUE, 'AMLO-1-01') – 跨报告复用。
+- 交易金额 (transaction_amount, DECIMAL, NULL, 交易金额, Amount, จำนวน (บาท), 5, TRUE, 'AMLO-1-01')。
+- 许可证号 (license_no, VARCHAR, 20, 许可证号, License No., ใบอนุญาตเลขที่, 1, TRUE, 'BOT_BuyFX') – BOT特有。
+- 序列号 (sequence, INT, NULL, 序列号, Sequence, ลำดับ, 3, FALSE, 'BOT_BuyFX')。
+- 报告日期 (report_date, DATE, NULL, 报告日期, Report Date, วันที่รายงาน, 4, TRUE, 'BOT_SellFX')。
+- 提供方名称 (provider_name, VARCHAR, 100, 提供方名称, Provider Name, ชื่อผู้ให้บริการ, 1, TRUE, 'BOT_Provider')。
+- FCD账户号 (fcd_account, VARCHAR, 50, FCD账户号, FCD Account, เลขที่บัญชี, 6, FALSE, 'BOT_FCD')。
+使用逻辑：根据报告类型和fill_order提取字段，动态构造表单（RepForm）。如果字段跨报告，复用同一记录。
+
+你需要分析  รายงาน ปปง 1-01 ซื้อขายเกิน 500,000 บาท ยกเว้นเงินบาทแลก.pdf，
+รายงาน ปปง 1-02 ซื้อขายเกิน 800,000 บาท ยกเว้นเงินบาทแลก.pdf
+รายงาน ปปง 1-03  ซื้อขายระหว่างนิติบุคลล.pdf
+以及BOT( Save Excel, PDF, Bot).xlsx文件中的四个sheet BOT报告：BOT_BuyFX、BOT_FCD、BOT_Provider Info、BOT_Sell FX
+总共7份报告所需要的所有字段都帮我提取翻译成三种语言版本，初始化  report_fields 表，以便用于动态生成报告。
+注意！需要覆盖所有报告字段
+
+
+
+
+2.2 报告审核表（Report_Check）
+新增Report_Check表，存储填写表单数据，用于生成PDF并审计。表字段基于report_fields动态扩展，固定字段如下（忽略report_fields中重复的）：
+表结构设计参考，具体你还需要进一步深入分析AMLO和BOT报告
+CREATE TABLE Report_Check (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    report_serial VARCHAR(20) NOT NULL COMMENT '报告流水号',
+    transaction_serial VARCHAR(20) NOT NULL COMMENT '交易流水号',
+    transaction_date DATE NOT NULL COMMENT '交易日期',
+    exchange_type ENUM('普通兑换', '大额兑换', '房产抵押兑换') NOT NULL COMMENT '兑换类型',
+    report_type ENUM('AMLO-1-01', 'AMLO-1-02', 'AMLO-1-03') NOT NULL COMMENT '报告类型',
+    operator VARCHAR(50) COMMENT '操作员',
+    operate_date DATETIME COMMENT '操作日期',
+    auditor VARCHAR(50) COMMENT '审核人员',
+    audit_date DATETIME COMMENT '审核日期',
+    status ENUM('待审批', '已上报', '驳回') NOT NULL COMMENT '当前状态',
+    branch_id INT NOT NULL COMMENT '网点ID',
+    -- 动态字段: 从report_fields扩展, e.g., customer_name VARCHAR(100)
+);
+生成逻辑：根据报告类型，从report_fields提取字段，生成动态表单（RepForm）。填写后数据写入此表，用于生成
+ รายงาน ปปง 1-01 ซื้อขายเกิน 500,000 บาท ยกเว้นเงินบาทแลก.pdf，
+รายงาน ปปง 1-02 ซื้อขายเกิน 800,000 บาท ยกเว้นเงินบาทแลก.pdf
+รายงาน ปปง 1-03  ซื้อขายระหว่างนิติบุคลล.pdf
+以及BOT( Save Excel, PDF, Bot).xlsx文件中的四个sheet BOT报告格式（项目目前已经能生成pdf的收据，沿用相同的技术，确保生成的PDF格式和 给出的样本一模一样。
+
+不同兑换类型可能需要填写的内容不同：
+- 普通兑换：仅姓名、证件类型，证件号码、电话号码。
+- 大额兑换：在普通兑换集成上增加填写 兑换人职业、工作单位、联系地址、证件有效期。
+- 房产抵押兑换：在上述集成上增加填写 不动产详情。
+
+
+三、功能扩展（A、B、C、D、E）
+
+功能A：规范管理 - 交易报告页面
+在【规范管理】 > 【余额报警】页后新增【交易报告】页面，用于 新增/维护报告类型（CTR报告:AMLO-1-01, ATR报告:AMLO-1-02, STR报告:AMLO-1-03）。
+每个类型需要能 维护报告名称及对应的触发条件（触发条件需要支持自定义规则：字段+运算符+阈值组合，这些字段来自report_fields表，条件如“金额 >= 500万 AND 资金来源 = '抵押房产'”）。
+
+触发举例1：例如，定义触发条件为： 兑换频率> 10次/月， 兑换总金额>200万，触发AMLO-1-03报告
+兑换交易时，输入证件号码后，调用API传入证件号，该API计算兑换次数及兑换总额，然后匹配条件：频率是否大于10次，总额是否大于200万，最后返回是否触发报告，触发哪一个报告。
+
+触发举例2：例如，定义资金来源=抵押房产 或 变卖土地，且总金额大于500万，触发AMLO-1-01报告
+兑换交易时，输入证件号码后，调用API传入资金来源，总金额，然后匹配条件，资金来源是否是房产抵押，是否总额超过500万，最后返回 是否触发，触发哪一个报告。
+
+需要新建trigger_rule表，用于存储规则。
+规则引擎模块要支持UI拖拽配置条件。存储触发条件到trigger_rules表（rule_id, report_type, condition_json）。
+
+
+功能B：普通兑换中的报告触发与预约
+1.输入证件号后，调用【触发报告检查API】（GET /check_report? id_number=xxx），返回：0（无需报告）、需报告+状态（已上报/待审核/通过/驳回）。
+2.累计超阈值（自定义，e.g., 200万THB）标记可疑，提示填1-03。根据设置决定是否继续。
+3.本币>200万显示【兑换类型】（默认大额），资产抵押需填不动产详情，动态生成RepForm。
+4.命中阈值：弹出预约页面，填RepForm（基于report_fields），生成PDF，存Reserved_Transaction表。
+5.Reserved_Transaction表结构( 供参考，具体需要进一步深入分析AMLO的1-01，1-02，1-03 和BOT的四张报告BOT_BuyFX、BOT_FCD、BOT_Provider Info、BOT_Sell FX)：
+
+CREATE TABLE Reserved_Transaction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id VARCHAR(20) COMMENT '证件号',
+    currency VARCHAR(3) COMMENT '外币种类',
+    direction ENUM('买入', '卖出') COMMENT '兑换方向',
+    amount DECIMAL(15,2) COMMENT '金额',
+    trigger_type ENUM('CTR', 'ATR', 'STR') COMMENT '触发类型',
+    form_data JSON COMMENT 'RepForm数据',
+    status ENUM('待审批', '已审核', '被驳回', '已交易', '已上报') NOT NULL,
+    branch_id INT NOT NULL,
+    create_time DATETIME COMMENT '预约时间',
+    audit_time DATETIME COMMENT '审核时间',
+    audit_user VARCHAR(50) COMMENT '审核人',
+    report_time DATETIME COMMENT '上报时间',
+    report_user VARCHAR(50) COMMENT '上报人'
+);
+
+
+6.检查API返回值处理：
+    6.1 API返回0，则说明没有触发任何报告，则继续交易；
+    6.2 API返回需要报告，且状态为 驳回，或待审核， 则返回审核状态，如果是驳回，还需要返回驳回原因，然后终止交易；
+    6.2 API返回需要报告，且状态为通过，则校验本次兑换的金额是否符合通过校验的报告，通过，则记录 兑换类型/审批号继续交易，金额校验不通过则终止交易。
+    6.3 静默生成AMLO PDF（文件名: 审计流水号_check.pdf），存AMLOReport表 
+
+AMLOReport表结构供参考，具体字段你还需要进一步深入分析AMLO和BOT报告
+
+CREATE TABLE AMLOReport (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reserved_id INT COMMENT 'Reserved_Transaction ID',
+    pdf_filename VARCHAR(100) COMMENT 'PDF文件名',
+    create_time DATETIME COMMENT '创建时间',
+    is_reported BOOLEAN DEFAULT FALSE COMMENT '是否上报',
+    transaction_time DATETIME COMMENT '交易时间',
+    report_type ENUM('CTR', 'ATR', 'STR') COMMENT '报告类型',
+    report_time DATETIME COMMENT '上报时间',
+    branch_id INT NOT NULL
+);
+补充：API定义：返回JSON {status: 0/1, audit_status: '已上报'/'待审核'等}。累计阈值时间窗口自定义（默认1月）。
+
+功能C：AMLO审计菜单
+在界面主导航菜单新增主菜单【AMLO审计】 > 【预约兑换审核】（查询Reserved_Transaction，默认1个月内）、【AMLO报告】（查询AMLOReport，蓝色/红色提示）。
+状态管理：待审批 → 已审核/驳回（记录时间/人）；支持反审核。【历史交易】按钮：查询用户所有记录（分页，支持跨页搜索）。
+补充：添加【用户交易查询】（输入证件号查询历史）、【大额交易查询】（输入金额范围查询，分页）。
+
+
+功能D：BOT报告功能
+新增表：BOT_BuyFX、BOT_SellFX、BOT_Provider、BOT_FCD（字段：transaction_id INT, create_time DATETIME, use_fcd BOOLEAN）。
+在界面主导航菜单新增主菜单【合规报告】 > 【报告生成条件】（设置阈值，如>5万美元）、【T+1上报】（显示未报，导出Excel多Sheet，如 BOT(Save Excel, PDF, Bot).xlsx）、【BOT报告查询】（汇总 BOTflag=0）、【FCD报告查询】（汇总 FCDflag=0）。
+
+1.设置条件：买入/卖出/提供方/FCD阈值。
+2.兑换页面勾选FCD，调用API（参数：use_fcd, direction, local_amount, verify_amount），计算 verify_amount（汇率转换）。
+3.生成报告，更新 flag。查询页面：蓝色/红色提示。
+补充：增加 seqno 字段到交易流水表（每日重置）。
+
+四、补充说明与测试计划
+测试计划：单元测试（API/阈值）、集成测试（报告生成/多语言）、合规模拟（大额交易上报）。维护指南：每年审视阈值，更新汇率源。
+- 补充1：仅500万和800万THB阈值触发报告，200万为累计可疑阈值，可自定义。
+- 补充2：同一人累计兑换按证件号统计，时间窗口自定义（默认1月），按下单汇率计算。
+- 补充3：本币>800万且资产抵押触发1-02，条件在【交易报告】设置。
+- 补充4：预约兑换不计入流水/库存，存 Reserved_Transaction。
+- 补充5：兑换页面增【历史交易】查询（次数/金额/时间/总额）。
+- 补充6：主菜单新增【用户交易查询】、【大额交易查询】（分页）。
+- 补充7：交易流水表加 seqno（每日重置）。
+- 补充8：AMLO/BOT报告可能同时触发（如>5万美元+>200万THB）。
+- 补充9：RepForm模块独立设计，便于复用。

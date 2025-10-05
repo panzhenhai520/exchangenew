@@ -1,0 +1,10 @@
+# 依赖文件夹
+node_modules/
+
+# 日志文件
+*.log
+logs/
+
+# 构建输出
+dist/
+build/

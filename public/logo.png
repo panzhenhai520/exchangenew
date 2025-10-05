@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Exchange System Logo</title>
+    <g id="Logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Background" fill="#2C3E50" cx="100" cy="100" r="100"></circle>
+        <g id="Exchange-Icon" transform="translate(40.000000, 40.000000)" fill="#FFFFFF">
+            <path d="M120,60 C120,93.137 93.137,120 60,120 C26.863,120 0,93.137 0,60 C0,26.863 26.863,0 60,0 C93.137,0 120,26.863 120,60 Z M60,110 C87.614,110 110,87.614 110,60 C110,32.386 87.614,10 60,10 C32.386,10 10,32.386 10,60 C10,87.614 32.386,110 60,110 Z" id="Circle"></path>
+            <path d="M85,45 L35,45 L50,30 L45,25 L20,50 L45,75 L50,70 L35,55 L85,55 L85,45 Z" id="Arrow-Up"></path>
+            <path d="M35,75 L85,75 L70,90 L75,95 L100,70 L75,45 L70,50 L85,65 L35,65 L35,75 Z" id="Arrow-Down"></path>
+        </g>
+    </g>
+</svg>
