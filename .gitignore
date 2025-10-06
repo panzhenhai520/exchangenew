@@ -8,3 +8,49 @@ logs/
 # 构建输出
 dist/
 build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 环境配置
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 临时文件
+TEST/
+nul
+*.tmp
+*.bak
+*.backup
+
+# 调试和检查文件
+check_data.py
+db_check.py
+comprehensive_check.py
+
+# 文档（如需版本控制可删除此行）
+AMLO_BOT_*.md
+
+# Claude设置
+.claude/settings.local.json
