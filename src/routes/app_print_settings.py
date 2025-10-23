@@ -9,9 +9,8 @@ import logging
 import base64
 from sqlalchemy import text
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('app_print_settings')
+# Get logger instance - DO NOT call basicConfig() here
+logger = logging.getLogger(__name__)
 
 # Create blueprint for print settings
 print_settings_bp = Blueprint('print_settings', __name__, url_prefix='/api/print-settings')

@@ -7,6 +7,12 @@ from models.exchange_models import Currency, Branch, Operator
 from services.db_service import DatabaseService
 from services.auth_service import token_required, has_permission
 from utils.multilingual_log_service import multilingual_logger
+import logging
+
+# 设置日志记录器
+logger = logging.getLogger(__name__)
+
+
 
 denomination_bp = Blueprint('denominations', __name__, url_prefix='/api/denominations')
 
@@ -15,10 +21,8 @@ def handle_options():
     """处理CORS预检请求"""
     response = jsonify({'message': 'CORS preflight'})
     origin = request.headers.get('Origin')
-    if origin in ["http://192.168.0.18:8080", "http://localhost:8080", "http://localhost:8081", "http://192.168.0.18:5001", "http://localhost:5001"] or origin is None:
-        response.headers['Access-Control-Allow-Origin'] = origin or "*"
-    else:
-        response.headers['Access-Control-Allow-Origin'] = "*"
+    # 允许所有origin，由全局CORS配置统一管理
+    response.headers['Access-Control-Allow-Origin'] = origin if origin else "*"
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
     response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     response.headers['Access-Control-Allow-Credentials'] = 'true'

@@ -19,7 +19,8 @@
     "validation_passed": "Validation passed",
     "validation_passed_can_execute": "Validation passed, transaction can be executed",
     "validation_passed_with_warnings": "Validation passed, but with balance threshold warnings",
-    "validation_passed_with_critical_warnings": "Validation passed, but with critical balance threshold warnings"
+    "validation_passed_with_critical_warnings": "Validation passed, but with critical balance threshold warnings",
+    "amount_exceeds_approved": "Transaction amount exceeds approved amount, please adjust the amount or resubmit for approval"
   },
   "balance": {
     "insufficient_balance": "Insufficient balance",
@@ -27,6 +28,7 @@
     "balance_check_error": "Error checking balance: {error}",
     "foreign_currency_insufficient": "{currency_name} insufficient balance, need to pay {required_amount:.2f} {currency_code}, current balance {current_balance:.2f} {currency_code}, shortage {shortfall:.2f} {currency_code}",
     "foreign_stock_insufficient": "{currency_name} insufficient stock, need {required_amount:.2f} {currency_code}, current stock {current_stock:.2f} {currency_code}, missing {missing_amount:.2f} {currency_code}",
+    "base_stock_insufficient": "{currency_name} base currency stock insufficient, need {required_amount:.2f} {currency_code}, current stock {current_stock:.2f} {currency_code}, missing {missing_amount:.2f} {currency_code}",
     "balance_update_failed": "Failed to update balance: {error}",
     "balance_sufficient": "Balance sufficient, transaction can be completed",
     "threshold_warning": "{currency_name} ({currency_code}) balance will change from {current_balance:.2f} to {new_balance:.2f}, {impact_analysis}"
@@ -55,6 +57,8 @@
   },
   "system": {
     "operation_successful": "Operation successful",
+    "base_currency": "Base Currency",
+    "unknown_currency": "Unknown Currency",
     "operation_failed": "Operation failed",
     "network_error": "Network error",
     "system_error": "System error: {error}",

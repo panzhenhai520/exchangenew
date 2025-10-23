@@ -48,7 +48,7 @@ class FormValidator:
                 field_label = field.get('label', field_name)
                 field_type = field.get('field_type')
                 is_required = field.get('is_required', False)
-                validation_rule = field.get('validation_rule', {})
+                validation_rule = field.get('validation_rule') or {}  # 确保不是None
 
                 # 获取实际值
                 actual_value = form_data.get(field_name)
@@ -74,7 +74,7 @@ class FormValidator:
                     continue
 
                 # 长度校验（VARCHAR, TEXT）
-                if field_type in ['VARCHAR', 'TEXT']:
+                if field_type in ['VARCHAR', 'TEXT'] and validation_rule:
                     length_valid, length_error = FormValidator._validate_length(
                         actual_value,
                         field_label,
@@ -85,7 +85,7 @@ class FormValidator:
                         errors.append(length_error)
 
                 # 数值范围校验（INT, DECIMAL）
-                if field_type in ['INT', 'DECIMAL']:
+                if field_type in ['INT', 'DECIMAL'] and validation_rule:
                     range_valid, range_error = FormValidator._validate_range(
                         actual_value,
                         field_label,
@@ -95,7 +95,7 @@ class FormValidator:
                         errors.append(range_error)
 
                 # 正则校验
-                if 'pattern' in validation_rule:
+                if validation_rule and 'pattern' in validation_rule:
                     pattern_valid, pattern_error = FormValidator._validate_pattern(
                         actual_value,
                         field_label,
@@ -281,7 +281,7 @@ class FormValidator:
             if not field or field.get('field_type') != 'ENUM':
                 return True  # 非枚举字段
 
-            validation_rule = field.get('validation_rule', {})
+            validation_rule = field.get('validation_rule') or {}
             options = validation_rule.get('options', [])
 
             return value in options

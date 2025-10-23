@@ -85,21 +85,24 @@ INSERT INTO `report_fields` VALUES
 
 -- AMLO-1-01：现金交易 >= 500万泰铢
 INSERT INTO `trigger_rules` VALUES
-(NULL, 'AMLO-1-01-500万THB', 'AMLO-1-01',
- '{"logic": "AND", "conditions": [{"field": "total_amount", "operator": ">=", "value": 5000000}]}',
- '单笔现金交易金额 >= 500万泰铢',
- 'Cash transaction >= 5 million THB',
- 'ธุรกรรมเงินสด >= 5 ล้านบาท',
+(NULL, 'AMLO-1-01-200万THB', 'AMLO-1-01',
+ '{"logic": "AND", "conditions": [{"field": "total_amount", "operator": ">=", "value": 2000000}]}',
+ '单笔现金交易金额 >= 200万泰铢',
+ 'Cash transaction >= 2 million THB',
+ 'ธุรกรรมเงินสด >= 2 ล้านบาท',
  100, TRUE, FALSE,
- '该交易金额达到500万泰铢，需填写AMLO-1-01报告',
- 'Transaction amount reached 5M THB, AMLO-1-01 report required',
- 'ยอดธุรกรรม >= 5 ล้านบาท ต้องรายงาน AMLO-1-01',
+ '该交易金额达到200万泰铢，需填写AMLO-1-01报告',
+ 'Transaction amount reached 2M THB, AMLO-1-01 report required',
+ 'ยอดธุรกรรม >= 2 ล้านบาท ต้องรายงาน AMLO-1-01',
  NULL, 1, NOW(), NOW());
 
 -- AMLO-1-02：资产交易 >= 800万泰铢
 INSERT INTO `trigger_rules` VALUES
 (NULL, 'AMLO-1-02-800万THB', 'AMLO-1-02',
- '{"logic": "AND", "conditions": [{"field": "asset_value", "operator": ">=", "value": 8000000}]}',
+ '{"logic": "AND", "conditions": ['
+  '{"field": "total_amount", "operator": ">=", "value": 8000000},'
+  '{"field": "exchange_type", "operator": "=", "value": "asset_mortgage"}'
+ ]}',
  '资产交易金额 >= 800万泰铢',
  'Asset transaction >= 8 million THB',
  'ธุรกรรมทรัพย์สิน >= 8 ล้านบาท',

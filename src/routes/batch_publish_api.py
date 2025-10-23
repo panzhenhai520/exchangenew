@@ -25,7 +25,7 @@ def publish_batch_denomination_rates(current_user):
     try:
         # 🔧 方案1：生成批次ID
         batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{current_user['branch_id']}"
-        print(f"[批次发布] 生成批次ID: {batch_id}")
+        logger.info(f"[批次发布] 生成批次ID: {batch_id}")
         
         # 获取显示配置
         theme = data.get('theme', 'light')
@@ -36,12 +36,12 @@ def publish_batch_denomination_rates(current_user):
         
         # 验证刷新间隔
         if not isinstance(refresh_interval, int) or refresh_interval < 5 or refresh_interval > 86400:
-            print(f"[批次发布] refresh_interval 验证失败，使用默认值3600")
+            logger.info(f"[批次发布] refresh_interval 验证失败，使用默认值3600")
             refresh_interval = 3600
         
         # 🔧 方案1：清理该分支的旧批次记录
         today = datetime.now().date()
-        print(f"[批次发布] 清理分支 {current_user['branch_id']} 的旧批次记录")
+        logger.info(f"[批次发布] 清理分支 {current_user['branch_id']} 的旧批次记录")
         
         # 删除旧的批次记录
         old_batches = session.query(RatePublishRecord).filter_by(
@@ -57,7 +57,7 @@ def publish_batch_denomination_rates(current_user):
             ).delete()
             # 删除发布记录
             session.delete(old_batch)
-            print(f"[批次发布] 删除旧批次记录: {old_batch.access_token[:8]}...")
+            logger.info(f"[批次发布] 删除旧批次记录: {old_batch.access_token[:8]}...")
         
         # 处理每个币种的面值汇率
         batch_currency_tokens = []  # 存储每个币种的Token
@@ -71,7 +71,7 @@ def publish_batch_denomination_rates(current_user):
             # 获取币种信息
             currency = session.query(Currency).filter_by(id=currency_id).first()
             if not currency:
-                print(f"[批次发布] 币种不存在: {currency_id}")
+                logger.info(f"[批次发布] 币种不存在: {currency_id}")
                 continue
             
             # 验证面值汇率数据
@@ -105,12 +105,12 @@ def publish_batch_denomination_rates(current_user):
                     })
             
             if not valid_denominations:
-                print(f"[批次发布] 币种 {currency.currency_code} 没有有效的面值汇率")
+                logger.info(f"[批次发布] 币种 {currency.currency_code} 没有有效的面值汇率")
                 continue
             
             # 🔧 方案1：为每个币种生成独立的Token
             currency_token = f"{batch_id}_{currency.currency_code}_{len(valid_denominations)}"
-            print(f"[批次发布] 币种 {currency.currency_code} 生成Token: {currency_token}")
+            logger.info(f"[批次发布] 币种 {currency.currency_code} 生成Token: {currency_token}")
             
             # 存储币种Token信息
             batch_currency_tokens.append({
@@ -200,7 +200,7 @@ def publish_batch_denomination_rates(current_user):
             session.commit()
             
             # 数据库操作成功
-            print(f"[批次发布] 批次数据已保存到数据库: {batch_main_token}")
+            logger.info(f"[批次发布] 批次数据已保存到数据库: {batch_main_token}")
             
             logger.info(f"批次面值汇率发布成功: 批次ID={batch_id}, 币种数={len(batch_currency_tokens)}, 总面值数={total_denominations}")
             

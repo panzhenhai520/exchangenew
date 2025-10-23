@@ -27,7 +27,7 @@ def compliance_permission_required(permission):
 @app_compliance.route('/api/compliance/fields', methods=['GET'])
 @token_required
 @compliance_permission_required('compliance_config')
-def get_report_fields():
+def get_report_fields(current_user):
     """
     获取报告字段定义列表
 
@@ -101,7 +101,7 @@ def get_report_fields():
 @app_compliance.route('/api/compliance/fields', methods=['POST'])
 @token_required
 @compliance_permission_required('compliance_config')
-def create_report_field():
+def create_report_field(current_user):
     """
     创建报告字段定义
 
@@ -159,13 +159,13 @@ def create_report_field():
                 field_name, field_type, field_length, field_precision,
                 field_cn_name, field_en_name, field_th_name,
                 report_type, field_group, fill_order,
-                is_required, placeholder, help_text_cn, help_text_en, help_text_th,
+                is_required, fillpos, placeholder, help_text_cn, help_text_en, help_text_th,
                 validation_rule, is_active, created_at
             ) VALUES (
                 :field_name, :field_type, :field_length, :field_precision,
                 :field_cn_name, :field_en_name, :field_th_name,
                 :report_type, :field_group, :fill_order,
-                :is_required, :placeholder, :help_text_cn, :help_text_en, :help_text_th,
+                :is_required, :fillpos, :placeholder, :help_text_cn, :help_text_en, :help_text_th,
                 :validation_rule, :is_active, NOW()
             )
         """)
@@ -186,6 +186,7 @@ def create_report_field():
             'field_group': request_data.get('field_group'),
             'fill_order': request_data.get('fill_order', 999),
             'is_required': request_data.get('is_required', False),
+            'fillpos': request_data.get('fillpos'),
             'placeholder': request_data.get('placeholder'),
             'help_text_cn': request_data.get('help_text_cn'),
             'help_text_en': request_data.get('help_text_en'),
@@ -218,7 +219,7 @@ def create_report_field():
 @app_compliance.route('/api/compliance/fields/<int:field_id>', methods=['PUT'])
 @token_required
 @compliance_permission_required('compliance_config')
-def update_report_field(field_id):
+def update_report_field(current_user, field_id):
     """
     更新报告字段定义
 
@@ -255,7 +256,7 @@ def update_report_field(field_id):
         allowed_fields = [
             'field_type', 'field_length', 'field_precision',
             'field_cn_name', 'field_en_name', 'field_th_name',
-            'field_group', 'fill_order', 'is_required', 'placeholder',
+            'field_group', 'fill_order', 'is_required', 'fillpos', 'placeholder',
             'help_text_cn', 'help_text_en', 'help_text_th', 'is_active'
         ]
 
@@ -309,7 +310,7 @@ def update_report_field(field_id):
 @app_compliance.route('/api/compliance/trigger-rules', methods=['GET'])
 @token_required
 @compliance_permission_required('compliance_config')
-def get_trigger_rules():
+def get_trigger_rules(current_user):
     """
     获取触发规则列表
 
@@ -330,7 +331,7 @@ def get_trigger_rules():
     try:
         report_type = request.args.get('report_type')
         is_active = request.args.get('is_active')
-        branch_id = g.current_user.get('branch_id')
+        branch_id = current_user.get('branch_id')
 
         # 构建查询条件
         where_clauses = ['(branch_id IS NULL OR branch_id = :branch_id)']
@@ -384,7 +385,7 @@ def get_trigger_rules():
 @app_compliance.route('/api/compliance/trigger-rules', methods=['POST'])
 @token_required
 @compliance_permission_required('compliance_config')
-def create_trigger_rule():
+def create_trigger_rule(current_user):
     """
     创建触发规则
 
@@ -498,7 +499,7 @@ def create_trigger_rule():
 @app_compliance.route('/api/compliance/trigger-rules/<int:rule_id>', methods=['PUT'])
 @token_required
 @compliance_permission_required('compliance_config')
-def update_trigger_rule(rule_id):
+def update_trigger_rule(current_user, rule_id):
     """
     更新触发规则
 

@@ -3,9 +3,95 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# 加载.env文件 - 必须在最开始加载
+from dotenv import load_dotenv
+import json
+from datetime import datetime as dt_datetime
+
+# 加载项目根目录的.env文件
+project_root = os.path.dirname(os.path.dirname(__file__))
+dotenv_path = os.path.join(project_root, '.env')
+load_dotenv(dotenv_path)
+print(f"[ENV] 加载环境配置文件: {dotenv_path}")
+
+# 自动同步环境配置到所有配置文件
+def auto_sync_environment():
+    """自动同步.env到所有配置文件（.env.local, environment_config.json, env-config.js）"""
+    try:
+        current_ip = os.getenv('CURRENT_IP', 'localhost')
+        backend_port = os.getenv('BACKEND_PORT', '5001')
+        frontend_port = os.getenv('FRONTEND_PORT', '8080')
+        backend_url = os.getenv('BACKEND_URL', f'http://{current_ip}:{backend_port}')
+        frontend_url = os.getenv('FRONTEND_URL', f'http://{current_ip}:{frontend_port}')
+
+        print(f"[ENV] CURRENT_IP: {current_ip}")
+        print(f"[ENV] BACKEND_URL: {backend_url}")
+        print(f"[ENV] FRONTEND_URL: {frontend_url}")
+
+        # 1. 更新 .env.local
+        env_local_path = os.path.join(project_root, '.env.local')
+        env_local_content = f"""VUE_APP_API_BASE_URL={backend_url}
+VUE_APP_CURRENT_IP={current_ip}
+VUE_APP_BACKEND_PORT={backend_port}
+VUE_APP_FRONTEND_PORT={frontend_port}
+"""
+        with open(env_local_path, 'w', encoding='utf-8') as f:
+            f.write(env_local_content)
+        print(f"[ENV] ✓ .env.local 已同步")
+
+        # 2. 更新 environment_config.json
+        config_path = os.path.join(project_root, 'environment_config.json')
+        config_data = {
+            "current_ip": current_ip,
+            "backend_url": backend_url,
+            "frontend_url": frontend_url,
+            "backend_port": int(backend_port),
+            "frontend_port": int(frontend_port),
+            "generated_at": dt_datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "cors_origins": [
+                "http://localhost:\\d+",
+                "http://127\\.0\\.0\\.1:\\d+",
+                f"http://{current_ip}:8080",
+                f"http://{current_ip}:5001",
+                "null",
+                f"http://{current_ip}:3000",
+                f"http://{current_ip}:8081",
+                f"http://{current_ip}:8082",
+                f"http://{current_ip}:8083",
+                f"http://{current_ip}:5173"
+            ]
+        }
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, indent=2, ensure_ascii=False)
+        print(f"[ENV] ✓ environment_config.json 已同步")
+
+        # 3. 更新 src/static/env-config.js
+        env_config_js = f"""// Auto-generated runtime config - {dt_datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+window.ENV_CONFIG = {{
+  API_BASE_URL: '{backend_url}',
+  CURRENT_IP: '{current_ip}',
+  BACKEND_PORT: {backend_port},
+  FRONTEND_PORT: {frontend_port}
+}};
+"""
+        static_dir = os.path.join(project_root, 'src', 'static')
+        os.makedirs(static_dir, exist_ok=True)
+        env_config_path = os.path.join(static_dir, 'env-config.js')
+        with open(env_config_path, 'w', encoding='utf-8') as f:
+            f.write(env_config_js)
+        print(f"[ENV] ✓ src/static/env-config.js 已同步")
+
+        print(f"[ENV] 所有配置文件已自动同步！")
+        return True
+    except Exception as e:
+        print(f"[ENV] ⚠️  配置同步失败: {e}")
+        return False
+
+# 启动时自动同步环境配置
+auto_sync_environment()
+
 from flask import Flask, jsonify, request, send_from_directory, render_template_string, make_response
 from flask_cors import CORS
-import os
 import logging
 from datetime import datetime
 from utils.safe_error_handler import safe_error_response
@@ -55,6 +141,7 @@ from routes.batch_display_api import batch_display_bp
 from routes.app_repform import app_repform
 from routes.app_amlo import app_amlo
 from routes.app_bot import app_bot
+from routes.app_report_numbers import report_number_bp
 from routes.app_compliance import app_compliance
 
 # Import services and models
@@ -504,22 +591,24 @@ def create_app():
     # Configure Flask secret key for session management
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'exchange-ok-secret-key-2025-dev-mode')
     
-    # Configure CORS to allow requests from any origin
-    # 使用环境配置管理CORS源列表
-    try:
-        from config.environment import env_config
-        cors_origins = env_config.get_cors_origins()
-        print(f"[CORS] 使用环境配置，当前IP: {env_config.current_ip}")
-        print(f"[CORS] 允许的源: {cors_origins}")
-    except ImportError:
-        print("[CORS] 环境配置模块不可用，使用默认配置")
-        cors_origins = [
-             r"http://localhost:\d+",  # 支持所有localhost端口
-             r"http://127\.0\.0\.1:\d+",  # 支持所有127.0.0.1端口
-             "http://192.168.13.56:8080",
-             "http://192.168.13.56:5001",
-             "null"
-         ]
+    # Configure CORS - 从环境变量读取配置
+    current_ip = os.getenv('CURRENT_IP', 'localhost')
+    frontend_port = os.getenv('FRONTEND_PORT', '8080')
+    backend_port = os.getenv('BACKEND_PORT', '5001')
+    
+    # 构建CORS允许的源列表
+    cors_origins = [
+        r"http://localhost:\d+",  # 本地开发
+        r"http://127\.0\.0\.1:\d+",  # 本地开发
+        f"http://{current_ip}:{frontend_port}",  # 前端地址
+        f"http://{current_ip}:{backend_port}",  # 后端地址
+        "null"  # 文件协议
+    ]
+    
+    print(f"[CORS] 当前IP: {current_ip}")
+    print(f"[CORS] 前端端口: {frontend_port}")
+    print(f"[CORS] 后端端口: {backend_port}")
+    print(f"[CORS] 允许的源: {cors_origins}")
 
     CORS(app,
          origins=cors_origins,
@@ -532,31 +621,35 @@ def create_app():
     # 添加全局OPTIONS处理
     @app.before_request
     def handle_preflight():
+        # 添加请求日志
+        print(f"\n========== [Flask] 收到请求 ==========", flush=True)
+        print(f"[Flask] {request.method} {request.path}", flush=True)
+        print(f"[Flask] Remote: {request.remote_addr}", flush=True)
+        print(f"[Flask] Headers: {dict(request.headers)}", flush=True)
+
         if request.method == "OPTIONS":
+            print(f"[Flask] OPTIONS预检请求，返回CORS头", flush=True)
             response = make_response()
             origin = request.headers.get('Origin')
 
-            # 检查origin是否为允许的类型
-            import re
-            allowed = False
-            if origin:
-                # 检查localhost或127.0.0.1的任何端口
-                if re.match(r'http://(localhost|127\.0\.0\.1):\d+', origin):
-                    allowed = True
-                # 检查特定的IP地址
-                elif origin in ["http://192.168.13.56:8080", "http://192.168.13.56:5001"]:
-                    allowed = True
-
-            if allowed or origin is None:
-                response.headers["Access-Control-Allow-Origin"] = origin or "*"
-            else:
-                response.headers["Access-Control-Allow-Origin"] = origin  # 允许所有origin
-
+            # 允许来自配置IP的请求
+            response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
             response.headers["Access-Control-Allow-Methods"] = "GET,PUT,POST,DELETE,OPTIONS,PATCH"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Cache-Control,X-Language"
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Max-Age"] = "86400"
             return response
+    
+    # 添加全局响应处理器，确保所有响应都包含CORS头
+    @app.after_request
+    def add_cors_headers(response):
+        origin = request.headers.get('Origin')
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET,PUT,POST,DELETE,OPTIONS,PATCH"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Cache-Control,X-Language"
+        return response
     
     # Register blueprints with /api prefix
     app.register_blueprint(rates_bp)  # 已经包含 /api 前缀
@@ -599,6 +692,7 @@ def create_app():
     app.register_blueprint(app_repform)  # RepForm核心API蓝图
     app.register_blueprint(app_amlo)  # AMLO审核API蓝图
     app.register_blueprint(app_bot)  # BOT报告API蓝图
+    app.register_blueprint(report_number_bp)  # 报告编号管理API蓝图
     app.register_blueprint(app_compliance)  # 合规配置API蓝图
 
     # Register teardown function to cleanup database sessions

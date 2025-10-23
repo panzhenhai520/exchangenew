@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API Token测试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Token测试工具</h1>
+
+    <div class="section">
+        <h3>测试配置</h3>
+        <label>后端地址: <input type="text" id="backendUrl" value="http://10.11.32.111:5001" style="width: 300px;"></label>
+    </div>
+
+    <div class="section">
+        <h3>步骤1: 登录获取Token</h3>
+        <button onclick="doLogin()">执行登录</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>步骤2: 验证Token</h3>
+        <button onclick="validateToken()">验证Token</button>
+        <div id="validateResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>步骤3: 调用汇率API</h3>
+        <button onclick="testRatesAPI()">测试汇率API</button>
+        <div id="ratesResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>当前localStorage状态</h3>
+        <button onclick="showStorage()">显示Storage</button>
+        <div id="storageResult"></div>
+    </div>
+
+    <script>
+        async function doLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            const backendUrl = document.getElementById('backendUrl').value;
+            resultDiv.innerHTML = '🔄 正在登录...';
+
+            try {
+                const response = await fetch(`${backendUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        login_code: 'admin',
+                        password: 'admin123',
+                        branch_id: 6
+                    })
+                });
+
+                const data = await response.json();
+                console.log('登录响应:', data);
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('userPermissions', JSON.stringify(data.permissions || []));
+
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 登录成功</div>
+                        <div>用户: ${data.user.name}</div>
+                        <div>角色: ${data.user.role_name}</div>
+                        <div>Token前50位: ${data.token.substring(0, 50)}...</div>
+                        <div>权限数量: ${data.permissions.length}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 登录失败</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        async function validateToken() {
+            const resultDiv = document.getElementById('validateResult');
+            const backendUrl = document.getElementById('backendUrl').value;
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ Token不存在,请先登录</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '🔄 验证中...';
+
+            try {
+                console.log('发送Token验证请求...');
+                console.log('Token:', token.substring(0, 50) + '...');
+                console.log('Authorization header:', `Bearer ${token}`);
+
+                const response = await fetch(`${backendUrl}/api/auth/validate-token`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('响应状态:', response.status);
+                const data = await response.json();
+                console.log('响应数据:', data);
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Token验证成功</div>
+                        <div>用户ID: ${data.user.id}</div>
+                        <div>用户名: ${data.user.name}</div>
+                        <div>权限数量: ${data.permissions.length}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 验证失败 (${response.status})</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        async function testRatesAPI() {
+            const resultDiv = document.getElementById('ratesResult');
+            const backendUrl = document.getElementById('backendUrl').value;
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ Token不存在,请先登录</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '🔄 调用中...';
+
+            try {
+                console.log('=== 调用汇率API ===');
+                console.log('URL:', `${backendUrl}/api/rates/available_currencies`);
+                console.log('Token:', token.substring(0, 50) + '...');
+                console.log('Authorization:', `Bearer ${token}`);
+
+                const response = await fetch(`${backendUrl}/api/rates/available_currencies`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('响应状态:', response.status);
+                const data = await response.json();
+                console.log('响应数据:', data);
+
+                if (response.ok) {
+                    if (data.success) {
+                        resultDiv.innerHTML = `
+                            <div class="success">✅ API调用成功</div>
+                            <div>货币数量: ${data.currencies ? data.currencies.length : 0}</div>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">⚠️ API返回success=false</div>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ API调用失败 (${response.status})</div>
+                        <div>这表示Token验证失败!</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            }
+        }
+
+        function showStorage() {
+            const resultDiv = document.getElementById('storageResult');
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const permissions = localStorage.getItem('userPermissions');
+
+            let html = '';
+            html += `<div><strong>Token:</strong> ${token ? '✅ ' + token.substring(0, 50) + '...' : '❌ 不存在'}</div>`;
+            html += `<div><strong>User:</strong> ${user ? '✅ 存在' : '❌ 不存在'}</div>`;
+            html += `<div><strong>Permissions:</strong> ${permissions ? '✅ 存在' : '❌ 不存在'}</div>`;
+
+            if (user) {
+                try {
+                    const userObj = JSON.parse(user);
+                    html += `<pre>User:\n${JSON.stringify(userObj, null, 2)}</pre>`;
+                } catch (e) {
+                    html += `<div class="error">User解析失败: ${e.message}</div>`;
+                }
+            }
+
+            if (permissions) {
+                try {
+                    const perms = JSON.parse(permissions);
+                    html += `<div><strong>权限数量:</strong> ${perms.length}</div>`;
+                    html += `<pre>Permissions:\n${JSON.stringify(perms, null, 2)}</pre>`;
+                } catch (e) {
+                    html += `<div class="error">Permissions解析失败: ${e.message}</div>`;
+                }
+            }
+
+            resultDiv.innerHTML = html;
+        }
+
+        // 页面加载时显示storage
+        window.onload = () => {
+            showStorage();
+        };
+    </script>
+</body>
+</html>

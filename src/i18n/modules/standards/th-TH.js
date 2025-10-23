@@ -5,7 +5,10 @@ export default {
     "tabs": {
       "purpose_limits": "การแจ้งเตือนการแลกเปลี่ยน",
       "receipt_files": "ไฟล์ใบเสร็จ",
-      "balance_alerts": "การแจ้งเตือนยอดเงิน"
+      "balance_alerts": "การแจ้งเตือนยอดเงิน",
+      "field_management": "จัดการฟิลด์",
+      "trigger_rules": "กำหนดกฎทริกเกอร์",
+      "test_trigger": "ทดสอบทริกเกอร์"
     },
     "purpose_limits": {
       "title": "การจัดการข้อมูลการแจ้งเตือนการแลกเปลี่ยน",

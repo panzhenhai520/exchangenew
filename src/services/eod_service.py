@@ -5,7 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from services.db_service import DatabaseService
 from services.log_service import LogService
 from models.exchange_models import (
-    EODStatus, EODHistory, EODBalanceSnapshot, 
+    EODStatus, 
+    # EODHistory, EODBalanceSnapshot,  # 已废弃 - 2025-10-10
     EODBalanceVerification, EODPrintLog, EODCashOut,
     ExchangeTransaction, Currency, CurrencyBalance, Branch, Operator, EODSessionLock
 )
@@ -360,60 +361,40 @@ class EODService:
                 
                 # 【关键修改】为每个币种分别计算时间范围和期初余额
                 
-                # 1. 首先检查该币种是否有上一次日结记录
-                if FeatureFlags.FEATURE_NEW_PERIOD_BALANCE:
-                    # 从EODBalanceVerification表查找该币种的上一次日结记录
-                    prev_eod_verification = session.query(EODBalanceVerification).join(EODStatus).filter(
-                        EODStatus.branch_id == branch_id,
-                        EODStatus.id != eod_id,  # 排除当前日结
-                        EODStatus.status == 'completed',
-                        EODBalanceVerification.currency_id == currency.id
-                    ).order_by(desc(EODStatus.completed_at)).first()
+                # 【简化】统一从 EODBalanceVerification 表查找该币种的上一次日结记录
+                prev_eod_verification = session.query(EODBalanceVerification).join(EODStatus).filter(
+                    EODStatus.branch_id == branch_id,
+                    EODStatus.id != eod_id,  # 排除当前日结
+                    EODStatus.status == 'completed',
+                    EODBalanceVerification.currency_id == currency.id
+                ).order_by(desc(EODStatus.completed_at)).first()
+                
+                if prev_eod_verification:
+                    # 该币种有上一次日结记录
+                    # 期初余额：使用上次日结验证后的余额
+                    opening_balance = Decimal(str(prev_eod_verification.actual_balance))
                     
-                    if prev_eod_verification:
-                        # 该币种有上一次日结记录
-                        # 期初余额：使用上次日结验证后的余额
-                        opening_balance = Decimal(str(prev_eod_verification.actual_balance))
+                    # 时间范围：从上一次日结结束时间到本次日结开始时间
+                    prev_eod_status = session.query(EODStatus).filter_by(id=prev_eod_verification.eod_status_id).first()
+                    
+                    logging.info(f"📋 币种{currency.currency_code}找到上次日结记录:")
+                    logging.info(f"  - 上次日结ID: {prev_eod_verification.eod_status_id}")
+                    logging.info(f"  - 期初余额: {opening_balance}")
+                    logging.info(f"  - completed_at: {prev_eod_status.completed_at if prev_eod_status else 'None'}")
+                    
+                    if prev_eod_status and prev_eod_status.completed_at:
+                        currency_change_start_time = prev_eod_status.completed_at
+                        currency_change_end_time = eod_status.started_at
                         
-                        # 时间范围：从上一次日结结束时间到本次日结开始时间
-                        prev_eod_status = session.query(EODStatus).filter_by(id=prev_eod_verification.eod_status_id).first()
-                        
-                        logging.info(f"📋 币种{currency.currency_code}找到上次日结记录:")
-                        logging.info(f"  - 上次日结ID: {prev_eod_verification.eod_status_id}")
-                        logging.info(f"  - 期初余额: {opening_balance}")
-                        logging.info(f"  - completed_at: {prev_eod_status.completed_at if prev_eod_status else 'None'}")
-                        
-                        if prev_eod_status and prev_eod_status.completed_at:
-                            currency_change_start_time = prev_eod_status.completed_at
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
-                            logging.info(f"  - 变化开始时间: {currency_change_start_time}")
-                            logging.info(f"  - 变化结束时间: {currency_change_end_time}")
-                        else:
-                            # 【修复】如果找不到完成时间，fallback到第一笔交易逻辑
-                            logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
-                            
-                            from routes.app_reports import _calculate_opening_balance_from_transactions
-                            
-                            # 重新计算期初余额和时间范围
-                            opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
-                                session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
-                            )
-                            
-                            opening_balance = Decimal(str(opening_balance_float))
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"📊 币种{currency.currency_code}期初余额(fallback到第一笔交易): {opening_balance}")
-                            logging.info(f"📅 币种{currency.currency_code}变化统计时间(fallback): {currency_change_start_time} 到 {currency_change_end_time}")
-                        
+                        logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
+                        logging.info(f"  - 变化开始时间: {currency_change_start_time}")
+                        logging.info(f"  - 变化结束时间: {currency_change_end_time}")
                     else:
-                        # 该币种没有上一次日结记录
-                        # 【修复】按照用户要求的逻辑：取第一笔交易的值作为期初余额
+                        # 如果找不到完成时间，fallback到第一笔交易逻辑
+                        logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
                         
                         from routes.app_reports import _calculate_opening_balance_from_transactions
                         
-                        # 调用统一的期初余额计算函数
                         opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
                             session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
                         )
@@ -421,69 +402,23 @@ class EODService:
                         opening_balance = Decimal(str(opening_balance_float))
                         currency_change_end_time = eod_status.started_at
                         
-                        logging.info(f"📊 币种{currency.currency_code}期初余额(第一笔交易): {opening_balance}")
-                        logging.info(f"📅 币种{currency.currency_code}变化统计时间: {currency_change_start_time} 到 {currency_change_end_time}")
+                        logging.info(f"📊 币种{currency.currency_code}期初余额(fallback): {opening_balance}")
+                        logging.info(f"📅 币种{currency.currency_code}变化统计时间(fallback): {currency_change_start_time} 到 {currency_change_end_time}")
                 
                 else:
-                    # 【传统方式】从EODBalanceSnapshot表查找该币种的上一次日结记录
-                    prev_snapshot = session.query(EODBalanceSnapshot).join(EODHistory).filter(
-                        EODHistory.branch_id == branch_id,
-                        EODBalanceSnapshot.currency_id == currency.id
-                    ).order_by(desc(EODHistory.created_at)).first()
+                    # 该币种没有上一次日结记录
+                    # 从第一笔交易的值作为期初余额
+                    from routes.app_reports import _calculate_opening_balance_from_transactions
                     
-                    if prev_snapshot:
-                        # 该币种有上一次日结记录
-                        # 期初余额：使用上次日结的剩余余额
-                        opening_balance = Decimal(str(prev_snapshot.remaining_balance))
-                        
-                        # 时间范围：从上一次日结结束时间到本次日结开始时间
-                        prev_eod_history = session.query(EODHistory).filter_by(id=prev_snapshot.eod_history_id).first()
-                        
-                        logging.info(f"📋 币种{currency.currency_code}找到传统方式上次日结记录:")
-                        logging.info(f"  - 上次历史ID: {prev_snapshot.eod_history_id}")
-                        logging.info(f"  - 期初余额: {opening_balance}")
-                        logging.info(f"  - created_at: {prev_eod_history.created_at if prev_eod_history else 'None'}")
-                        
-                        if prev_eod_history and prev_eod_history.created_at:
-                            currency_change_start_time = prev_eod_history.created_at
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"✅ 币种{currency.currency_code}传统方式使用上次日结时间:")
-                            logging.info(f"  - 变化开始时间: {currency_change_start_time}")
-                            logging.info(f"  - 变化结束时间: {currency_change_end_time}")
-                        else:
-                            # 【修复】如果找不到完成时间，fallback到第一笔交易逻辑
-                            logging.warning(f"⚠️ 币种{currency.currency_code}传统方式上次日结记录存在但created_at为空，fallback到第一笔交易逻辑")
-                            
-                            from routes.app_reports import _calculate_opening_balance_from_transactions
-                            
-                            # 重新计算期初余额和时间范围
-                            opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
-                                session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
-                            )
-                            
-                            opening_balance = Decimal(str(opening_balance_float))
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"📊 币种{currency.currency_code}期初余额(传统方式fallback到第一笔交易): {opening_balance}")
-                            logging.info(f"📅 币种{currency.currency_code}变化统计时间(传统方式fallback): {currency_change_start_time} 到 {currency_change_end_time}")
-                        
-                    else:
-                        # 该币种没有上一次日结记录
-                        # 【修复】按照用户要求的逻辑：取第一笔交易的值作为期初余额
-                        
-                        from routes.app_reports import _calculate_opening_balance_from_transactions
-                        
-                        # 调用统一的期初余额计算函数
-                        opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
-                            session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
-                        )
-                        
-                        opening_balance = Decimal(str(opening_balance_float))
-                        currency_change_end_time = eod_status.started_at
-                        
-                        logging.info(f"📊 币种{currency.currency_code}期初余额(传统方式-第一笔交易): {opening_balance}")
-                        logging.info(f"📅 币种{currency.currency_code}变化统计时间: {currency_change_start_time} 到 {currency_change_end_time}")
+                    opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
+                        session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
+                    )
+                    
+                    opening_balance = Decimal(str(opening_balance_float))
+                    currency_change_end_time = eod_status.started_at
+                    
+                    logging.info(f"📊 币种{currency.currency_code}期初余额(第一笔交易): {opening_balance}")
+                    logging.info(f"📅 币种{currency.currency_code}变化统计时间: {currency_change_start_time} 到 {currency_change_end_time}")
                 
                 # 2. 计算该币种的当日交易变动（使用该币种的时间范围）
                 is_base_currency = (branch and branch.base_currency_id == currency.id)
@@ -2457,75 +2392,15 @@ class EODService:
             branch_id = eod_status.branch_id
             target_date = eod_status.date
             
-            # 检查是否已有完成的日结记录
-            existing_history = session.query(EODHistory).filter_by(
-                eod_status_id=eod_id
-            ).first()
-            
-            if existing_history:
+            # 检查是否已完成
+            if eod_status.status == 'completed':
                 return {'success': False, 'message': '日结已完成'}
             
-            # 1. 创建日结历史记录
-            # 统计当日交易
-            transaction_summary = session.query(
-                func.count().label('total_count'),
-                func.coalesce(func.sum(case((ExchangeTransaction.type == 'buy', ExchangeTransaction.local_amount), else_=0)), 0).label('buy_amount'),
-                func.coalesce(func.sum(case((ExchangeTransaction.type == 'sell', ExchangeTransaction.local_amount), else_=0)), 0).label('sell_amount'),
-                func.coalesce(func.sum(case((ExchangeTransaction.type == 'adjust_balance', ExchangeTransaction.local_amount), else_=0)), 0).label('adjust_amount')
-            ).filter(
-                ExchangeTransaction.branch_id == branch_id,
-                func.date(ExchangeTransaction.transaction_date) == target_date,
-                ExchangeTransaction.status == 'completed'
-            ).first()
+            # 【简化】移除旧表写入逻辑
+            # 不再创建 EODHistory 和 EODBalanceSnapshot
+            # EODBalanceVerification 在步骤4/7已创建/更新，保持不变
             
-            # 计算总交款金额
-            total_cash_out = session.query(
-                func.coalesce(func.sum(EODCashOut.cash_out_amount), 0)
-            ).filter_by(eod_status_id=eod_id).scalar()
-            
-            eod_history = EODHistory(
-                eod_status_id=eod_id,
-                branch_id=branch_id,
-                date=target_date,
-                total_transactions=transaction_summary.total_count or 0,
-                total_buy_amount=transaction_summary.buy_amount or 0,
-                total_sell_amount=transaction_summary.sell_amount or 0,
-                total_adjust_amount=transaction_summary.adjust_amount or 0,
-                cash_out_amount=total_cash_out or 0,
-                cash_out_operator_id=operator_id
-            )
-            session.add(eod_history)
-            session.flush()  # 获取history_id
-            
-            # 2. 创建余额快照
-            verifications = session.query(EODBalanceVerification).filter_by(
-                eod_status_id=eod_id
-            ).all()
-            
-            cash_outs = session.query(EODCashOut).filter_by(
-                eod_status_id=eod_id
-            ).all()
-            
-            cash_out_dict = {co.currency_id: co.cash_out_amount for co in cash_outs}
-            
-            for verification in verifications:
-                cash_out_amount = cash_out_dict.get(verification.currency_id, 0)
-                remaining_balance = verification.actual_balance - cash_out_amount
-                
-                snapshot = EODBalanceSnapshot(
-                    eod_history_id=eod_history.id,
-                    currency_id=verification.currency_id,
-                    opening_balance=verification.opening_balance,
-                    closing_balance=verification.actual_balance,
-                    theoretical_balance=verification.theoretical_balance,
-                    actual_balance=verification.actual_balance,
-                    difference=verification.difference,
-                    cash_out_amount=cash_out_amount,
-                    remaining_balance=remaining_balance
-                )
-                session.add(snapshot)
-            
-            # 3. 标记收入和库存报表为最终版本 (is_final = 1)
+            # 1. 标记收入和库存报表为最终版本 (is_final = 1)
             from models.report_models import DailyIncomeReport, DailyStockReport
             
             session.query(DailyIncomeReport).filter_by(
@@ -2538,33 +2413,26 @@ class EODService:
                 is_final=False
             ).update({'is_final': True})
             
-            # 4. 更新日结状态
+            # 2. 更新日结状态
             completion_time = datetime.now()
             eod_status.status = 'completed'
             eod_status.completed_at = completion_time
             eod_status.completed_by = operator_id
-            eod_status.step = 9  # 更新为第9步
+            eod_status.step = 9
             eod_status.step_status = 'completed'
             eod_status.is_locked = False  # 解除营业锁定
+            eod_status.business_end_time = completion_time
             
-            # 【新增】如果启用了业务时间范围特性，也要更新business_end_time
-            if FeatureFlags.FEATURE_NEW_BUSINESS_TIME_RANGE:
-                eod_status.business_end_time = completion_time
-            
-            # 提交事务
+            # 3. 提交事务
             session.commit()
             
-            # 【修复】在事务提交后，使用统一的会话清理方法
-            # 这样可以确保权限检查在完成操作前进行
+            # 4. 清理会话锁定
             cleanup_result = EODService.cleanup_eod_session_locks(eod_id, operator_id)
             if not cleanup_result['success']:
                 # 会话清理失败不影响日结完成，但记录日志
                 LogService.log_error(f"清理会话锁定失败: {cleanup_result['message']}", operator_id=operator_id)
             
-            # 在会话关闭前提取所有需要的数据
-            eod_history_id = eod_history.id
-            
-            # 记录详细的日结完成日志
+            # 5. 记录日结完成日志
             try:
                 from services.unified_log_service import log_eod_operation
                 from utils.language_utils import get_current_language
@@ -2580,13 +2448,9 @@ class EODService:
                 
                 # 判断交款类型
                 cash_out_type = '未交款'
-                cash_receiver_name = '未指定'
+                cash_receiver_name = '未指定'  # 简化：不再从eod_history获取
                 
                 if cash_outs:
-                    # 获取收款人信息（从历史记录中获取）
-                    if eod_history.cash_receiver_id:
-                        cash_receiver = session.query(Operator).filter_by(id=eod_history.cash_receiver_id).first()
-                        cash_receiver_name = cash_receiver.name if cash_receiver else '未知收款人'
                     
                     # 获取验证记录，计算交款类型
                     total_currencies = 0
@@ -2668,7 +2532,7 @@ class EODService:
             return {
                 'success': True,
                 'message': '日结流程完成',
-                'eod_history_id': eod_history_id,
+                'eod_id': eod_id,
                 'status': 'completed'
             }
             
@@ -3097,7 +2961,17 @@ class EODService:
             if not eod_status:
                 return {'success': False, 'message': '日结记录不存在'}
             
-            # 【统一取消逻辑】无论什么状态都可以取消
+            # 【优化】先清理会话锁定，失败时回滚
+            cleanup_result = EODService.cleanup_eod_session_locks(eod_id, operator_id)
+            if not cleanup_result['success']:
+                # 会话清理失败应该回滚取消操作，确保数据一致性
+                return {
+                    'success': False,
+                    'message': f'清理会话锁定失败，无法取消日结: {cleanup_result["message"]}',
+                    'cleanup_failed': True
+                }
+            
+            # 【统一取消逻辑】会话清理成功后，更新EOD状态
             cancel_time = datetime.now()
             eod_status.status = 'cancelled'
             eod_status.cancel_reason = reason
@@ -3105,12 +2979,6 @@ class EODService:
             eod_status.completed_at = cancel_time
             eod_status.completed_by = operator_id
             eod_status.step_status = 'cancelled'
-            
-            # 【统一清理】使用统一的会话清理方法
-            cleanup_result = EODService.cleanup_eod_session_locks(eod_id, operator_id)
-            if not cleanup_result['success']:
-                # 会话清理失败不影响取消操作，但记录日志
-                LogService.log_error(f"清理会话锁定失败: {cleanup_result['message']}", operator_id=operator_id)
             
             session.commit()
             
@@ -3557,87 +3425,40 @@ class EODService:
                         base_currency_change_end_time = None
                         opening_balance = 0
                         
-                        # 根据特性开关 FEATURE_NEW_PERIOD_BALANCE 决定从哪个表获取期初余额
-                        from config.features import FeatureFlags
-                        latest_eod_record = None
-                        
-                        if FeatureFlags.FEATURE_NEW_PERIOD_BALANCE:
-                            # 从 EODBalanceVerification 表获取
-                            latest_eod_record = session.query(EODBalanceVerification).join(
-                                EODStatus, EODBalanceVerification.eod_status_id == EODStatus.id
-                            ).filter(
-                                EODBalanceVerification.currency_id == base_currency.id,
-                                EODStatus.branch_id == branch_id,
-                                EODStatus.date < target_date,
-                                EODStatus.status == 'completed'
-                            ).order_by(EODStatus.date.desc()).first()
-                        else:
-                            # 从 EODBalanceSnapshot 表获取
-                            latest_eod_record = session.query(EODBalanceSnapshot).join(
-                                EODHistory, EODBalanceSnapshot.eod_history_id == EODHistory.id
-                            ).filter(
-                                EODBalanceSnapshot.currency_id == base_currency.id,
-                                EODHistory.branch_id == branch_id,
-                                EODHistory.date < target_date
-                            ).order_by(EODHistory.date.desc()).first()
+                        # 【简化】统一从 EODBalanceVerification 表获取期初余额
+                        latest_eod_record = session.query(EODBalanceVerification).join(
+                            EODStatus, EODBalanceVerification.eod_status_id == EODStatus.id
+                        ).filter(
+                            EODBalanceVerification.currency_id == base_currency.id,
+                            EODStatus.branch_id == branch_id,
+                            EODStatus.date < target_date,
+                            EODStatus.status == 'completed'
+                        ).order_by(EODStatus.date.desc()).first()
                             
                         LogService.log_system_event(
-                            f"本币期初余额查询 - 特性开关FEATURE_NEW_PERIOD_BALANCE: {FeatureFlags.FEATURE_NEW_PERIOD_BALANCE}, 查询表: {'EODBalanceVerification' if FeatureFlags.FEATURE_NEW_PERIOD_BALANCE else 'EODBalanceSnapshot'}",
+                            f"本币期初余额查询 - 使用统一新表方式：EODBalanceVerification",
                             operator_id=operator_id,
                             branch_id=branch_id
                         )
                         
                         if latest_eod_record:
-                            # 1.1 有上一次日结记录的情况
-                            if FeatureFlags.FEATURE_NEW_PERIOD_BALANCE:
-                                # 从 EODBalanceVerification 表获取
-                                latest_eod_status = session.query(EODStatus).filter_by(
-                                    id=latest_eod_record.eod_status_id
-                                ).first()
+                            # 有上一次日结记录的情况
+                            # 【简化】统一从 EODBalanceVerification 表获取
+                            latest_eod_status = session.query(EODStatus).filter_by(
+                                id=latest_eod_record.eod_status_id
+                            ).first()
+                            
+                            if latest_eod_status and latest_eod_status.completed_at:
+                                base_currency_change_start_time = latest_eod_status.completed_at
+                                base_currency_change_end_time = eod_status.started_at
                                 
-                                if latest_eod_status and latest_eod_status.completed_at:
-                                    base_currency_change_start_time = latest_eod_status.completed_at
-                                    base_currency_change_end_time = eod_status.started_at
-                                    
-                                    # 期初余额：优先使用交款后剩余余额，否则使用验证后的实际余额
-                                    from models.exchange_models import EODCashOut
-                                    latest_cash_out = session.query(EODCashOut).filter_by(
-                                        eod_status_id=latest_eod_record.eod_status_id,
-                                        currency_id=base_currency.id
-                                    ).first()
-                                    
-                                    if latest_cash_out:
-                                        opening_balance = float(latest_cash_out.remaining_balance)
-                                        LogService.log_system_event(
-                                            f"本币期初余额(EODBalanceVerification) - 使用交款后剩余余额: {opening_balance}",
-                                            operator_id=operator_id,
-                                            branch_id=branch_id
-                                        )
-                                    else:
-                                        # 如果没有交款记录，使用验证的实际余额
-                                        opening_balance = float(latest_eod_record.actual_balance)
-                                        LogService.log_system_event(
-                                            f"本币期初余额(EODBalanceVerification) - 使用验证后实际余额: {opening_balance}",
-                                            operator_id=operator_id,
-                                            branch_id=branch_id
-                                        )
-                            else:
-                                # 从 EODBalanceSnapshot 表获取
-                                latest_eod_history = session.query(EODHistory).filter_by(
-                                    id=latest_eod_record.eod_history_id
-                                ).first()
-                                
-                                if latest_eod_history and latest_eod_history.created_at:
-                                    base_currency_change_start_time = latest_eod_history.created_at
-                                    base_currency_change_end_time = eod_status.started_at
-                                    
-                                    # 期初余额：使用快照中的剩余余额
-                                    opening_balance = float(latest_eod_record.remaining_balance)
-                                    LogService.log_system_event(
-                                        f"本币期初余额(EODBalanceSnapshot) - 使用快照剩余余额: {opening_balance}",
-                                        operator_id=operator_id,
-                                        branch_id=branch_id
-                                    )
+                                # 期初余额：直接使用 actual_balance（已在步骤7扣减交款金额）
+                                opening_balance = float(latest_eod_record.actual_balance)
+                                LogService.log_system_event(
+                                    f"本币期初余额 - 使用EODBalanceVerification.actual_balance: {opening_balance}",
+                                    operator_id=operator_id,
+                                    branch_id=branch_id
+                                )
                             
                             LogService.log_system_event(
                                 f"本币使用历史日结期初余额: {opening_balance}, 时间范围: {base_currency_change_start_time} ~ {base_currency_change_end_time}",
@@ -4820,60 +4641,40 @@ class EODService:
                 
                 # 【关键修改】为每个币种分别计算时间范围和期初余额
                 
-                # 1. 首先检查该币种是否有上一次日结记录
-                if FeatureFlags.FEATURE_NEW_PERIOD_BALANCE:
-                    # 从EODBalanceVerification表查找该币种的上一次日结记录
-                    prev_eod_verification = session.query(EODBalanceVerification).join(EODStatus).filter(
-                        EODStatus.branch_id == branch_id,
-                        EODStatus.id != eod_id,  # 排除当前日结
-                        EODStatus.status == 'completed',
-                        EODBalanceVerification.currency_id == currency.id
-                    ).order_by(desc(EODStatus.completed_at)).first()
+                # 【简化】统一从 EODBalanceVerification 表查找该币种的上一次日结记录
+                prev_eod_verification = session.query(EODBalanceVerification).join(EODStatus).filter(
+                    EODStatus.branch_id == branch_id,
+                    EODStatus.id != eod_id,  # 排除当前日结
+                    EODStatus.status == 'completed',
+                    EODBalanceVerification.currency_id == currency.id
+                ).order_by(desc(EODStatus.completed_at)).first()
+                
+                if prev_eod_verification:
+                    # 该币种有上一次日结记录
+                    # 期初余额：使用上次日结验证后的余额
+                    opening_balance = Decimal(str(prev_eod_verification.actual_balance))
                     
-                    if prev_eod_verification:
-                        # 该币种有上一次日结记录
-                        # 期初余额：使用上次日结验证后的余额
-                        opening_balance = Decimal(str(prev_eod_verification.actual_balance))
+                    # 时间范围：从上一次日结结束时间到本次日结开始时间
+                    prev_eod_status = session.query(EODStatus).filter_by(id=prev_eod_verification.eod_status_id).first()
+                    
+                    logging.info(f"📋 币种{currency.currency_code}找到上次日结记录:")
+                    logging.info(f"  - 上次日结ID: {prev_eod_verification.eod_status_id}")
+                    logging.info(f"  - 期初余额: {opening_balance}")
+                    logging.info(f"  - completed_at: {prev_eod_status.completed_at if prev_eod_status else 'None'}")
+                    
+                    if prev_eod_status and prev_eod_status.completed_at:
+                        currency_change_start_time = prev_eod_status.completed_at
+                        currency_change_end_time = eod_status.started_at
                         
-                        # 时间范围：从上一次日结结束时间到本次日结开始时间
-                        prev_eod_status = session.query(EODStatus).filter_by(id=prev_eod_verification.eod_status_id).first()
-                        
-                        logging.info(f"📋 币种{currency.currency_code}找到上次日结记录:")
-                        logging.info(f"  - 上次日结ID: {prev_eod_verification.eod_status_id}")
-                        logging.info(f"  - 期初余额: {opening_balance}")
-                        logging.info(f"  - completed_at: {prev_eod_status.completed_at if prev_eod_status else 'None'}")
-                        
-                        if prev_eod_status and prev_eod_status.completed_at:
-                            currency_change_start_time = prev_eod_status.completed_at
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
-                            logging.info(f"  - 变化开始时间: {currency_change_start_time}")
-                            logging.info(f"  - 变化结束时间: {currency_change_end_time}")
-                        else:
-                            # 【修复】如果找不到完成时间，fallback到第一笔交易逻辑
-                            logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
-                            
-                            from routes.app_reports import _calculate_opening_balance_from_transactions
-                            
-                            # 重新计算期初余额和时间范围
-                            opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
-                                session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
-                            )
-                            
-                            opening_balance = Decimal(str(opening_balance_float))
-                            currency_change_end_time = eod_status.started_at
-                            
-                            logging.info(f"📊 币种{currency.currency_code}期初余额(fallback到第一笔交易): {opening_balance}")
-                            logging.info(f"📅 币种{currency.currency_code}变化统计时间(fallback): {currency_change_start_time} 到 {currency_change_end_time}")
-                        
+                        logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
+                        logging.info(f"  - 变化开始时间: {currency_change_start_time}")
+                        logging.info(f"  - 变化结束时间: {currency_change_end_time}")
                     else:
-                        # 该币种没有上一次日结记录
-                        # 【修复】按照用户要求的逻辑：取第一笔交易的值作为期初余额
+                        # 如果找不到完成时间，fallback到第一笔交易逻辑
+                        logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
                         
                         from routes.app_reports import _calculate_opening_balance_from_transactions
                         
-                        # 调用统一的期初余额计算函数
                         opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
                             session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
                         )
@@ -4881,8 +4682,23 @@ class EODService:
                         opening_balance = Decimal(str(opening_balance_float))
                         currency_change_end_time = eod_status.started_at
                         
-                        logging.info(f"📊 币种{currency.currency_code}期初余额(第一笔交易): {opening_balance}")
-                        logging.info(f"📅 币种{currency.currency_code}变化统计时间: {currency_change_start_time} 到 {currency_change_end_time}")
+                        logging.info(f"📊 币种{currency.currency_code}期初余额(fallback): {opening_balance}")
+                        logging.info(f"📅 币种{currency.currency_code}变化统计时间(fallback): {currency_change_start_time} 到 {currency_change_end_time}")
+                
+                else:
+                    # 该币种没有上一次日结记录
+                    # 从第一笔交易的值作为期初余额
+                    from routes.app_reports import _calculate_opening_balance_from_transactions
+                    
+                    opening_balance_float, currency_change_start_time = _calculate_opening_balance_from_transactions(
+                        session, branch_id, currency.id, eod_status.started_at, branch.base_currency_id if branch else None
+                    )
+                    
+                    opening_balance = Decimal(str(opening_balance_float))
+                    currency_change_end_time = eod_status.started_at
+                    
+                    logging.info(f"📊 币种{currency.currency_code}期初余额(第一笔交易): {opening_balance}")
+                    logging.info(f"📅 币种{currency.currency_code}变化统计时间: {currency_change_start_time} 到 {currency_change_end_time}")
                 
                 # 计算当日变动
                 daily_transactions = session.query(func.sum(ExchangeTransaction.amount)).filter(

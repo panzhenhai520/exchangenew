@@ -19,7 +19,8 @@
     "validation_passed": "验证通过",
     "validation_passed_can_execute": "验证通过，可以执行交易",
     "validation_passed_with_warnings": "验证通过，但存在余额阈值警告",
-    "validation_passed_with_critical_warnings": "验证通过，但存在严重余额阈值警告"
+    "validation_passed_with_critical_warnings": "验证通过，但存在严重余额阈值警告",
+    "amount_exceeds_approved": "交易金额超过已审核的金额，请调整交易金额或重新提交审核"
   },
   "balance": {
     "insufficient_balance": "余额不足",
@@ -27,6 +28,7 @@
     "balance_check_error": "检查余额时出错: {error}",
     "foreign_currency_insufficient": "{currency_name}余额不足，需要支付 {required_amount:.2f} {currency_code}，当前余额 {current_balance:.2f} {currency_code}，还差 {shortfall:.2f} {currency_code}",
     "foreign_stock_insufficient": "{currency_name}库存不足，需要 {required_amount:.2f} {currency_code}，当前库存 {current_stock:.2f} {currency_code}，缺少 {missing_amount:.2f} {currency_code}",
+    "base_stock_insufficient": "{currency_name}本币库存不足，需要 {required_amount:.2f} {currency_code}，当前库存 {current_stock:.2f} {currency_code}，缺少 {missing_amount:.2f} {currency_code}",
     "balance_update_failed": "更新余额失败: {error}",
     "balance_sufficient": "余额充足，可以完成交易",
     "threshold_warning": "{currency_name} ({currency_code}) 交易后余额将从 {current_balance:.2f} 变为 {new_balance:.2f}，{impact_analysis}"
@@ -55,6 +57,8 @@
   },
   "system": {
     "operation_successful": "操作成功",
+    "base_currency": "本币",
+    "unknown_currency": "未知币种",
     "operation_failed": "操作失败",
     "network_error": "网络错误",
     "system_error": "系统错误: {error}",

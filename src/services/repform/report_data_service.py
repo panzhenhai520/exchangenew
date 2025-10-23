@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-ReportDataService - 报告数据服务
-负责保存和管理报告数据
-版本: v1.0
-创建日期: 2025-10-02
-"""
-
 import json
-from typing import Dict, Any, Optional
+import re
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -44,11 +37,16 @@ class ReportDataService:
             预约ID
         """
         try:
-            # 生成预约流水号
-            reservation_no = ReportDataService._generate_reservation_no(
-                db_session,
-                reservation_data.get('branch_id')
-            )
+            # 优先使用前端已生成的报告编号（包含币种代码）
+            reservation_no = reservation_data.get('form_data', {}).get('report_number')
+
+            # 如果前端没有提供，则生成新的预约流水号
+            if not reservation_no:
+                reservation_no = ReportDataService._generate_reservation_no(
+                    db_session,
+                    reservation_data.get('branch_id'),
+                    reservation_data.get('report_type')
+                )
 
             # 准备SQL插入
             sql = text("""
@@ -116,11 +114,19 @@ class ReportDataService:
                 'operator_id': reservation_data['operator_id']
             }
 
+            print(f"[DEBUG] 保存预约记录 - reservation_no: {params['reservation_no']}")
+            print(f"[DEBUG] 保存预约记录 - branch_id: {params['branch_id']}")
+            print(f"[DEBUG] 保存预约记录 - customer_id: {params['customer_id']}")
+            print(f"[DEBUG] 保存预约记录 - report_type: {params['report_type']}")
+            print(f"[DEBUG] 保存预约记录 - status: pending")
+
             result = db_session.execute(sql, params)
             db_session.commit()
 
             # 获取插入的ID
             reservation_id = result.lastrowid
+
+            print(f"[DEBUG] 预约记录保存成功 - reservation_id: {reservation_id}")
 
             return reservation_id
 
@@ -130,51 +136,95 @@ class ReportDataService:
             raise
 
     @staticmethod
-    def _generate_reservation_no(db_session: Session, branch_id: int) -> str:
-        """
-        生成预约流水号
-        格式: RSV + YYYYMMDD + 分支代码 + 5位流水号
+    def _sanitize_code(value: Optional[str], length: int, fallback: str) -> str:
+        digits = re.sub(r'[^0-9]', '', value or '')
+        if not digits:
+            digits = fallback
+        return digits[:length].zfill(length)
 
-        Args:
-            db_session: 数据库会话
-            branch_id: 网点ID
+    @staticmethod
+    def _fetch_branch_codes(db_session: Session, branch_id: int) -> Tuple[str, str]:
+        sql = text("""
+            SELECT amlo_institution_code, amlo_branch_code
+            FROM branches
+            WHERE id = :branch_id
+        """)
+        result = db_session.execute(sql, {'branch_id': branch_id}).fetchone()
+        institution_raw = result[0] if result else None
+        branch_raw = result[1] if result else None
+        institution_code = ReportDataService._sanitize_code(institution_raw, 3, '000')
+        branch_code = ReportDataService._sanitize_code(branch_raw, 3, '000')
+        return institution_code, branch_code
 
-        Returns:
-            预约流水号
-        """
+    @staticmethod
+    def _next_report_sequence(
+        db_session: Session,
+        branch_id: int,
+        report_type: str,
+        current_time: datetime
+    ) -> int:
+        sequence_date = current_time.date()
+        params = {
+            'sequence_date': sequence_date,
+            'report_type': report_type or 'AMLO-1-01',
+            'branch_id': branch_id
+        }
+
         try:
-            # 获取当天日期
-            today_str = datetime.now().strftime('%Y%m%d')
-
-            # 查询今天最大的流水号
-            sql = text("""
-                SELECT MAX(CAST(SUBSTRING(reservation_no, -5) AS UNSIGNED)) as max_seq
-                FROM Reserved_Transaction
-                WHERE DATE(created_at) = CURDATE()
-                    AND branch_id = :branch_id
+            select_sql = text("""
+                SELECT id, last_sequence
+                FROM amlo_report_sequences
+                WHERE sequence_date = :sequence_date
+                  AND report_type = :report_type
+                  AND branch_id = :branch_id
+                FOR UPDATE
             """)
+            row = db_session.execute(select_sql, params).fetchone()
 
-            result = db_session.execute(sql, {'branch_id': branch_id})
-            row = result.first()
+            if row:
+                seq_id, last_sequence = row
+                next_seq = (last_sequence or 0) + 1
+                update_sql = text("""
+                    UPDATE amlo_report_sequences
+                    SET last_sequence = :next_seq, updated_at = NOW()
+                    WHERE id = :seq_id
+                """)
+                db_session.execute(update_sql, {'next_seq': next_seq, 'seq_id': seq_id})
+                return next_seq
 
-            max_seq = row[0] if row and row[0] else 0
-            next_seq = max_seq + 1
+            insert_sql = text("""
+                INSERT INTO amlo_report_sequences (sequence_date, report_type, branch_id, last_sequence)
+                VALUES (:sequence_date, :report_type, :branch_id, :next_seq)
+            """)
+            db_session.execute(insert_sql, {**params, 'next_seq': 1})
+            return 1
+        except Exception as exc:  # pylint: disable=broad-except
+            print(f"Error accessing amlo_report_sequences: {exc}")
+            return int(current_time.strftime('%H%M%S')) % 1000 or 1
 
-            # 获取分支代码（假设分支代码为2位）
-            sql_branch = text("SELECT branch_code FROM branches WHERE id = :branch_id")
-            branch_result = db_session.execute(sql_branch, {'branch_id': branch_id})
-            branch_row = branch_result.first()
-            branch_code = branch_row[0] if branch_row else 'XX'
-
-            # 组合流水号
-            reservation_no = f"RSV{today_str}{branch_code}{next_seq:05d}"
-
-            return reservation_no
-
-        except Exception as e:
-            print(f"Error generating reservation number: {str(e)}")
-            # 返回备用流水号
-            return f"RSV{today_str}XX{datetime.now().microsecond:05d}"
+    @staticmethod
+    def _generate_reservation_no(
+        db_session: Session,
+        branch_id: int,
+        report_type: Optional[str]
+    ) -> str:
+        """
+        生成 AMLO 报告编号
+        结构: AAA-BBB-YY-<MMDD + 序号>
+        """
+        now = datetime.now()
+        try:
+            institution_code, branch_code = ReportDataService._fetch_branch_codes(db_session, branch_id)
+            be_year = now.year + 543
+            year_suffix = str(be_year)[-2:]
+            sequence = ReportDataService._next_report_sequence(db_session, branch_id, report_type, now)
+            serial_part = f"{now.strftime('%m%d')}{sequence:03d}"
+            return f"{institution_code}-{branch_code}-{year_suffix}-{serial_part}"
+        except Exception as exc:  # pylint: disable=broad-except
+            print(f"Error generating AMLO report number, fallback to legacy format: {exc}")
+            fallback_inst, fallback_branch = '000', '000'
+            serial_part = now.strftime('%m%d') + str(now.microsecond % 1000).zfill(3)
+            return f"{fallback_inst}-{fallback_branch}-{str(now.year + 543)[-2:]}-{serial_part}"
 
     @staticmethod
     def update_reservation_status(
@@ -309,12 +359,31 @@ class ReportDataService:
             报告ID
         """
         try:
-            # 生成报告编号
-            report_no = ReportDataService._generate_report_no(
-                db_session,
-                report_data.get('branch_id'),
-                report_data.get('report_type')
-            )
+            report_no = report_data.get('report_number')
+            reserved_id = report_data.get('reserved_id')
+
+            if not report_no and reserved_id:
+                reserved_record = ReportDataService.get_reservation_by_id(db_session, reserved_id)
+                if reserved_record and reserved_record.get('reservation_no'):
+                    report_no = reserved_record['reservation_no']
+
+            if not report_no:
+                # 使用新的报告编号生成器
+                from services.report_number_generator import ReportNumberGenerator
+                
+                # 获取币种代码
+                currency_code = report_data.get('currency_code', 'USD')
+                if not currency_code or len(currency_code) != 3:
+                    currency_code = 'USD'  # 默认币种
+                
+                # 生成新的AMLO报告编号
+                report_no = ReportNumberGenerator.generate_amlo_report_number(
+                    session=db_session,
+                    branch_id=report_data.get('branch_id'),
+                    currency_code=currency_code,
+                    operator_id=report_data.get('operator_id'),
+                    transaction_id=report_data.get('transaction_id')
+                )
 
             sql = text("""
                 INSERT INTO AMLOReport (
@@ -389,7 +458,7 @@ class ReportDataService:
     ) -> str:
         """
         生成报告编号
-        格式: AMLO-YYYY-MMDD-XXX
+        格式: AMLO-YYYY-MMDD-XXX (所有类型共用序号)
 
         Args:
             db_session: 数据库会话
@@ -402,16 +471,16 @@ class ReportDataService:
         try:
             today_str = datetime.now().strftime('%Y-%m%d')
 
+            # 查询今天该网点所有类型报告的数量，共用序号
             sql = text("""
                 SELECT COUNT(*) FROM AMLOReport
                 WHERE DATE(created_at) = CURDATE()
                     AND branch_id = :branch_id
-                    AND report_type = :report_type
             """)
 
             result = db_session.execute(
                 sql,
-                {'branch_id': branch_id, 'report_type': report_type}
+                {'branch_id': branch_id}
             )
 
             count = result.scalar() or 0

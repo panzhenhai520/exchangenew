@@ -6,6 +6,10 @@ from models.exchange_models import ExchangeRate, Currency, SystemLog, CurrencyTe
 from services.db_service import DatabaseService
 from services.auth_service import token_required, has_permission
 from utils.multilingual_log_service import multilingual_logger
+import logging
+
+# 设置日志记录器
+logger = logging.getLogger(__name__)
 
 def auto_init_daily_rates(session, branch_id, today):
     """自动初始化每日汇率记录，确保排序继承"""
@@ -55,7 +59,7 @@ def auto_init_daily_rates(session, branch_id, today):
         
         if today_rates_count > 0:
             # 今天已有汇率记录，但需要检查是否有被禁用的币种需要重新初始化
-            print(f"[DEBUG] 自动初始化 - 今天已有 {today_rates_count} 个汇率记录，检查是否需要重新初始化")
+            logger.debug(f"自动初始化 - 今天已有 {today_rates_count} 个汇率记录，检查是否需要重新初始化")
             
             # 获取当前启用的币种列表
             enabled_currencies = session.query(Currency).filter(
@@ -73,7 +77,7 @@ def auto_init_daily_rates(session, branch_id, today):
             missing_currencies = [c for c in enabled_currencies if c.id not in existing_currency_id_list]
             
             if missing_currencies:
-                print(f"[DEBUG] 自动初始化 - 发现 {len(missing_currencies)} 个启用的币种缺少今日汇率记录")
+                logger.debug(f"自动初始化 - 发现 {len(missing_currencies)} 个启用的币种缺少今日汇率记录")
                 # 为缺少的币种创建汇率记录
                 for currency in missing_currencies:
                     # 查找昨天的对应记录来继承排序和汇率
@@ -109,9 +113,9 @@ def auto_init_daily_rates(session, branch_id, today):
                     session.add(new_rate)
                 
                 session.commit()
-                print(f"[DEBUG] 自动初始化 - 为 {len(missing_currencies)} 个币种创建了汇率记录")
+                logger.debug(f"自动初始化 - 为 {len(missing_currencies)} 个币种创建了汇率记录")
             else:
-                print(f"[DEBUG] 自动初始化 - 所有启用的币种都有今日汇率记录，无需重新初始化")
+                logger.debug(f"自动初始化 - 所有启用的币种都有今日汇率记录，无需重新初始化")
             return
         
         # 获取昨天的汇率记录
@@ -134,10 +138,10 @@ def auto_init_daily_rates(session, branch_id, today):
             BranchCurrency.branch_id == branch_id,
             BranchCurrency.is_enabled == False
         ).count()
-        print(f"[DEBUG] 自动初始化 - 网点{branch_id}, 禁用的币种数量: {disabled_count}")
-        print(f"[DEBUG] 自动初始化 - 将创建 {len(all_currencies)} 个币种的汇率记录")
+        logger.debug(f"自动初始化 - 网点{branch_id}, 禁用的币种数量: {disabled_count}")
+        logger.debug(f"自动初始化 - 将创建 {len(all_currencies)} 个币种的汇率记录")
         for currency in all_currencies:
-            print(f"[DEBUG] 自动初始化 - 币种: {currency.currency_code}")
+            logger.debug(f"自动初始化 - 币种: {currency.currency_code}")
         
         # 为每个货币创建今天的汇率记录
         for currency in all_currencies:
@@ -514,27 +518,28 @@ def get_supported_currencies(current_user):
         DatabaseService.close_session(session)
 
 @rates_bp.route('/set_rate', methods=['POST'])
+@rates_bp.route('/set', methods=['POST'])  # Alias for test compatibility
 @token_required
 @has_permission('rate_manage')
 def set_rate(*args, **kwargs):
     # 从装饰器中获取current_user
     current_user = kwargs.get('current_user') or args[0]
     
-    print(f"[后端调试] set_rate API被调用")
-    print(f"[后端调试] 请求方法: {request.method}")
-    print(f"[后端调试] 请求路径: {request.path}")
-    print(f"[后端调试] Content-Type: {request.content_type}")
+    logger.info(f"[后端调试] set_rate API被调用")
+    logger.info(f"[后端调试] 请求方法: {request.method}")
+    logger.info(f"[后端调试] 请求路径: {request.path}")
+    logger.info(f"[后端调试] Content-Type: {request.content_type}")
     
     data = request.json
-    print(f"[后端调试] 接收到的原始数据: {data}")
+    logger.info(f"[后端调试] 接收到的原始数据: {data}")
     if not data or not all(k in data for k in ['currency_id', 'buy_rate', 'sell_rate']):
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
     
     # 添加调试信息
-    print(f"[DEBUG] set_rate - 收到的数据: {data}")
-    print(f"[DEBUG] set_rate - batch_saved: {data.get('batch_saved')}")
-    print(f"[DEBUG] set_rate - is_published: {data.get('is_published')}")
-    print(f"[DEBUG] set_rate - current_user: {current_user}")
+    logger.debug(f"set_rate - 收到的数据: {data}")
+    logger.debug(f"set_rate - batch_saved: {data.get('batch_saved')}")
+    logger.debug(f"set_rate - is_published: {data.get('is_published')}")
+    logger.debug(f"set_rate - current_user: {current_user}")
     
     session = DatabaseService.get_session()
     try:
@@ -561,21 +566,21 @@ def set_rate(*args, **kwargs):
             
             # 处理批量保存相关字段
             if data.get('batch_saved'):
-                print(f"[DEBUG] set_rate - 设置批量保存字段")
+                logger.debug(f"set_rate - 设置批量保存字段")
                 rate.batch_saved = 1  # 使用1而不是True
                 rate.batch_saved_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
                 rate.batch_saved_by = current_user.get('name', '未知用户')
-                print(f"[DEBUG] set_rate - batch_saved设置为: {rate.batch_saved}")
-                print(f"[DEBUG] set_rate - batch_saved_by设置为: {rate.batch_saved_by}")
+                logger.debug(f"set_rate - batch_saved设置为: {rate.batch_saved}")
+                logger.debug(f"set_rate - batch_saved_by设置为: {rate.batch_saved_by}")
             
             # 处理发布相关字段
             if data.get('is_published'):
-                print(f"[DEBUG] set_rate - 设置发布相关字段")
+                logger.debug(f"set_rate - 设置发布相关字段")
                 rate.is_published = 1  # 使用1而不是True
                 rate.publisher_name = current_user.get('name', '未知用户')
                 rate.last_publish_time = datetime.utcnow()
-                print(f"[DEBUG] set_rate - is_published设置为: {rate.is_published}")
-                print(f"[DEBUG] set_rate - publisher_name设置为: {rate.publisher_name}")
+                logger.debug(f"set_rate - is_published设置为: {rate.is_published}")
+                logger.debug(f"set_rate - publisher_name设置为: {rate.publisher_name}")
             
             action = f"Updated exchange rate for {currency.currency_code}"
             operation = "UPDATE_RATE"
@@ -607,13 +612,13 @@ def set_rate(*args, **kwargs):
                 
                 if last_rate_with_sort:
                     sort_order = last_rate_with_sort.sort_order
-                    print(f"[DEBUG] set_rate - 继承排序: currency_id={data['currency_id']}, sort_order={sort_order}")
+                    logger.debug(f"set_rate - 继承排序: currency_id={data['currency_id']}, sort_order={sort_order}")
                 else:
                     # 如果没有历史排序，使用currency_id作为默认排序
                     sort_order = data['currency_id']
-                    print(f"[DEBUG] set_rate - 使用默认排序: currency_id={data['currency_id']}, sort_order={sort_order}")
+                    logger.debug(f"set_rate - 使用默认排序: currency_id={data['currency_id']}, sort_order={sort_order}")
             except Exception as sort_error:
-                print(f"[DEBUG] set_rate - 获取排序信息失败: {sort_error}")
+                logger.debug(f"set_rate - 获取排序信息失败: {sort_error}")
                 sort_order = data['currency_id']  # 使用currency_id作为默认排序
             
             rate = ExchangeRate(
@@ -630,21 +635,21 @@ def set_rate(*args, **kwargs):
             
             # 处理批量保存相关字段
             if data.get('batch_saved'):
-                print(f"[DEBUG] set_rate - 创建新记录时设置批量保存字段")
+                logger.debug(f"set_rate - 创建新记录时设置批量保存字段")
                 rate.batch_saved = 1  # 使用1而不是True
                 rate.batch_saved_time = now.strftime('%Y-%m-%d %H:%M:%S')
                 rate.batch_saved_by = current_user.get('name', '未知用户')
-                print(f"[DEBUG] set_rate - 新记录 batch_saved设置为: {rate.batch_saved}")
-                print(f"[DEBUG] set_rate - 新记录 batch_saved_by设置为: {rate.batch_saved_by}")
+                logger.debug(f"set_rate - 新记录 batch_saved设置为: {rate.batch_saved}")
+                logger.debug(f"set_rate - 新记录 batch_saved_by设置为: {rate.batch_saved_by}")
             
             # 处理发布相关字段
             if data.get('is_published'):
-                print(f"[DEBUG] set_rate - 创建新记录时设置发布相关字段")
+                logger.debug(f"set_rate - 创建新记录时设置发布相关字段")
                 rate.is_published = 1  # 使用1而不是True
                 rate.publisher_name = current_user.get('name', '未知用户')
                 rate.last_publish_time = now
-                print(f"[DEBUG] set_rate - 新记录 is_published设置为: {rate.is_published}")
-                print(f"[DEBUG] set_rate - 新记录 publisher_name设置为: {rate.publisher_name}")
+                logger.debug(f"set_rate - 新记录 is_published设置为: {rate.is_published}")
+                logger.debug(f"set_rate - 新记录 publisher_name设置为: {rate.publisher_name}")
             
             session.add(rate)
             action = f"Set new exchange rate for {currency.currency_code}"
@@ -653,10 +658,10 @@ def set_rate(*args, **kwargs):
         # 日志记录已通过multilingual_logger处理，无需重复记录
         
         # 在提交前检查字段值
-        print(f"[DEBUG] set_rate - 提交前检查：batch_saved = {getattr(rate, 'batch_saved', 'NOT_SET')}")
-        print(f"[DEBUG] set_rate - 提交前检查：is_published = {getattr(rate, 'is_published', 'NOT_SET')}")
-        print(f"[DEBUG] set_rate - 提交前检查：batch_saved_by = {getattr(rate, 'batch_saved_by', 'NOT_SET')}")
-        print(f"[DEBUG] set_rate - 提交前检查：publisher_name = {getattr(rate, 'publisher_name', 'NOT_SET')}")
+        logger.debug(f"set_rate - 提交前检查：batch_saved = {getattr(rate, 'batch_saved', 'NOT_SET')}")
+        logger.debug(f"set_rate - 提交前检查：is_published = {getattr(rate, 'is_published', 'NOT_SET')}")
+        logger.debug(f"set_rate - 提交前检查：batch_saved_by = {getattr(rate, 'batch_saved_by', 'NOT_SET')}")
+        logger.debug(f"set_rate - 提交前检查：publisher_name = {getattr(rate, 'publisher_name', 'NOT_SET')}")
         
         DatabaseService.commit_session(session)
         return jsonify({
@@ -737,18 +742,18 @@ def get_current_rates(current_user):
                 
             # 获取编辑者姓名
             if rate.created_by:
-                print(f"[DEBUG] getCurrentRates - currency_id={currency.id}: created_by={rate.created_by}")
+                logger.debug(f"getCurrentRates - currency_id={currency.id}: created_by={rate.created_by}")
                 from models.exchange_models import Operator
                 editor = session.query(Operator).filter_by(id=rate.created_by).first()
-                print(f"[DEBUG] getCurrentRates - currency_id={currency.id}: 查询到的editor={editor}")
+                logger.debug(f"getCurrentRates - currency_id={currency.id}: 查询到的editor={editor}")
                 if editor:
-                    print(f"[DEBUG] getCurrentRates - currency_id={currency.id}: editor.name={editor.name}")
+                    logger.debug(f"getCurrentRates - currency_id={currency.id}: editor.name={editor.name}")
                     editor_name = editor.name
                 else:
-                    print(f"[DEBUG] getCurrentRates - currency_id={currency.id}: 在operators表中未找到ID为{rate.created_by}的用户")
+                    logger.debug(f"getCurrentRates - currency_id={currency.id}: 在operators表中未找到ID为{rate.created_by}的用户")
                     editor_name = '系统管理员'
             else:
-                print(f"[DEBUG] getCurrentRates - currency_id={currency.id}: created_by为空")
+                logger.debug(f"getCurrentRates - currency_id={currency.id}: created_by为空")
                 editor_name = '系统管理员'
             
             # 判断发布状态 - 按用户要求：网点=当前网点，发布日期=当前日期就是已发布
@@ -806,7 +811,7 @@ def get_current_rates(current_user):
         })
     
     except Exception as e:
-        print(f"[ERROR] /api/rates/current failed: {e}")
+        logger.info(f"[ERROR] /api/rates/current failed: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -827,7 +832,7 @@ def get_currency_rate_history(current_user, currency_id):
         ).order_by(ExchangeRate.rate_date.desc()).first()
         
         if not latest_rate:
-            print(f"No rates found for currency {currency_id} in branch {branch_id}")
+            logger.info(f"No rates found for currency {currency_id} in branch {branch_id}")
             return jsonify({
                 'success': True,
                 'history': []
@@ -836,7 +841,7 @@ def get_currency_rate_history(current_user, currency_id):
         end_date = latest_rate.rate_date
         start_date = end_date - timedelta(days=days)
 
-        print(f"Fetching rate history for currency {currency_id} in branch {branch_id} from {start_date} to {end_date}")
+        logger.info(f"Fetching rate history for currency {currency_id} in branch {branch_id} from {start_date} to {end_date}")
 
         # 查询指定币种的历史汇率
         rates = session.query(
@@ -854,7 +859,7 @@ def get_currency_rate_history(current_user, currency_id):
             ExchangeRate.rate_date.asc()
         ).all()
 
-        print(f"Found {len(rates)} rate records")
+        logger.info(f"Found {len(rates)} rate records")
 
         result = []
         for rate, currency in rates:
@@ -866,14 +871,14 @@ def get_currency_rate_history(current_user, currency_id):
             }
             result.append(rate_data)
 
-        print(f"Returning {len(result)} history records")
+        logger.info(f"Returning {len(result)} history records")
         return jsonify({
             'success': True,
             'history': result
         })
 
     except Exception as e:
-        print(f"Error in get_currency_rate_history: {str(e)}")
+        logger.error(f"in get_currency_rate_history: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -999,7 +1004,7 @@ def publish_daily_rates(*args):
     
     except Exception as e:
         DatabaseService.rollback_session(session)
-        print(f"Error in publish_daily_rates: {str(e)}")
+        logger.error(f"in publish_daily_rates: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1015,10 +1020,10 @@ def add_currency(*args, **kwargs):
     data = request.json
     required_fields = ['currency_code', 'currency_name', 'buy_rate', 'sell_rate']
     
-    print(f"Adding new currency. Data received: {data}")
-    print(f"Current user: {current_user}")
-    print(f"[DEBUG] custom_flag_filename in request: {data.get('custom_flag_filename')}")
-    print(f"[DEBUG] currency_name in request: {data.get('currency_name')}")
+    logger.info(f"Adding new currency. Data received: {data}")
+    logger.info(f"Current user: {current_user}")
+    logger.debug(f"custom_flag_filename in request: {data.get('custom_flag_filename')}")
+    logger.debug(f"currency_name in request: {data.get('currency_name')}")
     
     if not data:
         return jsonify({'success': False, 'message': 'No data provided'}), 400
@@ -1081,16 +1086,16 @@ def add_currency(*args, **kwargs):
         
         # 如果是从CurrencyTemplate添加的币种，使用模板中的信息
         if currency_template:
-            print(f"[DEBUG] 从CurrencyTemplate添加币种: {currency_template.currency_code}")
-            print(f"[DEBUG] 模板中的currency_name: {currency_template.currency_name}")
-            print(f"[DEBUG] 模板中的custom_flag_filename: {currency_template.custom_flag_filename}")
+            logger.debug(f"从CurrencyTemplate添加币种: {currency_template.currency_code}")
+            logger.debug(f"模板中的currency_name: {currency_template.currency_name}")
+            logger.debug(f"模板中的custom_flag_filename: {currency_template.custom_flag_filename}")
             currency_name = currency_template.currency_name
             country = currency_template.country
             flag_code = currency_template.flag_code
             custom_flag_filename = currency_template.custom_flag_filename
         else:
             # 使用请求中的数据
-            print(f"[DEBUG] 使用请求中的数据")
+            logger.debug(f"使用请求中的数据")
             currency_name = data['currency_name']
             country = data.get('country')
             flag_code = data.get('flag_code', '').upper()
@@ -1104,7 +1109,7 @@ def add_currency(*args, **kwargs):
         if existing_currency:
             # 使用现有币种记录
             new_currency = existing_currency
-            print(f"[DEBUG] 使用现有Currency记录: {existing_currency.currency_code}")
+            logger.debug(f"使用现有Currency记录: {existing_currency.currency_code}")
         else:
             # 创建新币种记录
             new_currency = Currency(
@@ -1117,7 +1122,7 @@ def add_currency(*args, **kwargs):
             )
             session.add(new_currency)
             session.flush()
-            print(f"[DEBUG] 创建新Currency记录: {new_currency.currency_code}")
+            logger.debug(f"创建新Currency记录: {new_currency.currency_code}")
         
         # 处理网点币种关联 - 使用新的BranchCurrency表
         branch_currency = session.query(BranchCurrency).filter_by(
@@ -1130,7 +1135,7 @@ def add_currency(*args, **kwargs):
             if not branch_currency.is_enabled:
                 branch_currency.is_enabled = True
                 branch_currency.updated_at = datetime.utcnow()
-                print(f"[DEBUG] 重新启用被删除的币种: {new_currency.currency_code}")
+                logger.debug(f"重新启用被删除的币种: {new_currency.currency_code}")
         else:
             # 创建启用记录
             branch_currency = BranchCurrency(
@@ -1139,12 +1144,12 @@ def add_currency(*args, **kwargs):
                 is_enabled=True
             )
             session.add(branch_currency)
-            print(f"[DEBUG] 创建新的网点币种关联: {new_currency.currency_code}")
+            logger.debug(f"创建新的网点币种关联: {new_currency.currency_code}")
         
-        print(f"[DEBUG] 创建的Currency对象:")
-        print(f"[DEBUG] - currency_code: {new_currency.currency_code}")
-        print(f"[DEBUG] - currency_name: {new_currency.currency_name}")
-        print(f"[DEBUG] - custom_flag_filename: {new_currency.custom_flag_filename}")
+        logger.debug(f"创建的Currency对象:")
+        logger.debug(f"- currency_code: {new_currency.currency_code}")
+        logger.debug(f"- currency_name: {new_currency.currency_name}")
+        logger.debug(f"- custom_flag_filename: {new_currency.custom_flag_filename}")
         
         # 4. 添加初始汇率
         today = date.today()
@@ -1157,9 +1162,9 @@ def add_currency(*args, **kwargs):
             ).with_entities(func.max(ExchangeRate.sort_order)).scalar()
             
             sort_order = (max_sort_order or 0) + 1
-            print(f"[DEBUG] add_currency - 新币种排序: currency_id={new_currency.id}, sort_order={sort_order}")
+            logger.debug(f"add_currency - 新币种排序: currency_id={new_currency.id}, sort_order={sort_order}")
         except Exception as sort_error:
-            print(f"[DEBUG] add_currency - 获取排序信息失败: {sort_error}")
+            logger.debug(f"add_currency - 获取排序信息失败: {sort_error}")
             sort_order = new_currency.id  # 使用currency_id作为默认排序
         
         new_rate = ExchangeRate(
@@ -1187,7 +1192,7 @@ def add_currency(*args, **kwargs):
         session.add(log)
         
         DatabaseService.commit_session(session)
-        print(f"Successfully added new currency: {new_currency.currency_code}")
+        logger.info(f"Successfully added new currency: {new_currency.currency_code}")
         
         return jsonify({
             'success': True,
@@ -1202,7 +1207,7 @@ def add_currency(*args, **kwargs):
     
     except Exception as e:
         DatabaseService.rollback_session(session)
-        print(f"Error adding currency: {str(e)}")
+        logger.error(f"adding currency: {str(e)}")
         return jsonify({'success': False, 'message': f'添加币种时出错: {str(e)}'}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1225,7 +1230,7 @@ def get_currency_templates(current_user):
         # 如果有排除的币种代码，添加过滤条件
         if exclude_codes:
             query = query.filter(~CurrencyTemplate.currency_code.in_(exclude_codes))
-            print(f"[get_currency_templates] 排除币种代码: {exclude_codes}")
+            logger.info(f"[get_currency_templates] 排除币种代码: {exclude_codes}")
         
         templates = query.all()
         result = [template.to_dict() for template in templates]
@@ -1256,13 +1261,13 @@ def get_currency_templates(current_user):
                 }
                 result.append(template_data)
         
-        print(f"[get_currency_templates] 返回 {len(result)} 个币种模板（包括 {len(disabled_currencies)} 个被删除的币种）")
+        logger.info(f"[get_currency_templates] 返回 {len(result)} 个币种模板（包括 {len(disabled_currencies)} 个被删除的币种）")
         if exclude_codes:
-            print(f"[get_currency_templates] 已排除 {len(exclude_codes)} 个已在今日汇率列表中的币种")
+            logger.info(f"[get_currency_templates] 已排除 {len(exclude_codes)} 个已在今日汇率列表中的币种")
         
         return jsonify(result)
     except Exception as e:
-        print(f"Error in get_currency_templates: {str(e)}")
+        logger.error(f"in get_currency_templates: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1323,15 +1328,15 @@ def get_available_currencies(current_user):
                     Currency.id.in_(all_published_currency_ids)
                 ).all()
 
-                print(f"[available_currencies] published_only=true, 发布记录ID: {publish_record.id}")
-                print(f"[available_currencies] 标准汇率发布币种ID: {standard_currency_ids}")
-                print(f"[available_currencies] 面值汇率发布币种ID: {denomination_currency_ids}")
-                print(f"[available_currencies] 合并后的币种ID列表: {all_published_currency_ids}")
-                print(f"[available_currencies] 返回今日最新发布的{len(currencies)}种外币")
+                logger.info(f"[available_currencies] published_only=true, 发布记录ID: {publish_record.id}")
+                logger.info(f"[available_currencies] 标准汇率发布币种ID: {standard_currency_ids}")
+                logger.info(f"[available_currencies] 面值汇率发布币种ID: {denomination_currency_ids}")
+                logger.info(f"[available_currencies] 合并后的币种ID列表: {all_published_currency_ids}")
+                logger.info(f"[available_currencies] 返回今日最新发布的{len(currencies)}种外币")
             else:
                 # 没有发布记录，返回空列表
                 currencies = []
-                print(f"[available_currencies] published_only=true, 今日无发布记录，返回0种外币")
+                logger.info(f"[available_currencies] published_only=true, 今日无发布记录，返回0种外币")
         else:
             # 查询所有非本币的币种（排除被禁用的币种）
             # 使用新的BranchCurrency表来检查币种是否在当前网点被禁用
@@ -1346,7 +1351,7 @@ def get_available_currencies(current_user):
                 Currency.id != branch.base_currency_id,  # 排除本币
                 ~Currency.id.in_(disabled_currency_id_list)  # 排除被禁用的币种
             ).all()
-            print(f"[available_currencies] published_only=false, 返回所有{len(currencies)}种外币（排除被禁用的币种）")
+            logger.info(f"[available_currencies] published_only=false, 返回所有{len(currencies)}种外币（排除被禁用的币种）")
 
         # 添加多语言币种名称映射
         currency_names_map = {
@@ -1404,7 +1409,7 @@ def get_available_currencies(current_user):
 
         return jsonify({'success': True, 'currencies': result})
     except Exception as e:
-        print(f"Error in get_available_currencies: {str(e)}")
+        logger.error(f"in get_available_currencies: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1437,7 +1442,7 @@ def get_currency_by_code(current_user, currency_code):
             }), 404
             
     except Exception as e:
-        print(f"Error in get_currency_by_code: {str(e)}")
+        logger.error(f"in get_currency_by_code: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1484,24 +1489,24 @@ def delete_currency(current_user, currency_code):
         ).first() is not None
         
         # 处理网点币种关联 - 使用新的BranchCurrency表
-        print(f"[DEBUG] 开始处理币种 {currency_code} 的网点关联")
+        logger.debug(f"开始处理币种 {currency_code} 的网点关联")
         branch_currency = session.query(BranchCurrency).filter_by(
             branch_id=branch_id,
             currency_id=currency.id
             ).first()
             
-        print(f"[DEBUG] 币种 {currency_code} 的BranchCurrency记录: {branch_currency}")
+        logger.debug(f"币种 {currency_code} 的BranchCurrency记录: {branch_currency}")
         
         if branch_currency:
             # 更新为禁用状态
-            print(f"[DEBUG] 更新币种 {currency_code} 为禁用状态，当前状态: {branch_currency.is_enabled}")
+            logger.debug(f"更新币种 {currency_code} 为禁用状态，当前状态: {branch_currency.is_enabled}")
             branch_currency.is_enabled = False
             branch_currency.updated_at = datetime.utcnow()
             deleted_currency = False  # 没有删除币种本身
-            print(f"[DEBUG] 更新后状态: {branch_currency.is_enabled}")
+            logger.debug(f"更新后状态: {branch_currency.is_enabled}")
         else:
             # 创建禁用记录
-            print(f"[DEBUG] 创建币种 {currency_code} 的禁用记录")
+            logger.debug(f"创建币种 {currency_code} 的禁用记录")
             branch_currency = BranchCurrency(
                 branch_id=branch_id,
                 currency_id=currency.id,
@@ -1511,7 +1516,7 @@ def delete_currency(current_user, currency_code):
             )
             session.add(branch_currency)
             deleted_currency = False  # 没有删除币种本身
-            print(f"[DEBUG] 创建禁用记录完成")
+            logger.debug(f"创建禁用记录完成")
         
         # 记录操作日志
         log = SystemLog(
@@ -1540,7 +1545,7 @@ def delete_currency(current_user, currency_code):
         
     except Exception as e:
         DatabaseService.rollback_session(session)
-        print(f"Error in delete_currency: {str(e)}")
+        logger.error(f"in delete_currency: {str(e)}")
         return jsonify({'success': False, 'message': f'删除币种失败: {str(e)}'}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1584,7 +1589,7 @@ def get_last_rate(current_user, currency_code):
             }), 404
             
     except Exception as e:
-        print(f"Error in get_last_rate: {str(e)}")
+        logger.error(f"in get_last_rate: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -1627,7 +1632,106 @@ def get_last_rates_all(current_user):
         })
             
     except Exception as e:
-        print(f"Error in get_last_rates_all: {str(e)}")
+        logger.error(f"in get_last_rates_all: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        DatabaseService.close_session(session)
+
+@rates_bp.route('/max_denomination_rate/<currency_code>', methods=['GET'])
+@token_required
+def get_max_denomination_rate(current_user, currency_code):
+    """
+    获取指定币种最大面值的汇率
+    用于测试触发和合规计算
+    
+    GET /api/rates/max_denomination_rate/USD?direction=buy
+    
+    参数:
+    - direction: 'buy' 或 'sell'，默认'buy'
+    
+    返回:
+    {
+        "success": true,
+        "data": {
+            "currency_code": "USD",
+            "max_denomination": 100,
+            "denomination_type": "note",
+            "buy_rate": 35.8,
+            "sell_rate": 34.5,
+            "rate_date": "2025-10-10",
+            "rate_type": "denomination"  // "denomination" 或 "standard"（回退）
+        }
+    }
+    """
+    session = DatabaseService.get_session()
+    try:
+        branch_id = current_user['branch_id']
+        direction = request.args.get('direction', 'buy')
+        
+        # 查询币种
+        currency = session.query(Currency).filter_by(currency_code=currency_code).first()
+        if not currency:
+            return jsonify({'success': False, 'message': f'币种 {currency_code} 不存在'}), 404
+        
+        # 尝试获取面值汇率
+        from models.denomination_models import DenominationRate, CurrencyDenomination
+        
+        # 查询当前网点该币种的所有面值汇率（最新的）
+        today = date.today()
+        
+        denomination_rates = session.query(DenominationRate).join(
+            CurrencyDenomination,
+            DenominationRate.denomination_id == CurrencyDenomination.id
+        ).filter(
+            DenominationRate.branch_id == branch_id,
+            DenominationRate.currency_id == currency.id,
+            DenominationRate.rate_date == today
+        ).order_by(CurrencyDenomination.denomination_value.desc()).all()
+        
+        if denomination_rates and len(denomination_rates) > 0:
+            # 找到最大面值的汇率
+            max_rate = denomination_rates[0]
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'currency_code': currency_code,
+                    'max_denomination': float(max_rate.denomination.denomination_value),
+                    'denomination_type': max_rate.denomination.denomination_type,
+                    'buy_rate': float(max_rate.buy_rate),
+                    'sell_rate': float(max_rate.sell_rate),
+                    'rate_date': max_rate.rate_date.isoformat() if max_rate.rate_date else None,
+                    'rate_type': 'denomination'
+                }
+            })
+        else:
+            # 如果没有面值汇率，回退到标准汇率
+            standard_rate = session.query(ExchangeRate).filter(
+                ExchangeRate.branch_id == branch_id,
+                ExchangeRate.currency_code == currency_code,
+                ExchangeRate.is_active == True
+            ).order_by(ExchangeRate.updated_at.desc()).first()
+            
+            if standard_rate:
+                return jsonify({
+                    'success': True,
+                    'data': {
+                        'currency_code': currency_code,
+                        'max_denomination': None,
+                        'denomination_type': None,
+                        'buy_rate': float(standard_rate.buy_rate),
+                        'sell_rate': float(standard_rate.sell_rate),
+                        'rate_date': standard_rate.rate_date.isoformat() if standard_rate.rate_date else None,
+                        'rate_type': 'standard'
+                    }
+                })
+            else:
+                return jsonify({'success': False, 'message': f'未找到币种 {currency_code} 的汇率'}), 404
+            
+    except Exception as e:
+        logger.error(f"getting max denomination rate: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)

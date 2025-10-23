@@ -43,16 +43,14 @@
     </select>
 
     <!-- 币种选择模态框 -->
-    <div 
-      class="modal fade" 
-      :class="{ 'show': modalVisible }"
-      :id="modalId" 
-      tabindex="-1" 
-      v-show="modalVisible"
-      @click.self="closeModal"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <teleport to="body">
+      <div 
+        v-if="modalVisible"
+        class="currency-modal-overlay"
+        @click.self="closeModal"
+      >
+      <div class="modal-dialog modal-lg" @click.stop>
+        <div class="modal-content" @click.stop>
           <div class="modal-header">
             <h5 class="modal-title">
               <font-awesome-icon icon="fa-solid fa-coins" class="me-2" />
@@ -62,7 +60,7 @@
           </div>
           <div class="modal-body">
             <!-- 搜索框 -->
-            <div class="mb-3">
+            <div class="search-container">
               <div class="input-group">
                 <span class="input-group-text">
                   <font-awesome-icon icon="fa-solid fa-search" />
@@ -73,6 +71,10 @@
                   type="text"
                   class="form-control"
                   autocomplete="off"
+                  ref="searchInput"
+                  @click.stop
+                  @keydown.stop
+                  @input.stop
                 />
               </div>
             </div>
@@ -140,7 +142,8 @@
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -186,6 +189,11 @@ export default {
       return `currencySelectModal_${this.id}`
     },
     filteredCurrencies() {
+      // 添加保护性检查
+      if (!this.internalCurrencies || !Array.isArray(this.internalCurrencies)) {
+        return [];
+      }
+      
       if (!this.searchText) {
         return this.internalCurrencies;
       }
@@ -198,8 +206,20 @@ export default {
       });
     },
     selectedCurrency() {
+      // 添加保护性检查，确保internalCurrencies是数组
+      if (!this.internalCurrencies || !Array.isArray(this.internalCurrencies)) {
+        return null;
+      }
       return this.internalCurrencies.find(c => c.currency_code === this.modelValue);
     }
+  },
+  mounted() {
+    // 绑定键盘事件
+    document.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    // 移除键盘事件
+    document.removeEventListener('keydown', this.handleKeydown);
   },
   watch: {
     currencies: {
@@ -215,37 +235,43 @@ export default {
     openModal() {
       this.modalVisible = true;
       this.loadCurrencies();
+      
+      // 简化聚焦逻辑，移除延迟
       this.$nextTick(() => {
-        const modalEl = document.getElementById(this.modalId);
-        if (modalEl) {
-          modalEl.classList.add('show');
-          modalEl.style.display = 'block';
-          document.body.classList.add('modal-open');
+        if (this.$refs.searchInput) {
+          this.$refs.searchInput.focus();
         }
       });
     },
     closeModal() {
-      this.modalVisible = false;
       this.searchText = '';
-      
-      const modalEl = document.getElementById(this.modalId);
-      if (modalEl) {
-        modalEl.classList.remove('show');
-        modalEl.style.display = 'none';
-        document.body.classList.remove('modal-open');
-        
-        // 移除backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-          backdrop.remove();
-        }
-      }
+      this.modalVisible = false;
     },
     selectCurrency(currency) {
       console.log('选择币种:', currency);
       this.$emit('update:modelValue', currency.currency_code);
       this.$emit('change', currency.currency_code, currency);
       this.closeModal();
+    },
+    
+    // 键盘事件处理
+    handleKeydown(event) {
+      if (!this.modalVisible) return;
+      
+      switch(event.key) {
+        case 'Escape':
+          event.preventDefault();
+          this.closeModal();
+          break;
+        case 'Enter': {
+          event.preventDefault();
+          const firstCurrency = this.filteredCurrencies[0];
+          if (firstCurrency) {
+            this.selectCurrency(firstCurrency);
+          }
+          break;
+        }
+      }
     },
     clearSelection() {
       this.$emit('update:modelValue', '');
@@ -255,12 +281,15 @@ export default {
     
     // 获取币种的自定义图标文件名
     getCurrencyCustomFlag(currencyCode) {
+      // 添加保护性检查
+      if (!this.internalCurrencies || !Array.isArray(this.internalCurrencies)) {
+        return null;
+      }
+      
       const currency = this.internalCurrencies.find(c => c.currency_code === currencyCode);
       if (currency && currency.custom_flag_filename) {
         return currency.custom_flag_filename;
       }
-      
-
       
       return null;
     },
@@ -317,10 +346,17 @@ export default {
         if (response.data.success) {
           // 根据不同的API端点处理不同的响应格式
           if (this.apiEndpoint.includes('currency-templates')) {
-            this.internalCurrencies = response.data.templates;
+            this.internalCurrencies = response.data.templates || [];
           } else {
-            this.internalCurrencies = response.data.currencies;
+            this.internalCurrencies = response.data.currencies || [];
           }
+          
+          // 确保 internalCurrencies 是数组
+          if (!Array.isArray(this.internalCurrencies)) {
+            console.error('币种数据不是数组格式:', this.internalCurrencies);
+            this.internalCurrencies = [];
+          }
+          
           console.log('成功加载币种:', this.internalCurrencies.length, '个');
           
           // 详细检查第一个币种的数据结构
@@ -425,42 +461,154 @@ export default {
   color: #007bff;
 }
 
-/* 模态框样式 */
-.modal {
-  z-index: 1060;
+/* 币种选择模态框覆盖层 */
+.currency-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1070;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal.show {
-  display: block !important;
+/* 模态框对话框样式 */
+.modal-dialog {
+  position: relative;
+  margin: 0.5rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 模态框内容区域 */
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: none;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: #fff;
+  background-clip: padding-box;
+  outline: 0;
+}
+
+/* 模态框头部 */
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.modal-header .modal-title {
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-header .btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+/* 模态框主体 */
+.modal-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+/* 模态框底部 */
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+  border-radius: 0 0 12px 12px;
+  background-color: #f8f9fa;
 }
 
 .currency-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-  max-height: 400px;
+  gap: 12px;
+  max-height: 450px;
   overflow-y: auto;
-  padding: 4px;
+  padding: 8px 4px;
+  flex: 1;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+/* WebKit浏览器滚动条样式 */
+.currency-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.currency-grid::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.currency-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.currency-grid::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .currency-card {
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .currency-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .currency-card.selected .card {
-  border-color: #007bff;
+  border: 2px solid #007bff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);
+}
+
+.currency-card .card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
+  height: 100%;
+}
+
+.currency-card .card:hover {
+  border-color: #cbd5e0;
 }
 
 .currency-card .card-body {
-  min-height: 50px;
-  padding: 8px !important;
+  min-height: 60px;
+  padding: 12px !important;
+  display: flex;
+  align-items: center;
 }
 
 .currency-info {
@@ -504,9 +652,41 @@ export default {
 }
 
 /* 搜索框样式 */
+.search-container {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.input-group {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .input-group-text {
-  background-color: #f8f9fa;
-  border-color: #ced4da;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-weight: 500;
+}
+
+.form-control {
+  border: 1px solid #e2e8f0;
+  border-left: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  outline: none;
 }
 
 /* 加载和错误状态样式 */
@@ -524,16 +704,28 @@ export default {
   .currency-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
+  
+  .modal-dialog {
+    width: 90vw;
+    max-width: 700px;
+  }
 }
 
 @media (max-width: 768px) {
   .currency-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    max-height: 300px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    max-height: 350px;
+    gap: 8px;
   }
   
   .modal-dialog {
+    width: 95vw;
+    max-width: 600px;
     margin: 10px;
+  }
+  
+  .modal-content {
+    max-height: 85vh;
   }
   
   .currency-inline {
@@ -541,11 +733,51 @@ export default {
     align-items: flex-start;
     gap: 2px;
   }
+  
+  .modal-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
 }
 
 @media (max-width: 576px) {
   .currency-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    max-height: 300px;
+  }
+  
+  .modal-dialog {
+    width: 98vw;
+    margin: 5px;
+  }
+  
+  .modal-header .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .currency-card .card-body {
+    padding: 8px !important;
+    min-height: 50px;
+  }
+  
+  .currency-flag-large {
+    width: 24px;
+    height: 18px;
+  }
+  
+  .currency-code {
+    font-size: 0.85rem;
+  }
+  
+  .currency-name {
+    font-size: 0.75rem;
   }
 }
 

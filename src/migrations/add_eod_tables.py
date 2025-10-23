@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData
-from models.exchange_models import Base, EODStatus, EODHistory, EODBalanceSnapshot
+from models.exchange_models import Base, EODStatus  # EODHistory, EODBalanceSnapshot 已废弃
 from services.db_service import DatabaseService
 
 def upgrade():

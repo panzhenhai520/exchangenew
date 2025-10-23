@@ -528,7 +528,11 @@
                       <i class="fas fa-arrow-left me-1"></i>
                       {{ $t('exchange.back') }}
                     </button>
-                    <button class="btn btn-success" @click="executeTransaction" :disabled="executing">
+                    <button
+                      class="btn btn-success"
+                      @click="executeTransaction"
+                      :disabled="executing || disableExchange || !canConfirm"
+                    >
                       <i class="fas fa-check me-1" :class="{ 'fa-spin': executing }"></i>
                       {{ executing ? $t('exchange.executing') : $t('exchange.execute') }}
                     </button>
@@ -594,8 +598,10 @@ import CurrencyBalanceInfo from '@/components/CurrencyBalanceInfo.vue'
 import DenominationSelector from '@/components/DenominationSelector.vue'
 import { getCurrencyName } from '@/utils/currencyTranslator'
 import rateService from '@/services/api/rateService'
+import customerReservationMixin from './exchange/mixins/customerReservationMixin'
 
 export default {
+  mixins: [customerReservationMixin],
   name: 'ExchangeViewWithDenominations',
   components: {
     CurrencyFlag,
@@ -638,6 +644,10 @@ export default {
       customerRemarks: '',
       paymentMethod: 'cash', // 付款方式，默认现金
       paymentMethodNote: '', // 其他付款方式备注
+
+      calculatedLocalAmount: 0,
+      approvedReservationAmount: null,
+      lastReservationStatusCode: null,
 
       // 交易成功
       transactionSuccess: false,
@@ -690,8 +700,13 @@ export default {
     },
     
     canConfirm() {
+      if (this.disableExchange) {
+        return false;
+      }
+
       return this.denominationData &&
              this.denominationData.total_amount > 0 &&
+             this.calculatedLocalAmount > 0 &&
              this.selectedPurpose &&
              this.customerName.trim() &&
              this.customerId.trim();
@@ -878,6 +893,7 @@ export default {
     async calculateExchange() {
       if (!this.denominationData || !this.denominationData.total_amount) {
         this.resultDisplay = '';
+        this.calculatedLocalAmount = 0;
         return;
       }
       
@@ -932,6 +948,7 @@ export default {
           }
 
           this.resultDisplay = this.generateExchangePrompt(totalAmount, resultAmount, relevantRate);
+          this.calculatedLocalAmount = Number(resultAmount);
           console.log('生成提示:', this.resultDisplay);
           console.log('==================');
           return;
@@ -942,6 +959,7 @@ export default {
       const rate = this.topRates.find(r => r.currency_code === this.foreignCurrency);
       if (!rate) {
         this.resultDisplay = this.$t('exchange.rate_unavailable');
+        this.calculatedLocalAmount = 0;
         return;
       }
       
@@ -958,6 +976,7 @@ export default {
       }
       
       this.resultDisplay = this.generateExchangePrompt(totalAmount, resultAmount, relevantRate);
+      this.calculatedLocalAmount = Number(resultAmount);
     },
     
     generateExchangePrompt(foreignAmount, localAmount, rate) {
@@ -971,9 +990,19 @@ export default {
       }
     },
     
-    async executeTransaction() {
+            async executeTransaction() {
       if (!this.canConfirm) return;
-      
+      if (this.disableExchange) {
+        this.$toast?.warning?.('Reservation is pending review. Please complete the approval before executing the exchange.');
+        return;
+      }
+
+      const localAmount = Math.abs(this.calculatedLocalAmount || 0);
+      if (!localAmount) {
+        this.$toast?.warning?.('Unable to determine the local amount. Please complete the denomination calculation first.');
+        return;
+      }
+
       this.executing = true;
       try {
         const transactionData = {
@@ -992,28 +1021,42 @@ export default {
             address: this.customerAddress || '',
             remarks: this.customerRemarks,
             payment_method: this.paymentMethod,
-            payment_method_note: this.paymentMethodNote
+            payment_method_note: this.paymentMethodNote,
+            local_amount: localAmount
           },
           purpose_id: this.selectedPurpose
         };
+
+        if (this.reservationStatus && this.reservationStatus.status === 'approved') {
+          const approvedAmount = Number(this.approvedReservationAmount ?? this.reservationStatus.approved_amount ?? 0);
+          if (localAmount > approvedAmount) {
+            this.$toast?.error?.(`Local amount (${localAmount.toLocaleString()} THB) exceeds the approved limit (${approvedAmount.toLocaleString()} THB).`);
+            this.executing = false;
+            return;
+          }
+
+          transactionData.customer_info.reservation_id = this.reservationStatus.reservation_id || this.reservationStatus.id;
+          transactionData.customer_info.reservation_no = this.reservationStatus.reservation_no;
+          transactionData.customer_info.approved_amount = approvedAmount;
+        }
 
         const response = await this.$api.post('/exchange/perform-dual-direction', transactionData);
         if (response.data.success) {
           this.transactionSuccess = true;
           this.transactionDetails = response.data.data;
-          this.$toast.success('交易执行成功');
+          this.$toast?.success?.('Denomination exchange completed successfully.');
           this.resetForm();
         } else {
-          this.$toast.error(response.data.message || '交易执行失败');
+          this.$toast?.error?.(response.data.message || 'Denomination exchange failed.');
         }
       } catch (error) {
-        console.error('执行交易失败:', error);
-        this.$toast.error('执行交易失败');
+        console.error('executeTransaction failed:', error);
+        this.$toast?.error?.('Failed to execute denomination exchange.');
       } finally {
         this.executing = false;
       }
-    },
-    
+    }
+
     resetForm() {
       this.foreignCurrency = '';
       this.selectedForeignCurrencyId = null;
@@ -1030,6 +1073,49 @@ export default {
       this.resultDisplay = '';
       this.showConfirmation = false;
       this.currentStep = 1;
+      this.calculatedLocalAmount = 0;
+      this.approvedReservationAmount = null;
+      this.lastReservationStatusCode = null;
+    },
+
+    async onReservationStatusUpdated(reservation, error) {
+      const trimmedId = (this.customerId || '').trim();
+      let statusKey = 'empty';
+
+      if (reservation) {
+        const idPart = reservation.reservation_id || reservation.id || reservation.reservation_no || 'unknown';
+        statusKey = `${reservation.status}:${idPart}`;
+      } else if (error) {
+        statusKey = `error:${error.name || 'unknown'}`;
+      } else if (trimmedId) {
+        statusKey = 'none';
+      }
+
+      if (reservation && this.lastReservationStatusCode !== statusKey) {
+        if (reservation.status === 'approved') {
+          this.$toast?.success?.(`Reservation approved. Limit: ${Number(reservation.approved_amount || 0).toLocaleString()} THB.`);
+        } else if (reservation.status === 'pending') {
+          this.$toast?.warning?.('Reservation is pending review. Denomination exchange is temporarily blocked.');
+        } else if (reservation.status === 'rejected') {
+          const reason = reservation.rejection_reason || 'No rejection reason provided.';
+          this.$toast?.error?.(`Reservation was rejected. Reason: ${reason}`);
+        }
+      }
+
+      if (!reservation && !error && trimmedId && this.lastReservationStatusCode !== statusKey) {
+        this.$toast?.info?.('No active reservation found for this customer. Proceed with the standard flow.');
+      }
+
+      this.approvedReservationAmount = reservation && reservation.status === 'approved'
+        ? Number(reservation.approved_amount || 0)
+        : null;
+
+      this.lastReservationStatusCode = statusKey;
+    },
+
+    onReservationStatusCleared() {
+      this.lastReservationStatusCode = null;
+      this.approvedReservationAmount = null;
     },
     
     selectRate(rate) {

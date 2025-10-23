@@ -1,0 +1,23 @@
+{
+  "reservationRequired": "请填写必要信息",
+  "ctr": "CTR",
+  "atr": "ATR",
+  "str": "STR",
+  "triggerAlertTitle": "触发警告",
+  "transactionSummary": "交易摘要",
+  "direction": "方向",
+  "foreignCurrency": "外币",
+  "localAmount": "本币金额",
+  "exchangeRate": "汇率",
+  "customerId": "客户ID",
+  "customerName": "客户姓名",
+  "fillRequiredInfo": "填写必要信息",
+  "loadingForm": "加载表单中",
+  "generatingReportNumber": "生成报告编号中",
+  "submitting": "提交中",
+  "submitReservation": "提交预约",
+  "saveFailed": "保存失败"
+}
+
+
+

@@ -14,7 +14,8 @@ from services.db_service import DatabaseService
 from services.unified_log_service import UnifiedLogService
 from models.exchange_models import (
     BranchOperatingStatus, Branch, Operator, ExchangeTransaction,
-    EODStatus, EODHistory, EODBalanceSnapshot,
+    EODStatus, 
+    # EODHistory, EODBalanceSnapshot,  # 已废弃 - 2025-10-10
     EODBalanceVerification, EODPrintLog, EODCashOut, SystemLog,
     CurrencyBalance, OperatorActivityLog, TransactionAlert, 
     RatePublishRecord, RatePublishDetail, ReceiptSequence, ExchangeRate,
@@ -25,8 +26,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_, or_, text
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger('app_operating_status')
 
 # Create blueprint for operating status operations
@@ -405,7 +406,7 @@ def clear_branch_operating_data(current_user, branch_id):
             )
         except Exception as log_error:
             # 日志记录失败不应该影响数据清理流程
-            print(f"营业数据清理日志记录失败: {log_error}")
+            logger.info(f"营业数据清理日志记录失败: {log_error}")
         
         return jsonify({
             'success': True,

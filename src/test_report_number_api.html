@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报告编号生成器测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>报告编号生成器测试</h1>
+    
+    <div class="container">
+        <h2>AMLO报告编号生成</h2>
+        <div class="form-group">
+            <label>币种代码:</label>
+            <select id="currencyCode">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="JPY">JPY</option>
+                <option value="GBP">GBP</option>
+                <option value="CNY">CNY</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>交易ID (可选):</label>
+            <input type="number" id="transactionId" placeholder="交易ID">
+        </div>
+        <button onclick="generateAMLOReport()">生成AMLO报告编号</button>
+        <div id="amloResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="container">
+        <h2>BOT报告编号生成</h2>
+        <div class="form-group">
+            <label>报告类型:</label>
+            <select id="reportType">
+                <option value="BuyFX">BuyFX</option>
+                <option value="SellFX">SellFX</option>
+                <option value="FCD">FCD</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>交易ID (可选):</label>
+            <input type="number" id="botTransactionId" placeholder="交易ID">
+        </div>
+        <button onclick="generateBOTReport()">生成BOT报告编号</button>
+        <div id="botResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="container">
+        <h2>报告编号验证</h2>
+        <div class="form-group">
+            <label>报告编号:</label>
+            <input type="text" id="validateNumber" placeholder="输入报告编号">
+        </div>
+        <button onclick="validateReportNumber()">验证报告编号</button>
+        <div id="validateResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="container">
+        <h2>统计信息</h2>
+        <button onclick="getStatistics()">获取统计信息</button>
+        <div id="statisticsResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5001/api';
+        
+        // 模拟登录token (实际使用时需要真实token)
+        const token = 'test-token';
+        
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                return { success: false, message: `网络错误: ${error.message}` };
+            }
+        }
+        
+        async function generateAMLOReport() {
+            const currencyCode = document.getElementById('currencyCode').value;
+            const transactionId = document.getElementById('transactionId').value;
+            
+            const data = {
+                currency_code: currencyCode
+            };
+            
+            if (transactionId) {
+                data.transaction_id = parseInt(transactionId);
+            }
+            
+            const result = await apiCall('/report-numbers/amlo/generate', 'POST', data);
+            showResult('amloResult', result);
+        }
+        
+        async function generateBOTReport() {
+            const reportType = document.getElementById('reportType').value;
+            const transactionId = document.getElementById('botTransactionId').value;
+            
+            const data = {
+                report_type: reportType
+            };
+            
+            if (transactionId) {
+                data.transaction_id = parseInt(transactionId);
+            }
+            
+            const result = await apiCall('/report-numbers/bot/generate', 'POST', data);
+            showResult('botResult', result);
+        }
+        
+        async function validateReportNumber() {
+            const reportNumber = document.getElementById('validateNumber').value;
+            
+            if (!reportNumber) {
+                showResult('validateResult', { success: false, message: '请输入报告编号' });
+                return;
+            }
+            
+            const result = await apiCall('/report-numbers/validate', 'POST', {
+                report_number: reportNumber
+            });
+            showResult('validateResult', result);
+        }
+        
+        async function getStatistics() {
+            const result = await apiCall('/report-numbers/statistics');
+            showResult('statisticsResult', result);
+        }
+        
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            
+            if (result.success) {
+                element.className = 'result success';
+                element.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                element.className = 'result error';
+                element.textContent = `错误: ${result.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+

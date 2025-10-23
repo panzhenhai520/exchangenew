@@ -11,6 +11,10 @@ from datetime import datetime
 from utils.multilingual_log_service import multilingual_logger
 from services.unified_log_service import log_user_login, log_user_logout
 from utils.language_utils import get_current_language
+import logging
+
+# Get logger instance - DO NOT call basicConfig() here
+logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -30,6 +34,8 @@ def get_active_branches():
             'branch_name': branch.branch_name,
             'branch_code': branch.branch_code,
             'is_active': branch.is_active,  # 添加活跃状态
+            'company_name': branch.company_name,  # 公司名称
+            'institution_type': branch.institution_type if hasattr(branch, 'institution_type') else 'money_changer',  # 机构类型
             'base_currency': {
                 'id': branch.base_currency.id,
                 'code': branch.base_currency.currency_code,
@@ -51,22 +57,22 @@ def login():
     data = request.get_json()
     login_code = data.get('login_code')
     password = data.get('password')
-    branch_id = data.get('branch')  # 获取选择的网点ID
+    branch_id = data.get('branch_id') or data.get('branch')  # 兼容 branch_id 和 branch 两种字段名
 
-    print(f"=== 登录调试信息 ===")
-    print(f"接收到的数据: {data}")
-    print(f"login_code: {login_code}")
-    print(f"password: {password}")
-    print(f"branch_id: {branch_id}")
+    logger.debug(f"=== 登录调试信息 ===")
+    logger.debug(f"接收到的数据: {data}")
+    logger.debug(f"login_code: {login_code}")
+    logger.debug(f"password: {password}")
+    logger.debug(f"branch_id: {branch_id}")
 
     if not login_code or not password or not branch_id:
-        print(f"ERROR: Missing required info: login_code={login_code}, password={password}, branch_id={branch_id}")
+        logger.error(f"ERROR: Missing required info: login_code={login_code}, password={password}, branch_id={branch_id}")
         return jsonify({'success': False, 'message': '缺少必要的登录信息'}), 400
 
     # 模拟密码加密后的MD5值比对（实际项目中建议使用 werkzeug）
     import hashlib
     password_md5 = hashlib.md5(password.encode()).hexdigest()
-    print(f"密码MD5: {password_md5}")
+    logger.debug(f"密码MD5: {password_md5}")
 
     session = DatabaseService.get_session()
     try:
@@ -80,12 +86,12 @@ def login():
             password_hash=password_md5
         ).first()
 
-        print(f"查询用户结果: {user}")
+        logger.debug(f"查询用户结果: {user}")
         if user:
-            print(f"找到用户: ID={user.id}, login_code={user.login_code}, is_active={user.is_active}")
+            logger.debug(f"找到用户: ID={user.id}, login_code={user.login_code}, is_active={user.is_active}")
 
         if not user:
-            print(f"❌ 用户验证失败: login_code={login_code}, password_md5={password_md5}")
+            logger.warning(f"❌ 用户验证失败: login_code={login_code}, password_md5={password_md5}")
             # 记录登录失败日志 - 使用请求头中的语言设置
             current_language = get_current_language()
             multilingual_logger.log_system_operation(
@@ -97,7 +103,7 @@ def login():
             return jsonify({'success': False, 'message': '用户名或密码错误'}), 401
 
         if not user.is_active:
-            print(f"❌ 用户已停用: {user.login_code}")
+            logger.warning(f"❌ 用户已停用: {user.login_code}")
             return jsonify({'success': False, 'message': '用户已停用'}), 403
 
         # 获取网点信息，包括本币信息
@@ -142,9 +148,9 @@ def login():
             ).fetchall()
             
             permissions = [row[0] for row in permission_query]
-            
-            print(f"[权限] 用户 {user.name} 的权限列表: {permissions}")
-            print(f"[检查] 是否有transaction_execute权限: {'transaction_execute' in permissions}")
+
+            logger.debug(f"[权限] 用户 {user.name} 的权限列表: {permissions}")
+            logger.debug(f"[检查] 是否有transaction_execute权限: {'transaction_execute' in permissions}")
 
         # 构建网点本币信息
         branch_currency = None
@@ -180,7 +186,25 @@ def login():
             )
         except Exception as log_error:
             # 日志记录失败不应该影响登录流程
-            print(f"用户登录日志记录失败: {log_error}")
+            logger.warning(f"用户登录日志记录失败: {log_error}")
+
+        branch_payload = {
+            'id': branch.id,
+            'branch_name': branch.branch_name,
+            'branch_code': branch.branch_code,
+            'address': branch.address,
+            'manager_name': branch.manager_name,
+            'phone_number': branch.phone_number,
+            'institution_type': getattr(branch, 'institution_type', None),
+            'company_full_name': getattr(branch, 'company_full_name', None),
+            'tax_registration_number': getattr(branch, 'tax_registration_number', None),
+            'license_number': getattr(branch, 'license_number', None),
+            'amlo_institution_code': getattr(branch, 'amlo_institution_code', None),
+            'amlo_branch_code': getattr(branch, 'amlo_branch_code', None),
+            'bot_sender_code': getattr(branch, 'bot_sender_code', None),
+            'bot_branch_area_code': getattr(branch, 'bot_branch_area_code', None),
+            'bot_license_number': getattr(branch, 'bot_license_number', None)
+        }
 
         return jsonify({
             'success': True,
@@ -193,14 +217,24 @@ def login():
                 'branch_code': branch.branch_code,
                 'role_id': user.role_id,
                 'role_name': role.role_name if role else None,
-                'branch_currency': branch_currency
+            'branch_currency': branch_currency,
+            'branch_currency_id': branch.base_currency.id if branch.base_currency else None,
+            'company_full_name': getattr(branch, 'company_full_name', None),
+            'tax_registration_number': getattr(branch, 'tax_registration_number', None),
+            'license_number': getattr(branch, 'license_number', None),
+            'amlo_institution_code': getattr(branch, 'amlo_institution_code', None),
+            'amlo_branch_code': getattr(branch, 'amlo_branch_code', None),
+                'bot_sender_code': getattr(branch, 'bot_sender_code', None),
+                'bot_branch_area_code': getattr(branch, 'bot_branch_area_code', None),
+                'bot_license_number': getattr(branch, 'bot_license_number', None),
+                'branch': branch_payload
             },
             'permissions': permissions,
             'require_password_change': require_password_change
         })
     except Exception as e:
         DatabaseService.rollback_session(session)
-        print(f"Login error: {str(e)}")
+        logger.error(f"Login error: {str(e)}")
         return jsonify({'success': False, 'message': '登录失败，请稍后重试'}), 500
     finally:
         DatabaseService.close_session(session)
@@ -242,7 +276,7 @@ def logout(current_user):
             )
         except Exception as log_error:
             # 日志记录失败不应该影响退出流程
-            print(f"用户退出日志记录失败: {log_error}")
+            logger.warning(f"用户退出日志记录失败: {log_error}")
         
         return jsonify({
             'success': True,
@@ -253,3 +287,60 @@ def logout(current_user):
             'success': False,
             'message': f'退出登录失败: {str(e)}'
         }), 500
+
+@auth_bp.route('/validate-token', methods=['GET'])
+@token_required
+def validate_token(current_user):
+    """验证token并返回用户权限信息"""
+    session = None
+    try:
+        session = DatabaseService.get_session()
+
+        # 从数据库重新获取用户角色和权限
+        from sqlalchemy import text
+        from models.exchange_models import Operator
+
+        user = session.query(Operator).filter_by(id=current_user['id']).first()
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': '用户不存在'
+            }), 404
+
+        # 获取用户权限
+        role = user.role
+        permissions = []
+        if role:
+            permission_query = session.execute(
+                text('''SELECT p.permission_name
+                   FROM permissions p
+                   JOIN role_permissions rp ON p.id = rp.permission_id
+                   WHERE rp.role_id = :role_id
+                   ORDER BY p.permission_name'''),
+                {'role_id': role.id}
+            ).fetchall()
+
+            permissions = [row[0] for row in permission_query]
+
+        logger.debug(f"[Token验证] 用户 {user.name} 的权限: {permissions}")
+
+        return jsonify({
+            'success': True,
+            'permissions': permissions,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'login_code': user.login_code,
+                'role_name': role.role_name if role else None,
+                'branch_id': user.branch_id
+            }
+        })
+    except Exception as e:
+        logger.error(f"Token验证失败: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Token验证失败: {str(e)}'
+        }), 500
+    finally:
+        if session:
+            DatabaseService.close_session(session)

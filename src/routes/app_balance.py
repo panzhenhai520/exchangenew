@@ -20,7 +20,7 @@ from utils.language_utils import get_current_language
 from utils.i18n_utils import I18nUtils
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig() - REMOVED: Do not override logging config from main.py
 logger = logging.getLogger('app_balance')
 
 # Create blueprint for balance operations
@@ -341,6 +341,84 @@ def adjust_balance(*args, **kwargs):
         )
         session.add(log)
         
+        # 检查BOT_Provider触发条件（仅针对外币增加的情况）
+        bot_report_generated = False
+        if adjustment_type == 'increase' and not is_base_currency and amount > 0:
+            try:
+                # 计算USD等值
+                # 获取USD对本币的汇率
+                usd_rate = session.query(ExchangeRate).filter(
+                    ExchangeRate.branch_id == current_user['branch_id'],
+                    ExchangeRate.currency_code == 'USD',
+                    ExchangeRate.is_active == True
+                ).order_by(ExchangeRate.updated_at.desc()).first()
+                
+                if usd_rate:
+                    # 获取调节币种对本币的汇率
+                    adj_currency_rate = session.query(ExchangeRate).filter(
+                        ExchangeRate.branch_id == current_user['branch_id'],
+                        ExchangeRate.currency_code == currency.currency_code,
+                        ExchangeRate.is_active == True
+                    ).order_by(ExchangeRate.updated_at.desc()).first()
+                    
+                    usd_equivalent = 0
+                    if currency.currency_code == 'USD':
+                        # 直接是USD
+                        usd_equivalent = float(amount)
+                    elif adj_currency_rate and usd_rate:
+                        # 转换为USD等值：外币金额 * 外币买入汇率 / USD卖出汇率
+                        usd_equivalent = float(amount) * float(adj_currency_rate.buy_rate) / float(usd_rate.sell_rate)
+                    
+                    logger.info(f"余额调节USD等值计算: {currency.currency_code} {amount} = {usd_equivalent} USD")
+                    
+                    # 检查BOT_Provider触发条件
+                    from services.repform.rule_engine import RuleEngine
+                    trigger_result = RuleEngine.check_triggers(
+                        session, 'BOT_Provider',
+                        {
+                            'adjustment_type': 'increase',
+                            'usd_equivalent': usd_equivalent,
+                            'currency_code': currency.currency_code,
+                            'adjustment_amount': float(amount)
+                        },
+                        current_user['branch_id']
+                    )
+                    
+                    if trigger_result.get('triggered'):
+                        logger.info(f"BOT_Provider触发条件满足，准备生成报告")
+                        
+                        # 生成BOT_Provider报告
+                        from services.bot_report_service import BOTReportService
+                        report_id = BOTReportService.generate_bot_provider(
+                            session,
+                            transaction.id,
+                            {
+                                'branch_id': current_user['branch_id'],
+                                'operator_id': current_user['id'],
+                                'currency_code': currency.currency_code,
+                                'adjustment_amount': float(amount),
+                                'usd_equivalent': usd_equivalent,
+                                'adjustment_reason': reason,
+                                'transaction_no': transaction.transaction_no
+                            }
+                        )
+                        
+                        if report_id:
+                            bot_report_generated = True
+                            logger.info(f"BOT_Provider报告生成成功: report_id={report_id}")
+                        else:
+                            logger.warning("BOT_Provider报告生成返回None")
+                    else:
+                        logger.info(f"BOT_Provider触发条件未满足: usd_equivalent={usd_equivalent}, 阈值=20000")
+                else:
+                    logger.warning("未找到USD汇率，无法计算USD等值")
+                    
+            except Exception as e:
+                logger.error(f"BOT_Provider触发检查失败: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                # 不影响主流程，继续执行
+        
         # 提交事务
         session.commit()
         
@@ -362,11 +440,17 @@ def adjust_balance(*args, **kwargs):
             )
         except Exception as log_error:
             # 日志记录失败不应该影响余额调整流程
-            print(f"余额调整日志记录失败: {log_error}")
+            logger.warning(f"余额调整日志记录失败: {log_error}")
+        
+        # 构建响应消息
+        response_message = '余额调整成功'
+        if bot_report_generated:
+            response_message += '，已自动生成BOT Provider报告'
         
         return jsonify({
             'success': True,
-            'message': '余额调整成功',
+            'message': response_message,
+            'bot_report_generated': bot_report_generated,
             'transaction': {
                 'id': transaction.id,
                 'transaction_id': transaction.id,
@@ -1158,7 +1242,7 @@ def set_initial_balance(*args, **kwargs):
                 )
         except Exception as log_error:
             # 日志记录失败不应该影响余额初始化流程
-            print(f"余额初始化日志记录失败: {log_error}")
+            logger.warning(f"余额初始化日志记录失败: {log_error}")
         
         # 构建成功返回信息
         response_message = f'成功设置 {len(transaction_records)} 个币种的期初余额'

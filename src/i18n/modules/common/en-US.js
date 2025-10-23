@@ -1,7 +1,18 @@
 // common模块 - en-US翻译
 export default {
-  "common": {
+  common: {
+    "locale": "en-US",
+    "index": "No.",
     "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+  "enable": "Enable",
+  "disable": "Disable",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "view": "View",
+  "action": "Action",
+  "totalItems": "Total {total} items",
     "dashboard": "Dashboard",
     "exchange": "Exchange",
     "balances": "Balances",
@@ -22,6 +33,8 @@ export default {
     "notification": "Notification",
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
     "save": "Save",
     "update": "Update",
     "edit": "Edit",

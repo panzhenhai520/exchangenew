@@ -1,28 +1,27 @@
 @echo off
 chcp 65001 > nul
-echo ============================================================
-echo ExchangeOK 环境自动配置工具
-echo ============================================================
+echo ======================================================================
+echo ExchangeOK Environment Configuration Tool
+echo ======================================================================
 echo.
 
 python setup_environment.py
 
 if %ERRORLEVEL% EQU 0 (
     echo.
-    echo ============================================================
-    echo 配置完成！系统已准备就绪
-    echo ============================================================
+    echo ======================================================================
+    echo Configuration completed successfully!
+    echo ======================================================================
     echo.
-    echo 您现在可以：
-    echo 1. 运行后端: cd src ^&^& python main.py
-    echo 2. 运行前端: npm run serve
-    echo 3. 访问系统: http://192.168.13.56:8080
+    echo Next steps:
+    echo 1. Start backend: python src\main.py
+    echo 2. Start frontend: npm run serve
     echo.
 ) else (
     echo.
-    echo ============================================================
-    echo 配置过程中出现错误，请检查输出信息
-    echo ============================================================
+    echo ======================================================================
+    echo Configuration failed - please check the error messages above
+    echo ======================================================================
 )
 
 pause

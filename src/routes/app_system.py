@@ -10,8 +10,8 @@ from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
 from utils.safe_error_handler import safe_error_response, handle_database_error, get_safe_error_message
 
-# 配置日志
-logging.basicConfig(level=logging.DEBUG)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger(__name__)
 
 system_bp = Blueprint('system', __name__, url_prefix='/api/system')
@@ -56,7 +56,14 @@ def get_branches(*args, **kwargs):
                     'base_currency': base_currency_code,
                     'is_active': branch.is_active,
                     'company_full_name': branch.company_full_name,
-                    'tax_registration_number': branch.tax_registration_number
+                    'tax_registration_number': branch.tax_registration_number,
+                    'institution_type': branch.institution_type if hasattr(branch, 'institution_type') else 'money_changer',
+                    'amlo_institution_code': getattr(branch, 'amlo_institution_code', None),
+                    'amlo_branch_code': getattr(branch, 'amlo_branch_code', None),
+                    'bot_sender_code': getattr(branch, 'bot_sender_code', None),
+                    'bot_branch_area_code': getattr(branch, 'bot_branch_area_code', None),
+                    'bot_license_number': getattr(branch, 'bot_license_number', None),
+                    'license_number': getattr(branch, 'license_number', None)
                 })
             except Exception as e:
                 logger.error(f"处理网点 {branch.branch_code} 时出错: {str(e)}")
@@ -99,14 +106,29 @@ def add_branch(*args, **kwargs):
             return safe_error_response(None, '指定的本币不存在', 404)
         
         # 创建新网点
+        def clean_str(value):
+            if isinstance(value, str):
+                value = value.strip()
+                return value or None
+            return value
+
         branch = Branch(
             branch_name=data['branch_name'],
             branch_code=data['branch_code'],
-            address=data.get('address'),
-            manager_name=data.get('manager_name'),
-            phone_number=data.get('phone_number'),
+            address=clean_str(data.get('address')),
+            manager_name=clean_str(data.get('manager_name')),
+            phone_number=clean_str(data.get('phone_number')),
             base_currency_id=data['base_currency_id'],
-            is_active=True
+            is_active=True,
+            company_full_name=clean_str(data.get('company_full_name')),
+            tax_registration_number=clean_str(data.get('tax_registration_number')),
+            institution_type=clean_str(data.get('institution_type')) or 'money_changer',
+            amlo_institution_code=clean_str(data.get('amlo_institution_code')),
+            amlo_branch_code=clean_str(data.get('amlo_branch_code')),
+            bot_sender_code=clean_str(data.get('bot_sender_code')),
+            bot_branch_area_code=clean_str(data.get('bot_branch_area_code')),
+            bot_license_number=clean_str(data.get('bot_license_number')),
+            license_number=clean_str(data.get('license_number'))
         )
         session.add(branch)
         session.commit()
@@ -179,18 +201,36 @@ def update_branch(*args, **kwargs):
         
         # 更新字段
         current_app.logger.info(f"[API] 更新网点 {branch_id} - 接收到的数据: {data}")
-        
-        for key in ['branch_name', 'branch_code', 'address', 'manager_name', 'phone_number', 'base_currency_id']:
+
+        for key in [
+            'branch_name',
+            'branch_code',
+            'address',
+            'manager_name',
+            'phone_number',
+            'base_currency_id',
+            'company_full_name',
+            'tax_registration_number',
+            'institution_type',
+            'amlo_institution_code',
+            'amlo_branch_code',
+            'bot_sender_code',
+            'bot_branch_area_code',
+            'bot_license_number',
+            'license_number'
+        ]:
             if key in data:
                 old_value = getattr(branch, key)
                 new_value = data[key]
                 current_app.logger.info(f"[API] 准备更新字段 {key}: {old_value} -> {new_value}")
-                
+
                 # 检查值是否为空字符串，转换为None
+                if isinstance(new_value, str):
+                    new_value = new_value.strip()
                 if new_value == '':
                     new_value = None
                     current_app.logger.info(f"[API] 空字符串转换为None: {key}")
-                
+
                 setattr(branch, key, new_value)
                 current_app.logger.info(f"[API] 已更新字段 {key}: {getattr(branch, key)}")
         
@@ -229,7 +269,16 @@ def update_branch(*args, **kwargs):
             'manager_name': branch.manager_name,
             'phone_number': branch.phone_number,
             'base_currency_id': branch.base_currency_id,
-            'base_currency': branch.base_currency.currency_code if branch.base_currency else None
+            'base_currency': branch.base_currency.currency_code if branch.base_currency else None,
+            'company_full_name': branch.company_full_name,
+            'tax_registration_number': branch.tax_registration_number,
+            'institution_type': branch.institution_type if hasattr(branch, 'institution_type') else 'money_changer',
+            'amlo_institution_code': getattr(branch, 'amlo_institution_code', None),
+            'amlo_branch_code': getattr(branch, 'amlo_branch_code', None),
+            'bot_sender_code': getattr(branch, 'bot_sender_code', None),
+            'bot_branch_area_code': getattr(branch, 'bot_branch_area_code', None),
+            'bot_license_number': getattr(branch, 'bot_license_number', None),
+            'license_number': getattr(branch, 'license_number', None)
         }
         
         current_app.logger.info(f"[API] 返回数据: {response_data}")
@@ -386,7 +435,9 @@ def get_currencies(*args, **kwargs):
             'currency_name': currency.currency_name,
             'country': currency.country,
             'flag_code': currency.flag_code,
-            'symbol': currency.symbol
+            'symbol': currency.symbol,
+            'custom_flag_filename': currency.custom_flag_filename,
+            'is_base': currency.is_base if hasattr(currency, 'is_base') else False
         } for currency in currencies]
         return jsonify({'success': True, 'currencies': result})
     except Exception as e:

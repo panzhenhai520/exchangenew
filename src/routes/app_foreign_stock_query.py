@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from services.db_service import DatabaseService
 from services.auth_service import token_required, has_permission
-from models.exchange_models import ExchangeTransaction, Branch, Currency, EODBalanceVerification, EODBalanceSnapshot, EODHistory, EODStatus
+from models.exchange_models import ExchangeTransaction, Branch, Currency, EODBalanceVerification, EODStatus  # EODBalanceSnapshot, EODHistory 已废弃
 from sqlalchemy import and_, or_, func, desc
 from datetime import datetime, timedelta
 from utils.multilingual_log_service import multilingual_logger

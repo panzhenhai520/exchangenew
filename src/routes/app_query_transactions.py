@@ -15,8 +15,8 @@ import os
 import base64
 from services.simple_pdf_service import SimplePDFService
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger('app_query_transactions')
 
 def decimal_to_str(value):
@@ -264,7 +264,7 @@ def reverse_transaction(current_user, *args):
                 }), 400
             
             # 【关键检查】检查交易是否在日结业务时间范围内，如果是则不允许作废
-            from models.exchange_models import EODHistory, EODStatus
+            from models.exchange_models import EODStatus  # EODHistory 已废弃
             from sqlalchemy import and_
             
             # 构建交易的完整时间（精确到时分秒）
@@ -393,7 +393,7 @@ def reverse_transaction(current_user, *args):
                 )
             except Exception as log_error:
                 # 日志记录失败不应该影响冲正流程
-                print(f"冲正交易日志记录失败: {log_error}")
+                logger.warning(f"冲正交易日志记录失败: {log_error}")
             
             return jsonify({
                 'success': True,

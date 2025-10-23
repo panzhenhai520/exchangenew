@@ -28,15 +28,15 @@ def update_show_html_branch_code(branch_code):
         
         # 检查文件是否存在
         if not os.path.exists(show_html_path):
-            print(f"[更新Show.html] 文件不存在: {show_html_path}")
+            logger.info(f"[更新Show.html] 文件不存在: {show_html_path}")
             return False
             
         # 读取文件内容
         with open(show_html_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        print(f"[更新Show.html] 当前网点代码: {branch_code}")
-        print(f"[更新Show.html] 文件路径: {show_html_path}")
+        logger.info(f"[更新Show.html] 当前网点代码: {branch_code}")
+        logger.info(f"[更新Show.html] 文件路径: {show_html_path}")
         
         # 使用更精确的正则表达式匹配
         # 匹配 return "A005"; 这样的格式
@@ -46,10 +46,10 @@ def update_show_html_branch_code(branch_code):
         match = re.search(pattern, content)
         if match:
             current_code = match.group(1)
-            print(f"[更新Show.html] 找到当前网点代码: {current_code}")
+            logger.info(f"[更新Show.html] 找到当前网点代码: {current_code}")
             
             if current_code == branch_code:
-                print(f"[更新Show.html] 网点代码已经是 {branch_code}，无需更新")
+                logger.info(f"[更新Show.html] 网点代码已经是 {branch_code}，无需更新")
                 return True
             
             # 执行替换
@@ -59,14 +59,14 @@ def update_show_html_branch_code(branch_code):
             with open(show_html_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
             
-            print(f"[更新Show.html] 成功更新网点代码: {current_code} -> {branch_code}")
+            logger.info(f"[更新Show.html] 成功更新网点代码: {current_code} -> {branch_code}")
             return True
         else:
-            print(f"[更新Show.html] 未找到网点代码模式")
+            logger.info(f"[更新Show.html] 未找到网点代码模式")
             return False
         
     except Exception as e:
-        print(f"[更新Show.html] 更新失败: {str(e)}")
+        logger.info(f"[更新Show.html] 更新失败: {str(e)}")
         return False
 
 @dashboard_bp.route('/overview', methods=['GET'])
@@ -104,7 +104,7 @@ def get_dashboard_overview(current_user):
             'rates': rate_data
         })
     except Exception as e:
-        print(f"Error in dashboard overview: {str(e)}")
+        logger.error(f"in dashboard overview: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         DatabaseService.close_session(session)
@@ -134,19 +134,19 @@ def publish_rates_for_display(*args, **kwargs):
         items_per_page = display_config.get('items_per_page', 12)
         refresh_interval = display_config.get('refresh_interval', 3600)
         
-        print(f"[发布配置调试] 接收到的display_config: {display_config}")
-        print(f"[发布配置调试] items_per_page: {items_per_page} (类型: {type(items_per_page)})")
-        print(f"[发布配置调试] refresh_interval: {refresh_interval} (类型: {type(refresh_interval)})")
+        logger.info(f"[发布配置调试] 接收到的display_config: {display_config}")
+        logger.info(f"[发布配置调试] items_per_page: {items_per_page} (类型: {type(items_per_page)})")
+        logger.info(f"[发布配置调试] refresh_interval: {refresh_interval} (类型: {type(refresh_interval)})")
         
         # 验证配置参数
         if not isinstance(items_per_page, int) or items_per_page < 6 or items_per_page > 20:
-            print(f"[发布配置调试] items_per_page 验证失败，使用默认值12")
+            logger.info(f"[发布配置调试] items_per_page 验证失败，使用默认值12")
             items_per_page = 12
         if not isinstance(refresh_interval, int) or refresh_interval < 5 or refresh_interval > 86400:
-            print(f"[发布配置调试] refresh_interval 验证失败，使用默认值3600")
+            logger.info(f"[发布配置调试] refresh_interval 验证失败，使用默认值3600")
             refresh_interval = 3600
             
-        print(f"[发布配置调试] 最终使用的配置: items_per_page={items_per_page}, refresh_interval={refresh_interval}")
+        logger.info(f"[发布配置调试] 最终使用的配置: items_per_page={items_per_page}, refresh_interval={refresh_interval}")
         
         if not rates_data:
             return jsonify({'success': False, 'message': '汇率数据不能为空'}), 400
@@ -164,8 +164,8 @@ def publish_rates_for_display(*args, **kwargs):
         }
         notes_json = json.dumps(notes_data, ensure_ascii=False)
         
-        print(f"[DEBUG] 发布汇率 - current_user: {current_user}")
-        print(f"[DEBUG] 发布汇率 - current_user name: {current_user.get('name', 'None')}")
+        logger.debug(f"发布汇率 - current_user: {current_user}")
+        logger.debug(f"发布汇率 - current_user name: {current_user.get('name', 'None')}")
         
         # 创建发布记录
         publish_record = RatePublishRecord(
@@ -313,28 +313,31 @@ def publish_rates_for_display(*args, **kwargs):
         # 删除旧的缓存
         for old_token in branch_tokens_to_remove:
             del published_rates_cache[old_token]
-            print(f"[缓存清理] 删除旧缓存: {old_token}")
+            logger.info(f"[缓存清理] 删除旧缓存: {old_token}")
         
         # 存储到缓存中
         published_rates_cache[token] = published_data
-        print(f"[缓存更新] 新缓存已存储: {token}, 货币数量: {len(rates_data)}")
+        logger.info(f"[缓存更新] 新缓存已存储: {token}, 货币数量: {len(rates_data)}")
         
         # 提交数据库事务
         DatabaseService.commit_session(session)
         
-        # 生成访问URL - 使用固定的服务器地址，确保机顶盒能正确访问
-        base_url = 'http://192.168.0.18:8080'
-        print(f"[发布汇率URL] 使用base_url: {base_url}")
+        # 生成访问URL - 从环境变量读取服务器地址
+        import os
+        current_ip = os.getenv('CURRENT_IP', 'localhost')
+        frontend_port = os.getenv('FRONTEND_PORT', '8080')
+        base_url = f'http://{current_ip}:{frontend_port}'
+        logger.info(f"[发布汇率URL] 使用base_url: {base_url}")
         access_url = f"{base_url}/api/dashboard/display-rates/{token}?theme={theme}&lang={language}"
         
         # 更新show.html文件中的网点代码
-        print(f"[发布汇率] 当前用户branch_id: {current_user['branch_id']}")
-        print(f"[发布汇率] 查询到的branch.branch_code: {branch.branch_code}")
+        logger.info(f"[发布汇率] 当前用户branch_id: {current_user['branch_id']}")
+        logger.info(f"[发布汇率] 查询到的branch.branch_code: {branch.branch_code}")
         update_success = update_show_html_branch_code(branch.branch_code)
         if update_success:
-            print(f"[发布汇率] 已自动更新show.html中的网点代码为: {branch.branch_code}")
+            logger.info(f"[发布汇率] 已自动更新show.html中的网点代码为: {branch.branch_code}")
         else:
-            print(f"[发布汇率] 更新show.html失败，但发布成功")
+            logger.info(f"[发布汇率] 更新show.html失败，但发布成功")
         
         return jsonify({
             'success': True,
@@ -494,7 +497,7 @@ def get_settop_box_url(branch_code):
     """机顶盒获取所有汇率展示URL"""
     try:
         # 🔧 方案1：优先从数据库查找最新的发布记录，确保数据一致性
-        print(f"[机顶盒URL] 优先从数据库查找分支 {branch_code} 的最新发布记录")
+        logger.info(f"[机顶盒URL] 优先从数据库查找分支 {branch_code} 的最新发布记录")
         
         session = DatabaseService.get_session()
         try:
@@ -511,7 +514,7 @@ def get_settop_box_url(branch_code):
                 latest_batch = batch_records[0]
                 batch_token = latest_batch.access_token
                 
-                print(f"[机顶盒URL] 找到批次发布记录: {batch_token[:8]}...")
+                logger.info(f"[机顶盒URL] 找到批次发布记录: {batch_token[:8]}...")
                 
                 # 构建批次URL
                 theme = latest_batch.publish_theme or 'light'
@@ -542,7 +545,7 @@ def get_settop_box_url(branch_code):
                 latest_record = denomination_records[0]
                 record_token = latest_record.access_token
                 
-                print(f"[机顶盒URL] 找到面值汇率发布记录: {record_token[:8]}...")
+                logger.info(f"[机顶盒URL] 找到面值汇率发布记录: {record_token[:8]}...")
                 
                 # 构建普通URL
                 theme = latest_record.publish_theme or 'light'
@@ -571,7 +574,7 @@ def get_settop_box_url(branch_code):
                 latest_record = standard_records[0]
                 record_token = latest_record.access_token
                 
-                print(f"[机顶盒URL] 找到标准汇率发布记录: {record_token[:8]}...")
+                logger.info(f"[机顶盒URL] 找到标准汇率发布记录: {record_token[:8]}...")
                 
                 theme = latest_record.publish_theme or 'light'
                 language = 'zh'
@@ -588,7 +591,7 @@ def get_settop_box_url(branch_code):
                     }
                 })
             
-            print(f"[机顶盒URL] 分支 {branch_code} 没有找到任何发布记录")
+            logger.info(f"[机顶盒URL] 分支 {branch_code} 没有找到任何发布记录")
             return jsonify({
                 'success': False, 
                 'message': f'没有找到网点 {branch_code} 的汇率发布记录'
@@ -849,21 +852,21 @@ def get_display_rates(token):
         display_config = {'items_per_page': 12, 'refresh_interval': 3600}  # 默认配置
         if publish_record.notes:
             try:
-                print(f"[数据恢复调试] 从数据库notes字段解析: {publish_record.notes}")
+                logger.info(f"[数据恢复调试] 从数据库notes字段解析: {publish_record.notes}")
                 notes_data = json.loads(publish_record.notes)
-                print(f"[数据恢复调试] 解析后的notes_data: {notes_data}")
+                logger.info(f"[数据恢复调试] 解析后的notes_data: {notes_data}")
                 if isinstance(notes_data, dict) and 'display_config' in notes_data:
                     stored_config = notes_data['display_config']
-                    print(f"[数据恢复调试] 存储的配置: {stored_config}")
+                    logger.info(f"[数据恢复调试] 存储的配置: {stored_config}")
                     if isinstance(stored_config, dict):
                         display_config = {
                             'items_per_page': stored_config.get('items_per_page', 12),
                             'refresh_interval': stored_config.get('refresh_interval', 3600)
                         }
-                        print(f"[数据恢复调试] 恢复的配置: {display_config}")
+                        logger.info(f"[数据恢复调试] 恢复的配置: {display_config}")
             except (json.JSONDecodeError, KeyError, TypeError) as e:
                 # 如果解析失败，使用默认配置
-                print(f"[数据恢复调试] 配置解析失败: {e}, 使用默认配置")
+                logger.info(f"[数据恢复调试] 配置解析失败: {e}, 使用默认配置")
                 pass
         
         # 获取该分支的所有发布记录，合并汇率数据
@@ -935,7 +938,7 @@ def get_display_rates(token):
         })
         
     except Exception as e:
-        print(f"Error in get_display_rates: {str(e)}")
+        logger.error(f"in get_display_rates: {str(e)}")
         return jsonify({
             'success': False, 
             'message': f'获取汇率数据失败: {str(e)}'
@@ -986,18 +989,18 @@ def get_recent_transactions(current_user):
         
         # 先检查是否有交易记录
         count = session.query(ExchangeTransaction).count()
-        print(f"Total transactions in database: {count}")
+        logger.info(f"Total transactions in database: {count}")
         
         # 检查第一条记录的内容
         first_transaction = session.query(ExchangeTransaction).first()
         if first_transaction:
             print("First transaction details:")
-            print(f"  ID: {first_transaction.id}")
-            print(f"  Transaction No: {first_transaction.transaction_no}")
-            print(f"  Type: {first_transaction.type}")
-            print(f"  Amount: {first_transaction.amount}")
-            print(f"  Rate: {first_transaction.rate}")
-            print(f"  Currency ID: {first_transaction.currency_id}")
+            logger.info(f"  ID: {first_transaction.id}")
+            logger.info(f"  Transaction No: {first_transaction.transaction_no}")
+            logger.info(f"  Type: {first_transaction.type}")
+            logger.info(f"  Amount: {first_transaction.amount}")
+            logger.info(f"  Rate: {first_transaction.rate}")
+            logger.info(f"  Currency ID: {first_transaction.currency_id}")
         
         # Query with proper joins for both buy and sell currencies
         transactions = session.query(
@@ -1014,7 +1017,7 @@ def get_recent_transactions(current_user):
             desc(ExchangeTransaction.created_at)
         ).limit(limit).all()
 
-        print(f"Found {len(transactions)} transactions after join")
+        logger.info(f"Found {len(transactions)} transactions after join")
         
         # 获取基础货币信息的缓存
         base_currency_cache = {}
@@ -1037,7 +1040,7 @@ def get_recent_transactions(current_user):
                 'customer_name': transaction.customer_name,
                 'transaction_date': transaction.transaction_date.strftime('%Y-%m-%d') if transaction.transaction_date else transaction.created_at.strftime('%Y-%m-%d')
             }
-            print(f"Processing transaction: {transaction_data}")
+            logger.info(f"Processing transaction: {transaction_data}")
             result.append(transaction_data)
 
         return jsonify({
@@ -1230,7 +1233,7 @@ def get_business_stats(current_user):
             }
             
         except Exception as e:
-            print(f"余额预警查询错误: {e}")
+            logger.info(f"余额预警查询错误: {e}")
             balance_alerts_result = {'low_alerts': 0, 'high_alerts': 0, 'alert_details': []}
         
         # 7. 最近日结时间 - 增加详细信息
@@ -1295,7 +1298,7 @@ def get_business_stats(current_user):
         })
         
     except Exception as e:
-        print(f"获取业务统计失败: {str(e)}")
+        logger.info(f"获取业务统计失败: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'获取业务统计失败: {str(e)}'
@@ -1313,18 +1316,18 @@ def clear_publish_cache(*args, **kwargs):
     session = None
     
     try:
-        print(f"[清除缓存] 开始清除缓存，用户: {current_user.get('name', 'unknown')}")
-        print(f"[清除缓存] 用户分支ID: {current_user.get('branch_id')}")
+        logger.info(f"[清除缓存] 开始清除缓存，用户: {current_user.get('name', 'unknown')}")
+        logger.info(f"[清除缓存] 用户分支ID: {current_user.get('branch_id')}")
         
         # 获取分支信息
         session = DatabaseService.get_session()
         branch = session.query(Branch).filter_by(id=current_user['branch_id']).first()
         
         if not branch:
-            print(f"[清除缓存] 找不到分支信息，分支ID: {current_user.get('branch_id')}")
+            logger.info(f"[清除缓存] 找不到分支信息，分支ID: {current_user.get('branch_id')}")
             return jsonify({'success': False, 'message': '找不到网点信息'}), 404
         
-        print(f"[清除缓存] 找到分支: {branch.branch_code} ({branch.branch_name})")
+        logger.info(f"[清除缓存] 找到分支: {branch.branch_code} ({branch.branch_name})")
         
         # 清除该分支的缓存
         branch_tokens_to_remove = []
@@ -1334,15 +1337,15 @@ def clear_publish_cache(*args, **kwargs):
             cached_branch_code = cached_data.get('branch', {}).get('code')
             if cached_branch_code == branch.branch_code:
                 branch_tokens_to_remove.append(cached_token)
-                print(f"[清除缓存] 标记删除缓存: {cached_token[:8]}... (分支: {cached_branch_code})")
+                logger.info(f"[清除缓存] 标记删除缓存: {cached_token[:8]}... (分支: {cached_branch_code})")
         
         removed_count = len(branch_tokens_to_remove)
         for old_token in branch_tokens_to_remove:
             del published_rates_cache[old_token]
-            print(f"[清除缓存] 删除缓存: {old_token[:8]}...")
+            logger.info(f"[清除缓存] 删除缓存: {old_token[:8]}...")
         
         cache_count_after = len(published_rates_cache)
-        print(f"[清除缓存] 缓存清理完成: {cache_count_before} -> {cache_count_after} (删除: {removed_count})")
+        logger.info(f"[清除缓存] 缓存清理完成: {cache_count_before} -> {cache_count_after} (删除: {removed_count})")
         
         return jsonify({
             'success': True, 
@@ -1353,9 +1356,9 @@ def clear_publish_cache(*args, **kwargs):
         })
         
     except Exception as e:
-        print(f"[清除缓存] 异常: {str(e)}")
+        logger.info(f"[清除缓存] 异常: {str(e)}")
         import traceback
-        print(f"[清除缓存] 异常堆栈: {traceback.format_exc()}")
+        logger.info(f"[清除缓存] 异常堆栈: {traceback.format_exc()}")
         return jsonify({'success': False, 'message': f'清除缓存失败: {str(e)}'}), 500
     finally:
         if session:
@@ -1421,7 +1424,7 @@ def save_rate_sort_order(current_user):
         })
 
     except Exception as e:
-        print(f"Error in save_rate_sort_order: {str(e)}")
+        logger.error(f"in save_rate_sort_order: {str(e)}")
         session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
@@ -1670,7 +1673,7 @@ def publish_denomination_rates(current_user):
     try:
         # 🔧 方案1：生成批次ID
         batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{current_user['branch_id']}"
-        print(f"[批次发布] 生成批次ID: {batch_id}")
+        logger.info(f"[批次发布] 生成批次ID: {batch_id}")
         
         # 获取显示配置
         theme = data.get('theme', 'light')
@@ -1680,7 +1683,7 @@ def publish_denomination_rates(current_user):
         
         # 验证刷新间隔
         if not isinstance(refresh_interval, int) or refresh_interval < 5 or refresh_interval > 86400:
-            print(f"[批次发布] refresh_interval 验证失败，使用默认值3600")
+            logger.info(f"[批次发布] refresh_interval 验证失败，使用默认值3600")
             refresh_interval = 3600
         # 检查今日已有的面值汇率发布记录（累积式发布）
         today = datetime.now().date()
@@ -1863,7 +1866,7 @@ def publish_denomination_rates(current_user):
         }
         
         # 🔧 修复：清理该分支的旧面值汇率发布记录，确保Token唯一性
-        print(f"[批量发布] 清理分支 {current_user['branch_id']} 的旧面值汇率发布记录")
+        logger.info(f"[批量发布] 清理分支 {current_user['branch_id']} 的旧面值汇率发布记录")
         old_records = session.query(RatePublishRecord).filter_by(
             branch_id=current_user['branch_id']
         ).filter(
@@ -1877,7 +1880,7 @@ def publish_denomination_rates(current_user):
             ).delete()
             # 删除发布记录
             session.delete(old_record)
-            print(f"[批量发布] 删除旧发布记录: {old_record.access_token[:8]}...")
+            logger.info(f"[批量发布] 删除旧发布记录: {old_record.access_token[:8]}...")
         
         # 开始事务处理
         try:

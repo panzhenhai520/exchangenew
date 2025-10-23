@@ -1,7 +1,18 @@
 // common模块 - zh-CN翻译
 export default {
-  "common": {
+  common: {
+    "locale": "zh-CN",
+    "index": "序号",
     "all": "全部",
+    "active": "已启用",
+    "inactive": "已禁用",
+  "enable": "启用",
+  "disable": "禁用",
+  "enabled": "已启用",
+  "disabled": "已禁用",
+  "view": "查看",
+  "action": "操作",
+  "totalItems": "共 {total} 条",
     "dashboard": "首页",
     "exchange": "外币兑换",
     "balances": "余额管理",
@@ -22,6 +33,8 @@ export default {
     "notification": "通知",
     "confirm": "确认",
     "cancel": "取消",
+    "yes": "是",
+    "no": "否",
     "save": "保存",
     "update": "更新",
     "edit": "编辑",
@@ -146,7 +159,11 @@ export default {
     "download": "下载",
     "select_all": "全选",
     "balance_method_new": "新方式",
-    
+    "fields": "字段",
+    "submitting": "提交中...",
+    "fieldRequired": "此字段为必填项",
+    "remarks": "备注",
+
     // 时间相关翻译
     "just_now": "刚刚",
     "minutes_ago": "{minutes}分钟前",

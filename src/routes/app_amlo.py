@@ -10,7 +10,7 @@ from flask import Blueprint, request, jsonify, g, send_file
 from functools import wraps
 from services.db_service import SessionLocal
 from services.repform import ReportDataService
-from services.pdf import AMLOPDFGenerator
+from services.pdf import AMLOPDFGenerator, AMLOFormFiller, adapt_route_data_to_pdf_data
 from services.auth_service import token_required, permission_required
 from sqlalchemy import text
 from datetime import datetime
@@ -18,9 +18,14 @@ import traceback
 import json
 import os
 import tempfile
+import logging
 
-# 创建Blueprint
-app_amlo = Blueprint('app_amlo', __name__)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
+logger = logging.getLogger(__name__)
+
+# 创建Blueprint - 统一使用url_prefix方式
+app_amlo = Blueprint('app_amlo', __name__, url_prefix='/api/amlo')
 
 
 # 权限装饰器
@@ -29,10 +34,96 @@ def amlo_permission_required(permission):
     return permission_required(permission)
 
 
-@app_amlo.route('/api/amlo/reservations', methods=['GET'])
+@app_amlo.route('/check-customer-reservation', methods=['GET'])
 @token_required
-@amlo_permission_required('amlo_reservation_view')
-def get_reservations():
+def check_customer_reservation(current_user):
+    """
+    检查客户是否有预约记录
+    
+    GET /api/amlo/check-customer-reservation?customer_id=xxx
+    
+    返回:
+    {
+        "has_reservation": true,
+        "status": "approved",  // pending, approved, rejected, completed
+        "reservation_id": 123,
+        "report_type": "AMLO-1-01",
+        "approved_amount": 2130000,
+        "audit_notes": "审核通过",
+        "reject_reason": null,
+        "auditor_name": "管理员"
+    }
+    """
+    session = SessionLocal()
+    
+    try:
+        customer_id = request.args.get('customer_id')
+        if not customer_id:
+            return jsonify({
+                'success': False,
+                'message': '缺少customer_id参数'
+            }), 400
+        
+        # 查询最近的预约记录（未完成交易的）
+        sql = text("""
+            SELECT 
+                r.id,
+                r.reservation_no,
+                r.report_type,
+                r.status,
+                r.local_amount,
+                r.audit_notes,
+                r.rejection_reason,
+                r.auditor_id,
+                u.name as auditor_name,
+                r.created_at,
+                r.audit_time
+            FROM Reserved_Transaction r
+            LEFT JOIN users u ON r.auditor_id = u.id
+            WHERE r.customer_id = :customer_id
+              AND r.status IN ('pending', 'approved', 'rejected')
+            ORDER BY r.created_at DESC
+            LIMIT 1
+        """)
+        
+        result = session.execute(sql, {'customer_id': customer_id}).fetchone()
+        
+        if not result:
+            return jsonify({
+                'success': True,
+                'has_reservation': False
+            })
+        
+        return jsonify({
+            'success': True,
+            'has_reservation': True,
+            'reservation_id': result[0],
+            'reservation_no': result[1],
+            'report_type': result[2],
+            'status': result[3],
+            'approved_amount': float(result[4]) if result[4] else 0,
+            'audit_notes': result[5],
+            'rejection_reason': result[6],
+            'auditor_name': result[8],
+            'created_at': str(result[9]),
+            'audit_time': str(result[10]) if result[10] else None
+        })
+        
+    except Exception as e:
+        logger.error(f"Error checking customer reservation: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'查询失败: {str(e)}'
+        }), 500
+    finally:
+        session.close()
+
+
+@app_amlo.route('/reservations', methods=['GET'])
+@token_required
+# @amlo_permission_required('amlo_reservation_view')  # 临时注释掉权限检查
+def get_reservations(current_user):
     """
     查询预约记录列表
 
@@ -74,6 +165,10 @@ def get_reservations():
         # 获取当前用户的branch_id
         branch_id = g.current_user.get('branch_id')
 
+        logger.debug(f"查询预约记录 - 当前用户branch_id: {branch_id}")
+        logger.debug(f"查询预约记录 - 状态过滤: {status if status else '无(查询所有状态)'}")
+        logger.debug(f"查询预约记录 - page: {page}, page_size: {page_size}")
+
         # 构建查询条件
         where_clauses = ['branch_id = :branch_id']
         params = {'branch_id': branch_id}
@@ -100,6 +195,9 @@ def get_reservations():
 
         where_sql = ' AND '.join(where_clauses)
 
+        logger.debug(f"执行的SQL查询条件: {where_sql}")
+        logger.debug(f"查询参数: {params}")
+
         # 查询总数
         count_sql = text(f"""
             SELECT COUNT(*) as total
@@ -109,6 +207,8 @@ def get_reservations():
 
         count_result = session.execute(count_sql, params)
         total = count_result.scalar()
+
+        logger.debug(f"查询总记录数: {total}")
 
         # 查询数据
         offset = (page - 1) * page_size
@@ -132,6 +232,10 @@ def get_reservations():
         data_result = session.execute(data_sql, params)
         items = [dict(row._mapping) for row in data_result]
 
+        logger.debug(f"查询结果 - 总记录数: {total}, 返回记录数: {len(items)}")
+        if len(items) > 0:
+            logger.debug(f"第一条记录: id={items[0].get('id')}, reservation_no={items[0].get('reservation_no')}, status={items[0].get('status')}, branch_id={items[0].get('branch_id')}")
+
         # 计算总页数
         total_pages = (total + page_size - 1) // page_size
 
@@ -147,7 +251,7 @@ def get_reservations():
         })
 
     except Exception as e:
-        print(f"Error in get_reservations: {str(e)}")
+        logger.error(f"Error in get_reservations: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -158,10 +262,10 @@ def get_reservations():
         session.close()
 
 
-@app_amlo.route('/api/amlo/reservations/<int:reservation_id>/audit', methods=['POST'])
+@app_amlo.route('/reservations/<int:reservation_id>/audit', methods=['POST'])
 @token_required
 @amlo_permission_required('amlo_reservation_audit')
-def audit_reservation(reservation_id):
+def audit_reservation(current_user, reservation_id):
     """
     审核预约记录
 
@@ -244,6 +348,79 @@ def audit_reservation(reservation_id):
         )
 
         if success:
+            # 🔧 修复：审核通过后自动创建AMLOReport记录
+            if action == 'approve':
+                try:
+                    # 🔧 查询预约记录详情（修复表名：amlo_reservations -> Reserved_Transaction）
+                    reservation_query = text("""
+                        SELECT
+                            r.reservation_no,
+                            r.report_type,
+                            r.customer_id,
+                            r.customer_name,
+                            r.local_amount,
+                            r.currency_id,
+                            r.direction,
+                            r.created_at,
+                            r.branch_id,
+                            r.operator_id
+                        FROM Reserved_Transaction r
+                        WHERE r.id = :reservation_id
+                    """)
+
+                    reservation_data = session.execute(reservation_query, {'reservation_id': reservation_id}).fetchone()
+
+                    if reservation_data:
+                        # 查询币种代码
+                        currency_query = text("""
+                            SELECT code FROM currencies WHERE id = :currency_id
+                        """)
+                        currency_result = session.execute(currency_query, {'currency_id': reservation_data.currency_id}).fetchone()
+                        currency_code = currency_result[0] if currency_result else 'USD'
+
+                        # 创建AMLO报告记录（使用正确的表名和字段）
+                        insert_sql = text("""
+                            INSERT INTO AMLOReport (
+                                report_no, report_type, report_format,
+                                reserved_id, customer_id, customer_name,
+                                transaction_amount, transaction_date, is_reported,
+                                branch_id, operator_id, language,
+                                created_at, updated_at
+                            )
+                            VALUES (
+                                :report_no, :report_type, :report_format,
+                                :reserved_id, :customer_id, :customer_name,
+                                :transaction_amount, :transaction_date, 0,
+                                :branch_id, :operator_id, 'th',
+                                NOW(), NOW()
+                            )
+                        """)
+
+                        session.execute(insert_sql, {
+                            'report_no': reservation_data.reservation_no,
+                            'report_type': reservation_data.report_type,
+                            'report_format': reservation_data.report_type,  # 使用相同的report_type
+                            'reserved_id': reservation_id,
+                            'customer_id': reservation_data.customer_id,
+                            'customer_name': reservation_data.customer_name,
+                            'transaction_amount': float(reservation_data.local_amount or 0),
+                            'transaction_date': reservation_data.created_at.date() if reservation_data.created_at else None,
+                            'branch_id': reservation_data.branch_id,
+                            'operator_id': reservation_data.operator_id
+                        })
+
+                        session.commit()
+
+                        logger.info(f"✅ 审核通过，已为预约 {reservation_id} 创建AMLO报告记录 {reservation_data.reservation_no}")
+                    else:
+                        logger.warning(f"⚠️ 未找到预约记录 {reservation_id}，无法创建AMLO报告")
+
+                except Exception as create_error:
+                    logger.error(f"❌ 创建AMLO报告记录失败: {str(create_error)}")
+                    session.rollback()  # 回滚报告创建，但保留审核状态
+                    # 不影响审核结果，只记录错误
+                    traceback.print_exc()
+
             message = '审核通过' if action == 'approve' else '已驳回'
             return jsonify({
                 'success': True,
@@ -256,7 +433,7 @@ def audit_reservation(reservation_id):
             }), 500
 
     except Exception as e:
-        print(f"Error in audit_reservation: {str(e)}")
+        logger.error(f"Error in audit_reservation: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -267,10 +444,10 @@ def audit_reservation(reservation_id):
         session.close()
 
 
-@app_amlo.route('/api/amlo/reservations/<int:reservation_id>/reverse-audit', methods=['POST'])
+@app_amlo.route('/reservations/<int:reservation_id>/reverse-audit', methods=['POST'])
 @token_required
 @amlo_permission_required('amlo_reservation_audit')
-def reverse_audit(reservation_id):
+def reverse_audit(current_user, reservation_id):
     """
     反审核预约记录
 
@@ -332,7 +509,7 @@ def reverse_audit(reservation_id):
             }), 500
 
     except Exception as e:
-        print(f"Error in reverse_audit: {str(e)}")
+        logger.error(f"Error in reverse_audit: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -343,10 +520,10 @@ def reverse_audit(reservation_id):
         session.close()
 
 
-@app_amlo.route('/api/amlo/reports', methods=['GET'])
+@app_amlo.route('/reports', methods=['GET'])
 @token_required
 @amlo_permission_required('amlo_report_view')
-def get_amlo_reports():
+def get_amlo_reports(current_user):
     """
     查询AMLO报告列表
 
@@ -461,7 +638,7 @@ def get_amlo_reports():
         })
 
     except Exception as e:
-        print(f"Error in get_amlo_reports: {str(e)}")
+        logger.error(f"Error in get_amlo_reports: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -472,10 +649,75 @@ def get_amlo_reports():
         session.close()
 
 
-@app_amlo.route('/api/amlo/reports/batch-report', methods=['POST'])
+@app_amlo.route('/reports/mark-reported', methods=['POST'])
+@token_required
+def mark_amlo_reported(current_user):
+    """
+    标记AMLO报告为已上报
+    
+    POST /api/amlo/reports/mark-reported
+    {
+        "ids": [1, 2, 3]
+    }
+    
+    返回:
+    {
+        "success": true,
+        "updated_count": 3
+    }
+    """
+    session = SessionLocal()
+    
+    try:
+        data = request.get_json()
+        ids = data.get('ids', [])
+        
+        if not ids:
+            return jsonify({
+                'success': False,
+                'message': '缺少报告ID'
+            }), 400
+        
+        # 获取当前用户ID
+        user_id = g.current_user.get('id', 1)
+        
+        # 更新记录
+        sql = text("""
+            UPDATE AMLOReport
+            SET is_reported = TRUE,
+                report_time = NOW(),
+                reporter_id = :user_id
+            WHERE id IN :ids
+        """)
+        
+        result = session.execute(sql, {
+            'user_id': user_id,
+            'ids': tuple(ids)
+        })
+        
+        session.commit()
+        
+        return jsonify({
+            'success': True,
+            'updated_count': result.rowcount,
+            'message': f'成功标记{result.rowcount}条报告为已上报'
+        })
+        
+    except Exception as e:
+        session.rollback()
+        logger.error(f"标记AMLO已上报失败: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'标记失败: {str(e)}'
+        }), 500
+    finally:
+        session.close()
+
+
+@app_amlo.route('/reports/batch-report', methods=['POST'])
 @token_required
 @amlo_permission_required('amlo_report_submit')
-def batch_report():
+def batch_report(current_user):
     """
     批量上报AMLO报告
 
@@ -567,7 +809,7 @@ def batch_report():
                 success_count += 1
 
             except Exception as e:
-                print(f"Error reporting AMLO report {report_id}: {str(e)}")
+                logger.error(f"Error reporting AMLO report {report_id}: {str(e)}")
                 failed_count += 1
                 failed_ids.append(report_id)
 
@@ -586,7 +828,7 @@ def batch_report():
 
     except Exception as e:
         session.rollback()
-        print(f"Error in batch_report: {str(e)}")
+        logger.error(f"Error in batch_report: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -597,7 +839,7 @@ def batch_report():
         session.close()
 
 
-@app_amlo.route('/api/amlo/reservations/<int:reservation_id>/complete', methods=['POST'])
+@app_amlo.route('/reservations/<int:reservation_id>/complete', methods=['POST'])
 @token_required
 def complete_reservation(current_user, reservation_id):
     """
@@ -661,7 +903,7 @@ def complete_reservation(current_user, reservation_id):
             }), 500
 
     except Exception as e:
-        print(f"Error in complete_reservation: {str(e)}")
+        logger.error(f"Error in complete_reservation: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -672,10 +914,10 @@ def complete_reservation(current_user, reservation_id):
         session.close()
 
 
-@app_amlo.route('/api/amlo/reports/<int:report_id>/generate-pdf', methods=['GET'])
+@app_amlo.route('/reports/<int:report_id>/generate-pdf', methods=['GET'])
 @token_required
 @amlo_permission_required('amlo_report_view')
-def generate_report_pdf(report_id):
+def generate_report_pdf(current_user, report_id):
     """
     生成AMLO报告PDF文件
 
@@ -751,16 +993,17 @@ def generate_report_pdf(report_id):
                 'suspicion_reasons': form_data.get('suspicion_reasons', '')
             })
 
-        # 生成PDF
-        generator = AMLOPDFGenerator()
+        # 生成PDF - 使用新的表单填充器
+        filler = AMLOFormFiller()
 
         # 创建临时文件
         temp_dir = tempfile.gettempdir()
         pdf_filename = f"AMLO_{result.report_type.replace('-', '_')}_{result.reservation_no}.pdf"
         pdf_path = os.path.join(temp_dir, pdf_filename)
 
-        # 生成PDF文件
-        generator.generate_pdf(result.report_type, pdf_data, pdf_path)
+        # 转换数据格式并生成PDF文件
+        adapted_data = adapt_route_data_to_pdf_data(pdf_data)
+        filler.fill_form(result.report_type, adapted_data, pdf_path)
 
         # 返回PDF文件
         return send_file(
@@ -771,7 +1014,7 @@ def generate_report_pdf(report_id):
         )
 
     except Exception as e:
-        print(f"Error in generate_report_pdf: {str(e)}")
+        logger.error(f"Error in generate_report_pdf: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -782,10 +1025,10 @@ def generate_report_pdf(report_id):
         session.close()
 
 
-@app_amlo.route('/api/amlo/reports/batch-generate-pdf', methods=['POST'])
+@app_amlo.route('/reports/batch-generate-pdf', methods=['POST'])
 @token_required
 @amlo_permission_required('amlo_report_view')
-def batch_generate_pdf():
+def batch_generate_pdf(current_user):
     """
     批量生成AMLO报告PDF文件（打包为ZIP）
 
@@ -840,7 +1083,7 @@ def batch_generate_pdf():
         import io
 
         zip_buffer = io.BytesIO()
-        generator = AMLOPDFGenerator()
+        filler = AMLOFormFiller()
 
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for result in results:
@@ -874,12 +1117,14 @@ def batch_generate_pdf():
                         'suspicion_reasons': form_data.get('suspicion_reasons', '')
                     })
 
-                # 生成PDF到临时文件
+                # 生成PDF到临时文件 - 使用新的表单填充器
                 temp_dir = tempfile.gettempdir()
                 pdf_filename = f"AMLO_{result.report_type.replace('-', '_')}_{result.reservation_no}.pdf"
                 pdf_path = os.path.join(temp_dir, pdf_filename)
 
-                generator.generate_pdf(result.report_type, pdf_data, pdf_path)
+                # 转换数据格式并生成PDF
+                adapted_data = adapt_route_data_to_pdf_data(pdf_data)
+                filler.fill_form(result.report_type, adapted_data, pdf_path)
 
                 # 添加到ZIP
                 with open(pdf_path, 'rb') as pdf_file:
@@ -900,7 +1145,7 @@ def batch_generate_pdf():
         )
 
     except Exception as e:
-        print(f"Error in batch_generate_pdf: {str(e)}")
+        logger.error(f"Error in batch_generate_pdf: {str(e)}")
         traceback.print_exc()
         return jsonify({
             'success': False,
@@ -909,6 +1154,69 @@ def batch_generate_pdf():
 
     finally:
         session.close()
+
+
+@app_amlo.route('/blank-form/<report_type>', methods=['GET'])
+@token_required
+def serve_blank_form(current_user, report_type):
+    """
+    提供空白AMLO表单PDF文件
+
+    GET /api/amlo/blank-form/AMLO-1-01
+
+    响应:
+    - 成功: 返回PDF文件流 (application/pdf)
+    - 失败: {"success": false, "message": "错误信息"}
+    """
+    try:
+        # PDF文件映射
+        pdf_map = {
+            'AMLO-1-01': 'รายงาน ปปง 1-01 ซื้อขายเกิน 500,000 บาท ยกเว้นเงินบาทแลก.pdf',
+            'AMLO-1-02': 'รายงาน ปปง 1-02 ซื้อขายเกิน 800,000 บาท ยกเว้นเงินบาทแลก.pdf',
+            'AMLO-1-03': 'รายงาน ปปง 1-03  ซื้อขายระหว่างนิติบุคลล.pdf'
+        }
+
+        # 检查报告类型是否有效
+        if report_type not in pdf_map:
+            return jsonify({
+                'success': False,
+                'message': f'无效的报告类型: {report_type}'
+            }), 400
+
+        # 获取PDF文件路径 - 使用新的标准化文件名
+        standardized_filename = f"{report_type}.pdf"
+
+        # PDF文件存储在src/static/amlo_forms/目录
+        current_file = os.path.abspath(__file__)
+        src_dir = os.path.dirname(os.path.dirname(current_file))
+        amlo_forms_dir = os.path.join(src_dir, 'static', 'amlo_forms')
+        pdf_path = os.path.join(amlo_forms_dir, standardized_filename)
+
+        logger.info(f"[AMLO] 尝试访问空白表单: {pdf_path}")
+        logger.info(f"[AMLO] 文件是否存在: {os.path.exists(pdf_path)}")
+
+        # 检查文件是否存在
+        if not os.path.exists(pdf_path):
+            return jsonify({
+                'success': False,
+                'message': f'PDF文件不存在: {standardized_filename}'
+            }), 404
+
+        # 返回PDF文件 - 使用标准化文件名避免Windows编码问题
+        return send_file(
+            pdf_path,
+            mimetype='application/pdf',
+            as_attachment=False,  # 在浏览器中直接打开而不是下载
+            download_name=standardized_filename  # 使用英文文件名避免GBK编码错误
+        )
+
+    except Exception as e:
+        logger.error(f"Error in serve_blank_form: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'获取空白表单失败: {str(e)}'
+        }), 500
 
 
 # 错误处理

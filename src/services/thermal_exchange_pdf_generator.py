@@ -13,6 +13,7 @@ from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, KeepTogethe
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.pdfbase import pdfmetrics
 from .pdf_base import PDFBase
 
 logger = logging.getLogger(__name__)
@@ -160,8 +161,18 @@ class ThermalExchangePDFGenerator(PDFBase):
             # 获取多语言文本
             texts = ThermalExchangePDFGenerator._get_thermal_texts(language)
 
-            # 使用标准字体避免字体文件依赖问题
-            font_name = 'Helvetica'  # 使用标准字体
+            # 初始化字体支持，使用支持中文的字体
+            PDFBase.init_fonts(language)
+            
+            # 获取安全的字体名称（支持中文）
+            if language == 'zh':
+                font_name = 'SimHei' if 'SimHei' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            elif language == 'th':
+                font_name = 'ArialUnicode' if 'ArialUnicode' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            else:
+                font_name = 'Tahoma' if 'Tahoma' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            
+            logger.info(f"使用字体: {font_name} (语言: {language})")
             styles = ThermalExchangePDFGenerator.get_thermal_styles(font_name)
 
             # 创建PDF文档 - 预估高度

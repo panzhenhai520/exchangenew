@@ -5,7 +5,10 @@ export default {
     "tabs": {
       "purpose_limits": "Exchange Reminder",
       "receipt_files": "Bill Document",
-      "balance_alerts": "Balance Alert"
+      "balance_alerts": "Balance Alert",
+      "field_management": "Field Management",
+      "trigger_rules": "Trigger Rules",
+      "test_trigger": "Test Trigger"
     },
     "purpose_limits": {
       "title": "Exchange Reminder Information Maintenance",

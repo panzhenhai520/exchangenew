@@ -111,11 +111,27 @@ def check_and_update_database_structure():
 
             # 需要添加的字段
             required_fields = {
+                'seqno': 'INT',
+                'exchange_type': 'VARCHAR(50) DEFAULT "normal"',
+                'approval_serial': 'VARCHAR(30)',
+                'id_expiry_date': 'DATE',
+                'asset_details': 'TEXT',
+                'bot_flag': 'INT DEFAULT 0',
+                'fcd_flag': 'INT DEFAULT 0',
+                'use_fcd': 'TINYINT(1) DEFAULT 0',
+                'payment_method': 'VARCHAR(50) DEFAULT "cash"',
+                'payment_method_note': 'VARCHAR(200)',
+                'receipt_language': 'VARCHAR(5) DEFAULT "zh"',
+                'issuing_country_code': 'VARCHAR(2)',
+                'funding_source': 'VARCHAR(50)',
                 'business_group_id': 'VARCHAR(100)',
                 'group_sequence': 'INT DEFAULT 1',
                 'transaction_direction': 'VARCHAR(20)',
                 'customer_country_code': 'VARCHAR(10)',
-                'customer_address': 'TEXT'
+                'customer_address': 'TEXT',
+                'occupation': 'VARCHAR(100)',
+                'workplace': 'VARCHAR(200)',
+                'work_phone': 'VARCHAR(20)'
             }
 
             for field_name, field_type in required_fields.items():
@@ -141,7 +157,13 @@ def check_and_update_database_structure():
                 'website': 'VARCHAR(255)',
                 'company_name': 'VARCHAR(255)',
                 'tax_id': 'VARCHAR(50)',
-                'receipt_template_type': 'VARCHAR(50) DEFAULT "standard"'
+                'receipt_template_type': 'VARCHAR(50) DEFAULT "standard"',
+                'institution_type': 'VARCHAR(50) DEFAULT "money_changer"',
+                'amlo_institution_code': 'VARCHAR(10)',
+                'amlo_branch_code': 'VARCHAR(10)',
+                'bot_sender_code': 'VARCHAR(20)',
+                'bot_branch_area_code': 'VARCHAR(20)',
+                'bot_license_number': 'VARCHAR(20)'
             }
 
             for field_name, field_type in required_fields.items():

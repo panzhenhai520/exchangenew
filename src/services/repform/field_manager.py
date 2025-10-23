@@ -70,6 +70,16 @@ class FieldManager:
                         ELSE help_text_cn
                     END as help_text,
                     field_group,
+                    field_group_cn,
+                    field_group_en,
+                    field_group_th,
+                    CASE :language
+                        WHEN 'zh' THEN field_group_cn
+                        WHEN 'en' THEN field_group_en
+                        WHEN 'th' THEN field_group_th
+                        ELSE field_group_cn
+                    END as group_name_localized,
+                    fillpos,
                     report_type,
                     is_active
                 FROM report_fields
@@ -97,6 +107,14 @@ class FieldManager:
                         field_dict['validation_rule'] = json.loads(field_dict['validation_rule'])
                     except:
                         field_dict['validation_rule'] = {}
+
+                # 将is_required转换为布尔值（数据库返回1/0）
+                if 'is_required' in field_dict:
+                    field_dict['is_required'] = bool(field_dict['is_required'])
+
+                # 将is_active转换为布尔值
+                if 'is_active' in field_dict:
+                    field_dict['is_active'] = bool(field_dict['is_active'])
 
                 fields.append(field_dict)
 
@@ -179,19 +197,26 @@ class FieldManager:
 
             report_name = report_names.get(report_type, {}).get(language, report_type)
 
-            # 按field_group分组
+            # 按field_group分组（使用英文标识符作为key）
             grouped_fields = {}
-            for field in fields:
-                group_name = field.get('field_group', '其他')
-                if group_name not in grouped_fields:
-                    grouped_fields[group_name] = []
-                grouped_fields[group_name].append(field)
+            group_name_map = {}  # 存储field_group -> localized_name的映射
 
-            # 构建field_groups列表
+            for field in fields:
+                group_id = field.get('field_group', 'other')  # 英文标识符
+                group_name_localized = field.get('group_name_localized', group_id)  # 本地化名称
+
+                if group_id not in grouped_fields:
+                    grouped_fields[group_id] = []
+                    group_name_map[group_id] = group_name_localized
+
+                grouped_fields[group_id].append(field)
+
+            # 构建field_groups列表，使用本地化的分组名
             field_groups = []
-            for group_name, group_fields in grouped_fields.items():
+            for group_id, group_fields in grouped_fields.items():
                 field_groups.append({
-                    'group_name': group_name,
+                    'group_id': group_id,  # 英文标识符
+                    'group_name': group_name_map.get(group_id, group_id),  # 本地化名称
                     'fields': group_fields
                 })
 
@@ -202,6 +227,7 @@ class FieldManager:
                 'report_name_th': report_names.get(report_type, {}).get('th', ''),
                 'report_name': report_name,
                 'field_groups': field_groups,
+                'fields': fields,  # 添加扁平化的字段列表供前端使用
                 'total_fields': len(fields)
             }
 

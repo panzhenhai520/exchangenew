@@ -6,8 +6,8 @@ from services.auth_service import token_required, has_permission
 from sqlalchemy import and_
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger(__name__)
 
 purpose_limits_bp = Blueprint('purpose_limits', __name__, url_prefix='/api/system/purpose-limits')

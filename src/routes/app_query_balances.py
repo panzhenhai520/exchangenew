@@ -9,8 +9,8 @@ import logging
 import random
 from utils.transaction_utils import generate_transaction_no
 
-# 配置日志
-logging.basicConfig(level=logging.DEBUG)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger(__name__)
 
 # 创建blueprint，但不再注册任何路由

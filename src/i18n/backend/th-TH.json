@@ -19,7 +19,8 @@
     "validation_passed": "การตรวจสอบผ่าน",
     "validation_passed_can_execute": "การตรวจสอบผ่าน สามารถดำเนินการธุรกรรมได้",
     "validation_passed_with_warnings": "การตรวจสอบผ่าน แต่มีการเตือนเกี่ยวกับขีดจำกัดยอดเงิน",
-    "validation_passed_with_critical_warnings": "การตรวจสอบผ่าน แต่มีการเตือนสำคัญเกี่ยวกับขีดจำกัดยอดเงิน"
+    "validation_passed_with_critical_warnings": "การตรวจสอบผ่าน แต่มีการเตือนสำคัญเกี่ยวกับขีดจำกัดยอดเงิน",
+    "amount_exceeds_approved": "จำนวนเงินธุรกรรมเกินจำนวนเงินที่อนุมัติแล้ว กรุณาปรับจำนวนเงินหรือส่งขออนุมัติใหม่"
   },
   "balance": {
     "insufficient_balance": "ยอดเงินไม่เพียงพอ",
@@ -27,6 +28,7 @@
     "balance_check_error": "เกิดข้อผิดพลาดในการตรวจสอบยอดเงิน: {error}",
     "foreign_currency_insufficient": "{currency_name}ยอดเงินไม่เพียงพอ ต้องจ่าย {required_amount:.2f} {currency_code} ยอดเงินปัจจุบัน {current_balance:.2f} {currency_code} ขาด {shortfall:.2f} {currency_code}",
     "foreign_stock_insufficient": "{currency_name}สต็อกไม่เพียงพอ ต้องการ {required_amount:.2f} {currency_code} สต็อกปัจจุบัน {current_stock:.2f} {currency_code} ขาด {missing_amount:.2f} {currency_code}",
+    "base_stock_insufficient": "{currency_name}สต็อกสกุลเงินหลักไม่เพียงพอ ต้องการ {required_amount:.2f} {currency_code} สต็อกปัจจุบัน {current_stock:.2f} {currency_code} ขาด {missing_amount:.2f} {currency_code}",
     "balance_update_failed": "การอัปเดตยอดเงินล้มเหลว: {error}",
     "balance_sufficient": "ยอดเงินเพียงพอ สามารถทำธุรกรรมได้",
     "threshold_warning": "{currency_name} ({currency_code}) ยอดเงินหลังทำธุรกรรมจะเปลี่ยนจาก {current_balance:.2f} เป็น {new_balance:.2f}, {impact_analysis}"
@@ -55,6 +57,8 @@
   },
   "system": {
     "operation_successful": "การดำเนินการสำเร็จ",
+    "base_currency": "สกุลเงินหลัก",
+    "unknown_currency": "สกุลเงินไม่ทราบ",
     "operation_failed": "การดำเนินการล้มเหลว",
     "network_error": "ข้อผิดพลาดของเครือข่าย",
     "system_error": "ข้อผิดพลาดของระบบ: {error}",

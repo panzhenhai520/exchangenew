@@ -1,7 +1,18 @@
 // common模块 - th-TH翻译
 export default {
-  "common": {
+  common: {
+    "locale": "th-TH",
+    "index": "ลำดับ",
     "all": "ทั้งหมด",
+    "active": "เปิดใช้งาน",
+    "inactive": "ปิดใช้งาน",
+  "enable": "เปิดใช้งาน",
+  "disable": "ปิดใช้งาน",
+  "enabled": "เปิดใช้งานแล้ว",
+  "disabled": "ปิดใช้งานแล้ว",
+  "view": "ดู",
+  "action": "การดำเนินการ",
+  "totalItems": "รวม {total} รายการ",
     "dashboard": "หน้าหลัก",
     "exchange": "แลกเปลี่ยน",
     "balances": "ยอดเงิน",
@@ -22,6 +33,8 @@ export default {
     "notification": "การแจ้งเตือน",
     "confirm": "ยืนยัน",
     "cancel": "ยกเลิก",
+    "yes": "ใช่",
+    "no": "ไม่ใช่",
     "save": "บันทึก",
     "update": "อัปเดต",
     "edit": "แก้ไข",

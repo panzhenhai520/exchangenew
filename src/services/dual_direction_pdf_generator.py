@@ -72,6 +72,8 @@ class DualDirectionPDFGenerator(PDFBase):
                 'denomination_details': business_group_data.get('denomination_details', []),
                 'branch_name': branch.branch_name if branch else '',
                 'branch_code': branch.branch_code if branch else '',
+                'branch_address': getattr(branch, 'address', '') if branch else '',
+                'branch_phone': getattr(branch, 'phone_number', '') if branch else '',
                 'branch_license': getattr(branch, 'license_number', '') if branch else '',
                 'branch_website': getattr(branch, 'website', '') if branch else '',
                 'branch_company': getattr(branch, 'company_name', '') if branch else '',
@@ -133,7 +135,17 @@ class DualDirectionPDFGenerator(PDFBase):
             texts = DualDirectionPDFGenerator._get_language_texts(language)
 
             # 初始化字体和样式
-            font_name = DualDirectionPDFGenerator.init_fonts(language)
+            PDFBase.init_fonts(language)
+            
+            # 获取安全的字体名称（支持中文）
+            if language == 'zh':
+                font_name = 'SimHei' if 'SimHei' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            elif language == 'th':
+                font_name = 'ArialUnicode' if 'ArialUnicode' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            else:
+                font_name = 'Tahoma' if 'Tahoma' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            
+            logger.info(f"使用字体: {font_name} (语言: {language})")
             styles = DualDirectionPDFGenerator._get_thermal_styles(font_name)
 
             # 创建自定义80mm页面大小的PDF文档
@@ -150,43 +162,59 @@ class DualDirectionPDFGenerator(PDFBase):
             # 构建PDF内容
             story = []
 
-            # 添加标题
-            story.append(Paragraph(texts['title'], styles['title']))
-            story.append(Spacer(1, 3*mm))
-
-            # 公司信息（新增）
+            # 1. 公司抬头（居中粗体）
             if receipt_data.get('company_full_name'):
-                story.append(Paragraph("=" * 40, styles['separator']))
-                story.append(Spacer(1, 1*mm))
                 story.append(Paragraph(f"<b>{receipt_data['company_full_name']}</b>", styles['center']))
-                if receipt_data.get('tax_registration_number'):
-                    story.append(Paragraph(
-                        f"{texts['tax_number']}: {receipt_data['tax_registration_number']}",
-                        styles['small_center']
-                    ))
+                story.append(Spacer(1, 0.5*mm))
+
+            # 2. 地址信息（居中小字）
+            branch_address = receipt_data.get('branch_address', '')
+            if branch_address:
+                story.append(Paragraph(f"{texts.get('address', 'ที่อยู่')}: {branch_address}", styles['small_center']))
+                story.append(Spacer(1, 0.5*mm))
+
+            # 3. 电话和网站（一行显示）
+            contact_parts = []
+            branch_phone = receipt_data.get('branch_phone', '')
+            branch_website = receipt_data.get('branch_website', '')
+            if branch_phone:
+                contact_parts.append(f"{texts.get('phone', 'โทร')}: {branch_phone}")
+            if branch_website:
+                contact_parts.append(f"{texts.get('website', 'เว็บไซต์')}: {branch_website}")
+            if contact_parts:
+                story.append(Paragraph("  ".join(contact_parts), styles['small_center']))
                 story.append(Spacer(1, 1*mm))
-                story.append(Paragraph("=" * 40, styles['separator']))
-                story.append(Spacer(1, 3*mm))
 
-            # 网点信息
-            if receipt_data.get('branch_name'):
-                story.append(Paragraph(f"<b>{receipt_data['branch_name']}</b>", styles['center']))
-                if receipt_data.get('branch_code'):
-                    story.append(Paragraph(f"{texts['branch_code']}: {receipt_data['branch_code']}", styles['center']))
+            # 4. 票据类型和标题
+            story.append(Paragraph("<b>SELL/ใบขายธนบัตร</b>", styles['center']))
+            story.append(Paragraph(f"<b>{texts['title']}</b>", styles['title']))
+            story.append(Spacer(1, 1*mm))
 
-            # 许可证和联系信息
+            # 5. 许可证号和日期时间（左右对齐）
+            license_line_parts = []
             if receipt_data.get('branch_license'):
-                story.append(Paragraph(f"{texts['license']}: {receipt_data['branch_license']}", styles['small_center']))
-            if receipt_data.get('branch_website'):
-                story.append(Paragraph(f"{texts['website']}: {receipt_data['branch_website']}", styles['small_center']))
+                license_line_parts.append(f"{texts['license']}: {receipt_data['branch_license']}")
+            license_line_parts.append(f"{texts['date']}: {receipt_data.get('transaction_date', '')} {texts.get('time', 'เวลา')}: {receipt_data.get('transaction_time', '')}")
+            if license_line_parts:
+                story.append(Paragraph("  ".join(license_line_parts), styles['info']))
 
-            story.append(Spacer(1, 5*mm))
-            story.append(Paragraph("=" * 40, styles['separator']))
-            story.append(Spacer(1, 3*mm))
+            # 6. 税号
+            if receipt_data.get('tax_registration_number'):
+                story.append(Paragraph(
+                    f"{texts['tax_number']}: {receipt_data['tax_registration_number']}",
+                    styles['info']
+                ))
 
-            # 业务组信息
-            story.append(Paragraph(f"<b>{texts['business_group']}:</b> {receipt_data['business_group_id']}", styles['info']))
-            story.append(Paragraph(f"<b>{texts['transaction_date']}:</b> {receipt_data.get('transaction_date', '')} {receipt_data.get('transaction_time', '')}", styles['info']))
+            # 7. 收据编号
+            if receipt_data.get('business_group_id'):
+                story.append(Paragraph(
+                    f"<b>{texts.get('receipt_no', 'เลขที่/No.')}: {receipt_data['business_group_id']}</b>",
+                    styles['info']
+                ))
+                story.append(Spacer(1, 1*mm))
+
+            story.append(Paragraph("-" * 40, styles['separator']))
+            story.append(Spacer(1, 1*mm))
 
             # 付款方式（新增）
             payment_method_display = {
@@ -200,7 +228,7 @@ class DualDirectionPDFGenerator(PDFBase):
             if receipt_data.get('payment_method_note'):
                 story.append(Paragraph(f"  {texts['payment_note']}: {receipt_data['payment_method_note']}", styles['small_info']))
 
-            story.append(Spacer(1, 3*mm))
+            story.append(Spacer(1, 1.5*mm))
 
             # 客户信息
             customer_info = receipt_data.get('customer_info', {})
@@ -224,24 +252,24 @@ class DualDirectionPDFGenerator(PDFBase):
             if customer_info.get('address'):
                 story.append(Paragraph(f"<b>{texts['customer_address']}:</b> {customer_info['address']}", styles['info']))
 
-            story.append(Spacer(1, 3*mm))
+            story.append(Spacer(1, 1.5*mm))
             story.append(Paragraph("-" * 40, styles['separator']))
-            story.append(Spacer(1, 3*mm))
+            story.append(Spacer(1, 1.5*mm))
 
             # 面值详情表格
             if receipt_data.get('denomination_details'):
                 story.append(Paragraph(f"<b>{texts['denomination_details']}</b>", styles['section_title']))
-                story.append(Spacer(1, 2*mm))
+                story.append(Spacer(1, 1*mm))
 
                 denomination_table = DualDirectionPDFGenerator._create_denomination_table(
                     receipt_data['denomination_details'], font_name, texts
                 )
                 story.append(denomination_table)
-                story.append(Spacer(1, 3*mm))
+                story.append(Spacer(1, 1.5*mm))
 
             # 交易汇总
             story.append(Paragraph(f"<b>{texts['transaction_summary']}</b>", styles['section_title']))
-            story.append(Spacer(1, 2*mm))
+            story.append(Spacer(1, 1*mm))
 
             # 按币种分组显示交易汇总
             currency_summary = DualDirectionPDFGenerator._create_currency_summary(
@@ -267,11 +295,11 @@ class DualDirectionPDFGenerator(PDFBase):
                     f"  平均汇率: 1 {currency_code} = {summary['avg_rate']:,.4f} {receipt_data['base_currency']}",
                     styles['rate_line']
                 ))
-                story.append(Spacer(1, 2*mm))
+                story.append(Spacer(1, 1*mm))
 
-            story.append(Spacer(1, 3*mm))
+            story.append(Spacer(1, 1.5*mm))
             story.append(Paragraph("-" * 40, styles['separator']))
-            story.append(Spacer(1, 3*mm))
+            story.append(Spacer(1, 1.5*mm))
 
             # 操作员信息
             if receipt_data.get('operator_name'):
@@ -281,13 +309,13 @@ class DualDirectionPDFGenerator(PDFBase):
             if customer_info.get('remarks'):
                 story.append(Paragraph(f"<b>{texts['remarks']}:</b> {customer_info['remarks']}", styles['info']))
 
-            story.append(Spacer(1, 5*mm))
+            story.append(Spacer(1, 2*mm))
 
             # 签名区域
             signature_section = DualDirectionPDFGenerator._create_signature_section(texts, styles)
             story.append(signature_section)
 
-            story.append(Spacer(1, 5*mm))
+            story.append(Spacer(1, 2*mm))
 
             # 注意事项
             story.append(Paragraph(texts['notice'], styles['notice']))
@@ -307,10 +335,14 @@ class DualDirectionPDFGenerator(PDFBase):
         """获取对应语言的文本"""
         texts = {
             'zh': {
-                'title': '多币种兑换交易凭证',
-                'tax_number': '税务登记号',
-                'license': '营业执照',
-                'website': '网站',
+                'title': 'Statement of Currency Exchange / ใบเสร็จรับเงิน (Receipt)',
+                'address': 'ที่อยู่',
+                'phone': 'โทร',
+                'time': 'เวลา',
+                'tax_number': 'เลขประจำตัวผู้เสียภาษี',
+                'license': 'ใบอนุญาตเลขที่',
+                'receipt_no': 'เลขที่/No.',
+                'website': 'เว็บไซต์',
                 'branch_code': '网点代码',
                 'business_group': '业务组号',
                 'transaction_date': '交易日期',
@@ -345,10 +377,14 @@ class DualDirectionPDFGenerator(PDFBase):
                 'notice': '注意事项:\n1. 请核对交易信息，如有疑问请及时联系。\n2. 本凭证请妥善保管，作为交易凭证。\n3. 如需查询，请提供业务组号。'
             },
             'en': {
-                'title': 'MULTI-CURRENCY EXCHANGE RECEIPT',
-                'tax_number': 'Tax Registration No',
-                'license': 'Business License',
-                'website': 'Website',
+                'title': 'Statement of Currency Exchange / ใบเสร็จรับเงิน (Receipt)',
+                'address': 'ที่อยู่',
+                'phone': 'โทร',
+                'time': 'เวลา',
+                'tax_number': 'เลขประจำตัวผู้เสียภาษี',
+                'license': 'ใบอนุญาตเลขที่',
+                'receipt_no': 'เลขที่/No.',
+                'website': 'เว็บไซต์',
                 'branch_code': 'Branch Code',
                 'business_group': 'Business Group No',
                 'transaction_date': 'Transaction Date',
@@ -383,9 +419,13 @@ class DualDirectionPDFGenerator(PDFBase):
                 'notice': 'Notice:\n1. Please verify transaction details.\n2. Keep this receipt as transaction proof.\n3. For inquiries, provide business group number.'
             },
             'th': {
-                'title': 'ใบเสร็จแลกเปลี่ยนเงินตราหลายสกุล',
-                'tax_number': 'เลขทะเบียนภาษี',
-                'license': 'ใบอนุญาตประกอบธุรกิจ',
+                'title': 'Statement of Currency Exchange / ใบเสร็จรับเงิน (Receipt)',
+                'address': 'ที่อยู่',
+                'phone': 'โทร',
+                'time': 'เวลา',
+                'tax_number': 'เลขประจำตัวผู้เสียภาษี',
+                'license': 'ใบอนุญาตเลขที่',
+                'receipt_no': 'เลขที่/No.',
                 'website': 'เว็บไซต์',
                 'branch_code': 'รหัสสาขา',
                 'business_group': 'หมายเลขกลุ่มธุรกิจ',

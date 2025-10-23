@@ -259,13 +259,15 @@ class TransactionSplitService:
             for i, record in enumerate(transaction_records):
                 logger.info(f"[TransactionSplitService] 交易记录 {i+1}: 币种ID={record['currency_id']}, 方向={record['transaction_direction']}, 外币金额={record['amount']}, 本币金额={record['local_amount']}")
 
-            # 4. 验证余额充足性
+            # 4. 验证余额充足性（仅记录警告，不阻止交易）
             validation_result = TransactionSplitService.validate_balance_sufficiency(
-                session, transaction_records, branch_id, 'zh-CN'  # Default to Chinese for internal validation
+                session, transaction_records, branch_id, base_currency_id, 'zh-CN'  # Default to Chinese for internal validation
             )
 
+            # 记录验证结果，但不阻止交易（允许预约）
             if not validation_result['success']:
-                return validation_result
+                logger.warning(f"[TransactionSplitService] 余额验证失败，但允许继续执行（用于预约）: {validation_result['message']}")
+                # 不返回错误，继续执行交易
 
             # 5. 执行交易记录插入和余额更新
             created_transactions = []
@@ -351,7 +353,7 @@ class TransactionSplitService:
 
     @staticmethod
     def validate_balance_sufficiency(
-        session, transaction_records: List[Dict[str, Any]], branch_id: int, language: str = 'zh-CN'
+        session, transaction_records: List[Dict[str, Any]], branch_id: int, base_currency_id: int, language: str = 'zh-CN'
     ) -> Dict[str, Any]:
         """验证余额充足性"""
         try:
@@ -399,8 +401,35 @@ class TransactionSplitService:
 
                 # 检查本币余额（如果有本币相关的余额记录）
                 if local_amount_change < 0:  # 减少本币库存
-                    # 这里可以添加本币余额检查逻辑
-                    pass
+                    logger.info(f"[TransactionSplitService] 需要减少本币库存，检查余额充足性...")
+                    base_balance = session.query(CurrencyBalance).filter_by(
+                        branch_id=branch_id,
+                        currency_id=base_currency_id
+                    ).with_for_update().first()
+                    
+                    logger.info(f"[TransactionSplitService] 当前本币余额记录: {base_balance}")
+                    if base_balance:
+                        logger.info(f"[TransactionSplitService] 当前本币余额: {base_balance.balance}, 需要减少: {abs(local_amount_change)}")
+                    
+                    if not base_balance or base_balance.balance < abs(local_amount_change):
+                        # 获取本币信息用于国际化错误消息
+                        base_currency = session.query(Currency).filter_by(id=base_currency_id).first()
+                        currency_name = base_currency.currency_name if base_currency else t('system.base_currency', language)
+                        currency_code = base_currency.currency_code if base_currency else 'BASE'
+                        
+                        error_msg = t('balance.base_stock_insufficient', language,
+                                    currency_name=currency_name,
+                                    required_amount=abs(local_amount_change),
+                                    currency_code=currency_code,
+                                    current_stock=base_balance.balance if base_balance else 0,
+                                    missing_amount=abs(local_amount_change) - (base_balance.balance if base_balance else 0))
+                        logger.error(f"[TransactionSplitService] {error_msg}")
+                        return {
+                            'success': False,
+                            'message': error_msg
+                        }
+                else:
+                    logger.info(f"[TransactionSplitService] 增加本币库存，无需检查余额 (local_amount_change: {local_amount_change})")
 
             return {'success': True, 'message': t('validation.validation_passed', language)}
 

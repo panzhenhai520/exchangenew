@@ -8,6 +8,8 @@ export default {
     "amount": "交易金额",
     "exchange_amount": "兑换金额",
     "exchange_rate": "交易汇率",
-    "print_receipt": "打印凭证"
+    "print_receipt": "打印凭证",
+    "buy": "买入",
+    "sell": "卖出"
   }
 }

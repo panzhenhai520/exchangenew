@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from services.db_service import DatabaseService
 from services.auth_service import token_required, has_permission, check_eod_session_permission
 from services.eod_service import EODService
-from models.exchange_models import EODStatus, EODHistory, EODBalanceSnapshot, EODBalanceVerification, EODCashOut, ExchangeTransaction, Currency, Branch, Operator
+from models.exchange_models import EODStatus, EODBalanceVerification, EODCashOut, ExchangeTransaction, Currency, Branch, Operator  # EODHistory, EODBalanceSnapshot 已废弃
 from utils.i18n_utils import I18nUtils
 
 
@@ -932,7 +932,7 @@ def download_eod_report(current_user, eod_no):
             
     except Exception as e:
         import traceback
-        print(f"下载日结报表失败: {str(e)}")
+        logger.info(f"下载日结报表失败: {str(e)}")
         print(traceback.format_exc())
         return jsonify({'success': False, 'message': f'下载失败: {str(e)}'}), 500
 

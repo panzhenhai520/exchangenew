@@ -1,0 +1,38 @@
+
+
+
+
+场景1: 普通大额交易
+
+  金额: 850万THB
+  类型: normal
+  触发: ✅ AMLO-1-01 (超过200万)
+  触发: ❌ AMLO-1-02 (不是资产抵押)
+
+ 场景2: 资产抵押大额交易
+
+  金额: 850万THB
+  类型: asset_backed
+  触发: ✅ AMLO-1-01 (超过200万)
+  触发: ✅ AMLO-1-02 (超过800万且是资产抵押)
+
+ 场景3: 资产抵押小额交易
+
+  金额: 500万THB
+  类型: asset_backed
+  触发: ✅ AMLO-1-01 (超过200万)
+  触发: ❌ AMLO-1-02 (未超过800万)
+
+
+现有触发器脚本配置了三条标准规则：total_amount >= 2_000_000 触发 CTR、
+total_amount >= 8_000_000 且 exchange_type == 'asset_backed' 触发 ATR、
+以及 30 天累计 cumulative_amount_30d >= 5_000_000 触发 STR 
+
+
+场景一（CTR）：在标准兑换里模拟客户买入外币，输入约 2,100,000 THB，本币阈值被命中后会弹出预约模态框；保持 exchange_type 默认值即可验证 CTR 流程。
+
+场景二（ATR）：金额调到 ≥ 8,000,000 THB，并在开发者工具里把 exchangeType/exchange_type 改成 'asset_backed' 后提交；
+在当前 UI 修复前只能通过这种方式或直接改表单 JSON 触发 ATR 规则。
+
+
+场景三（STR）：准备一批同一客户的交易记录，使 30 天累计金额写入到 cumulative_amount_30d ≥ 5,000,000；也可以直接调用后台的触发检查接口并伪造累计值，以验证规则能生成 STR 任务

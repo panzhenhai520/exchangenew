@@ -6,6 +6,7 @@ export default {
     "denomination_exchange": "面值兑换",
     "denomination_rates": "面值汇率",
     "no_denomination_rates": "暂无面值汇率数据",
+    "no_denomination_rates_published": "当日未发布面值汇率，无法进行面值兑换交易",
     "denomination_rates_available": "面值汇率已加载",
     "denomination_rates_unavailable": "面值汇率不可用",
     "from_currency": "源币种",
@@ -30,6 +31,10 @@ export default {
     "confirm_transaction": "确认交易",
     "customer_name": "客户姓名",
     "customer_id": "客户证件号",
+    "id_type": "证件类型",
+    "national_id": "身份证",
+    "passport": "护照",
+    "tax_id": "纳税人识别号/企业代码",
     "exchange_steps": "兑换步骤",
     "select_buy_sell": "选择买入还是卖出",
     "select_purpose": "选择用途",
@@ -43,6 +48,26 @@ export default {
     "transaction_time": "交易时间",
     "base_currency": "本币",
     "select_transaction_direction": "选择交易方向",
+    "approval_amount_exceeded_title": "交易金额超过审核限额",
+    "approved_amount": "审核金额",
+    "actual_amount": "实际金额",
+    "exceed_amount": "超出金额",
+    "reservation_no": "预约单号",
+    "report_type": "报告类型",
+    "suggestions": "操作建议",
+    "suggestion_reduce_amount": "降低交易金额至 {amount} 或以下",
+    "suggestion_resubmit_approval": "使用实际金额重新提交AMLO审核申请",
+    "reduce_amount": "修改金额",
+    "resubmit_approval": "重新审核",
+
+    // 大额交易类型选择
+    "exchange_type_selection": "交易类型选择 (大额交易监管要求)",
+    "exchange_type_notice": "提示：本笔交易金额为 {amount} THB，已达到大额交易阈值 (200万THB)，请选择交易类型",
+    "exchange_type_normal": "普通交易",
+    "exchange_type_normal_desc": "正常的外币兑换业务",
+    "exchange_type_asset_mortgage": "资产抵押交易",
+    "exchange_type_asset_mortgage_desc": "使用房产、车辆等资产抵押的大额兑换",
+
     "select_purpose_label": "选择用途",
     "input_amount_label": "输入金额",
     "customer_payment": "顾客支付",
@@ -183,8 +208,17 @@ export default {
     "customer_address": "联系地址",
     "customer_address_placeholder": "请输入联系地址",
 
+    // 支付方式相关翻译
+    "payment_method": "支付方式",
+    "payment_cash": "现金",
+    "payment_bank_transfer": "银行转账",
+    "payment_fcd_account": "外币账户",
+    "payment_other": "其他",
+    "payment_other_note": "请说明其他付款方式",
+
     // 双向交易相关翻译
     "dual_direction_title": "双向交易",
+    "dual_direction": "双向交易",
     "single_transaction": "单向交易",
     "add_denomination_combination": "添加面值组合",
     "select_currency": "选择币种",
@@ -240,6 +274,22 @@ export default {
     "required": "需要",
     "validation_error": "验证错误",
     "threshold_warnings": "阈值警告",
-    "critical_threshold_warnings": "严重阈值警告"
+    "critical_threshold_warnings": "严重阈值警告",
+
+    // 大额交易相关翻译
+    "large_amount_notice": "大额交易提示",
+    "large_transaction_detected": "检测到大额交易",
+    "exceeds_threshold": "超过阈值",
+    "select_exchange_type": "请选择兑换类型",
+    "please_select_exchange_type": "请选择兑换类型后再继续",
+    "large_amount_exchange": "大额兑换",
+    "asset_mortgage_exchange": "资产抵押兑换",
+    "funding_source": "资金来源",
+    "select_funding_source": "请选择资金来源",
+    "exchange_type_hint": "根据监管要求，本币金额超过200万时需要选择兑换类型",
+    "customer_id_hint": "请输入客户证件号码（护照、身份证等）",
+    "view_customer_history": "查看客户历史",
+    "please_enter_customer_id": "请先输入客户证件号",
+    "funding_source_required": "选择资产抵押交易时，必须填写资金来源"
   }
 }

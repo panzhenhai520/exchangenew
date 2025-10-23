@@ -17,6 +17,103 @@ class RuleEngine:
     """规则引擎类"""
 
     @staticmethod
+    def evaluate_rule_with_details(rule_expression: Dict[str, Any], data: Dict[str, Any]) -> tuple:
+        """
+        评估规则表达式并返回详细的条件匹配信息
+        
+        Args:
+            rule_expression: 规则表达式字典
+            data: 待评估的数据字典
+            
+        Returns:
+            (是否匹配, 条件详情字典)
+            条件详情 = {
+                'matched': [满足的条件列表],
+                'unmatched': [未满足的条件列表]
+            }
+        """
+        if not rule_expression or not isinstance(rule_expression, dict):
+            return False, {'matched': [], 'unmatched': []}
+        
+        logic = rule_expression.get('logic', 'AND').upper()
+        conditions = rule_expression.get('conditions', [])
+        
+        if not conditions:
+            return False, {'matched': [], 'unmatched': []}
+        
+        matched_conditions = []
+        unmatched_conditions = []
+        results = []  # 用于逻辑判断的结果列表
+
+        for condition in conditions:
+            try:
+                # 检查是否是嵌套条件（有logic字段）
+                if 'logic' in condition and 'conditions' in condition:
+                    # 递归处理嵌套条件
+                    nested_result, nested_details = RuleEngine.evaluate_rule_with_details(condition, data)
+
+                    # 不要扁平化嵌套条件，只记录嵌套条件的最终结果
+                    condition_detail = {
+                        'nested_logic': condition.get('logic'),
+                        'nested_result': nested_result,
+                        'nested_details': nested_details,  # 保留详细信息
+                        'matched': nested_result
+                    }
+
+                    results.append(nested_result)  # 用于逻辑判断
+                    if nested_result:
+                        matched_conditions.append(condition_detail)
+                    else:
+                        unmatched_conditions.append(condition_detail)
+                else:
+                    # 处理简单条件
+                    field_name = condition.get('field')
+                    operator = condition.get('operator')
+                    expected_value = condition.get('value')
+                    actual_value = data.get(field_name)
+
+                    result = RuleEngine._compare_values(actual_value, operator, expected_value)
+
+                    condition_detail = {
+                        'field': field_name,
+                        'operator': operator,
+                        'expected_value': expected_value,
+                        'actual_value': actual_value,
+                        'matched': result
+                    }
+
+                    results.append(result)  # 用于逻辑判断
+                    if result:
+                        matched_conditions.append(condition_detail)
+                    else:
+                        unmatched_conditions.append(condition_detail)
+
+            except Exception as e:
+                print(f"Error evaluating condition {condition}: {str(e)}")
+                unmatched_conditions.append({
+                    'field': condition.get('field', 'unknown'),
+                    'operator': condition.get('operator', '='),
+                    'expected_value': condition.get('value'),
+                    'actual_value': None,
+                    'matched': False,
+                    'error': str(e)
+                })
+        
+        # 根据逻辑操作符返回结果
+        if logic == 'AND':
+            is_triggered = all(results) and len(results) > 0
+        elif logic == 'OR':
+            is_triggered = any(results) and len(results) > 0
+        else:  # NOT
+            is_triggered = not any(results)
+        
+        return is_triggered, {
+            'matched': matched_conditions,
+            'unmatched': unmatched_conditions,
+            'logic': logic
+        }
+    
+    @staticmethod
     def evaluate_rule(rule_expression: Dict[str, Any], data: Dict[str, Any]) -> bool:
         """
         评估规则表达式
@@ -47,18 +144,25 @@ class RuleEngine:
         results = []
         for condition in conditions:
             try:
-                field_name = condition.get('field')
-                operator = condition.get('operator')
-                expected_value = condition.get('value')
+                # 检查是否是嵌套条件（有logic字段）
+                if 'logic' in condition and 'conditions' in condition:
+                    # 递归处理嵌套条件
+                    nested_result = RuleEngine.evaluate_rule(condition, data)
+                    results.append(nested_result)
+                else:
+                    # 处理简单条件
+                    field_name = condition.get('field')
+                    operator = condition.get('operator')
+                    expected_value = condition.get('value')
 
-                actual_value = data.get(field_name)
+                    actual_value = data.get(field_name)
 
-                result = RuleEngine._compare_values(
-                    actual_value,
-                    operator,
-                    expected_value
-                )
-                results.append(result)
+                    result = RuleEngine._compare_values(
+                        actual_value,
+                        operator,
+                        expected_value
+                    )
+                    results.append(result)
 
             except Exception as e:
                 print(f"Error evaluating condition {condition}: {str(e)}")
@@ -171,6 +275,11 @@ class RuleEngine:
             }
         """
         try:
+            print(f"\n[RuleEngine.check_triggers] ========== 开始检查触发条件 ==========", flush=True)
+            print(f"[RuleEngine.check_triggers] 报告类型: {report_type}", flush=True)
+            print(f"[RuleEngine.check_triggers] 网点ID: {branch_id}", flush=True)
+            print(f"[RuleEngine.check_triggers] 交易数据: {data}", flush=True)
+
             # 查询该报告类型的启用规则
             sql = text("""
                 SELECT
@@ -199,36 +308,66 @@ class RuleEngine:
                 {'report_type': report_type, 'branch_id': branch_id or 0}
             )
 
+            all_rules = list(result)
+            print(f"[RuleEngine.check_triggers] 查询到 {len(all_rules)} 条启用的规则", flush=True)
+
             matched_rules = []
 
-            for row in result:
+            for row in all_rules:
                 rule_dict = dict(row._mapping)
+                rule_id = rule_dict['id']
+                rule_name = rule_dict['rule_name']
+                priority = rule_dict['priority']
+
+                print(f"\n[RuleEngine.check_triggers] --- 评估规则 {rule_id}: {rule_name} (优先级: {priority}) ---", flush=True)
 
                 # 解析rule_expression
                 try:
                     rule_expression = json.loads(rule_dict['rule_expression'])
-                except:
-                    print(f"Invalid rule expression for rule {rule_dict['id']}")
+                    print(f"[RuleEngine.check_triggers] 规则表达式: {rule_expression}", flush=True)
+                except Exception as parse_error:
+                    print(f"[RuleEngine.check_triggers] [ERROR] 规则表达式解析失败: {str(parse_error)}", flush=True)
                     continue
 
-                # 评估规则
-                if RuleEngine.evaluate_rule(rule_expression, data):
+                # 评估规则，并收集条件匹配详情
+                is_matched, condition_details = RuleEngine.evaluate_rule_with_details(rule_expression, data)
+
+                match_result = 'MATCHED' if is_matched else 'NOT_MATCHED'
+                print(f"[RuleEngine.check_triggers] 规则匹配结果: {match_result}", flush=True)
+                print(f"[RuleEngine.check_triggers] 匹配的条件: {condition_details.get('matched', [])}", flush=True)
+                print(f"[RuleEngine.check_triggers] 未匹配的条件: {condition_details.get('unmatched', [])}", flush=True)
+
+                if is_matched:
+                    print(f"[RuleEngine.check_triggers] [OK] 规则 {rule_id} 匹配成功，添加到结果列表", flush=True)
+                    rule_dict['condition_details'] = condition_details  # 添加条件详情
+                    rule_dict['rule_expression_parsed'] = rule_expression  # 添加解析后的表达式
                     matched_rules.append(rule_dict)
 
             # 构建返回结果
+            print(f"\n[RuleEngine.check_triggers] ========== 评估完成 ==========", flush=True)
+            print(f"[RuleEngine.check_triggers] 共匹配 {len(matched_rules)} 条规则", flush=True)
+
             if matched_rules:
                 highest_priority_rule = matched_rules[0]
+                print(f"[RuleEngine.check_triggers] 最高优先级规则: {highest_priority_rule['rule_name']} (ID: {highest_priority_rule['id']})", flush=True)
 
-                return {
+                result_dict = {
                     'triggered': True,
                     'trigger_rules': matched_rules,
                     'highest_priority_rule': highest_priority_rule,
                     'allow_continue': highest_priority_rule.get('allow_continue', False),
                     'message_cn': highest_priority_rule.get('warning_message_cn', ''),
                     'message_en': highest_priority_rule.get('warning_message_en', ''),
-                    'message_th': highest_priority_rule.get('warning_message_th', '')
+                    'message_th': highest_priority_rule.get('warning_message_th', ''),
+                    'matched_conditions': highest_priority_rule.get('condition_details', {}).get('matched', []),  # 新增
+                    'unmatched_conditions': highest_priority_rule.get('condition_details', {}).get('unmatched', []),  # 新增
+                    'rule_expression': highest_priority_rule.get('rule_expression_parsed')  # 新增
                 }
+
+                print(f"[RuleEngine.check_triggers] 返回结果: triggered=True", flush=True)
+                return result_dict
             else:
+                print(f"[RuleEngine.check_triggers] 返回结果: triggered=False (无匹配规则)", flush=True)
                 return {
                     'triggered': False,
                     'trigger_rules': [],
@@ -237,7 +376,9 @@ class RuleEngine:
                 }
 
         except Exception as e:
-            print(f"Error checking triggers for report type {report_type}: {str(e)}")
+            print(f"[RuleEngine.check_triggers] [EXCEPTION] 异常: {str(e)}", flush=True)
+            import traceback
+            traceback.print_exc()
             raise
 
     @staticmethod
@@ -247,7 +388,7 @@ class RuleEngine:
         days: int = 30
     ) -> Dict[str, Any]:
         """
-        获取客户累计交易统计
+        获取客户累计交易统计（跨网点）
 
         Args:
             db_session: 数据库会话
@@ -257,18 +398,20 @@ class RuleEngine:
         Returns:
             统计结果字典:
             {
-                "cumulative_amount_1month": 累计金额,
-                "transaction_count_1month": 交易次数,
-                "last_transaction_date": 最后交易日期
+                "cumulative_amount_30d": 累计金额（跨网点）,
+                "transaction_count_30d": 交易次数（跨网点）,
+                "last_transaction_date": 最后交易日期,
+                "branch_breakdown": 按网点分解统计
             }
         """
         try:
             start_date = (datetime.now() - timedelta(days=days)).date()
 
+            # 总体统计（跨网点）
             sql = text("""
                 SELECT
                     COUNT(*) as transaction_count,
-                    COALESCE(SUM(local_amount), 0) as cumulative_amount,
+                    COALESCE(SUM(ABS(local_amount)), 0) as cumulative_amount,
                     MAX(transaction_date) as last_transaction_date
                 FROM exchange_transactions
                 WHERE customer_id = :customer_id
@@ -282,25 +425,64 @@ class RuleEngine:
             )
 
             row = result.first()
+            
+            # 按网点分解统计
+            branch_sql = text("""
+                SELECT
+                    branch_id,
+                    COUNT(*) as count,
+                    COALESCE(SUM(ABS(local_amount)), 0) as amount
+                FROM exchange_transactions
+                WHERE customer_id = :customer_id
+                    AND transaction_date >= :start_date
+                    AND status = 'completed'
+                GROUP BY branch_id
+                ORDER BY branch_id
+            """)
+            
+            branch_result = db_session.execute(
+                branch_sql,
+                {'customer_id': customer_id, 'start_date': start_date}
+            )
+            
+            branch_breakdown = []
+            for branch_row in branch_result:
+                branch_breakdown.append({
+                    'branch_id': branch_row[0],
+                    'count': int(branch_row[1]),
+                    'amount': float(branch_row[2])
+                })
+            
             if row:
-                return {
+                stats = {
+                    'cumulative_amount_30d': float(row[1] or 0),
+                    'transaction_count_30d': int(row[0] or 0),
+                    'last_transaction_date': str(row[2]) if row[2] else None,
+                    'branch_breakdown': branch_breakdown,
+                    # 保持向后兼容
                     'cumulative_amount_1month': float(row[1] or 0),
-                    'transaction_count_1month': int(row[0] or 0),
-                    'last_transaction_date': str(row[2]) if row[2] else None
+                    'transaction_count_1month': int(row[0] or 0)
                 }
+                return stats
 
             return {
+                'cumulative_amount_30d': 0.0,
+                'transaction_count_30d': 0,
+                'last_transaction_date': None,
+                'branch_breakdown': [],
                 'cumulative_amount_1month': 0.0,
-                'transaction_count_1month': 0,
-                'last_transaction_date': None
+                'transaction_count_1month': 0
             }
 
         except Exception as e:
             print(f"Error getting customer stats for {customer_id}: {str(e)}")
             return {
+                'cumulative_amount_30d': 0.0,
+                'transaction_count_30d': 0,
+                'last_transaction_date': None,
+                'branch_breakdown': [],
                 'cumulative_amount_1month': 0.0,
-                'transaction_count_1month': 0,
-                'last_transaction_date': None
+                'transaction_count_1month': 0
             }
 
     @staticmethod

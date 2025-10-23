@@ -106,7 +106,7 @@
 
     <!-- 新增/编辑网点弹窗 -->
     <div class="modal fade" id="branchModal" tabindex="-1">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ editingBranch ? $t('system_maintenance.branch_management.edit_branch') : $t('system_maintenance.branch_management.add_branch') }}</h5>
@@ -114,100 +114,170 @@
           </div>
           <div class="modal-body">
             <form @submit.prevent="saveBranch">
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.branch_code') }} <span class="text-danger">*</span></label>
-                <div class="input-group">
+              <div class="row g-3">
+                <div class="col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.branch_code') }} <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      v-model="branchForm.branch_code" 
+                      :disabled="editingBranch"
+                      required
+                    />
+                    <button 
+                      v-if="!editingBranch" 
+                      class="btn btn-outline-secondary" 
+                      type="button"
+                      @click="showBranchCodeHelp"
+                    >
+                      <font-awesome-icon :icon="['fas', 'question-circle']" />
+                    </button>
+                  </div>
+                  <small class="text-muted d-block" v-if="!editingBranch">
+                    {{ $t('system_maintenance.branch_code_help.code_format') }}
+                  </small>
+                </div>
+                <div class="col-lg-8">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.branch_name') }} <span class="text-danger">*</span></label>
                   <input 
                     type="text" 
                     class="form-control" 
-                    v-model="branchForm.branch_code" 
-                    :disabled="editingBranch"
+                    v-model="branchForm.branch_name" 
                     required
                   />
-                  <button 
-                    v-if="!editingBranch" 
-                    class="btn btn-outline-secondary" 
-                    type="button"
-                    @click="showBranchCodeHelp"
-                  >
-                    <font-awesome-icon :icon="['fas', 'question-circle']" />
-                  </button>
                 </div>
-                <small class="text-muted" v-if="!editingBranch">
-                  {{ $t('system_maintenance.branch_code_help.code_format') }}
-                </small>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.branch_name') }} <span class="text-danger">*</span></label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="branchForm.branch_name" 
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.address') }}</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="branchForm.address"
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.manager_name') }}</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  v-model="branchForm.manager_name"
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.phone_number') }}</label>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  v-model="branchForm.phone_number"
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.base_currency') }} <span class="text-danger">*</span></label>
-                <select class="form-select currency-select" v-model="branchForm.base_currency_id" required>
-                  <option value="">{{ $t('system_maintenance.form.select_currency') }}</option>
-                  <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
-                    {{ currency.currency_code }} - {{ currency.currency_name }}
-                  </option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.company_full_name') }}</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="branchForm.company_full_name"
-                  :placeholder="$t('system_maintenance.branch_management.company_full_name_placeholder')"
-                />
-                <small class="text-muted">{{ $t('system_maintenance.branch_management.company_full_name_help') }}</small>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">{{ $t('system_maintenance.branch_management.tax_registration_number') }}</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="branchForm.tax_registration_number"
-                  :placeholder="$t('system_maintenance.branch_management.tax_registration_number_placeholder')"
-                />
-                <small class="text-muted">{{ $t('system_maintenance.branch_management.tax_registration_number_help') }}</small>
-              </div>
-              <div class="mb-3" v-if="editingBranch">
-                <div class="form-check">
+                <div class="col-12">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.address') }}</label>
                   <input 
-                    type="checkbox" 
-                    class="form-check-input" 
-                    id="is_active" 
-                    v-model="branchForm.is_active"
+                    type="text" 
+                    class="form-control" 
+                    v-model="branchForm.address"
                   />
-                  <label class="form-check-label" for="is_active">{{ $t('system_maintenance.form.enable_status') }}</label>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.manager_name') }}</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    v-model="branchForm.manager_name"
+                  />
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.phone_number') }}</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    v-model="branchForm.phone_number"
+                  />
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.base_currency') }} <span class="text-danger">*</span></label>
+                  <select class="form-select currency-select" v-model="branchForm.base_currency_id" required>
+                    <option value="">{{ $t('system_maintenance.form.select_currency') }}</option>
+                    <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
+                      {{ currency.currency_code }} - {{ currency.currency_name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.company_full_name') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.company_full_name"
+                    :placeholder="$t('system_maintenance.branch_management.company_full_name_placeholder')"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.company_full_name_help') }}</small>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.tax_registration_number') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.tax_registration_number"
+                    :placeholder="$t('system_maintenance.branch_management.tax_registration_number_placeholder')"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.tax_registration_number_help') }}</small>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.license_number') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.license_number"
+                    :placeholder="$t('system_maintenance.branch_management.license_number_placeholder')"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.license_number_help') }}</small>
+                </div>
+                <div class="col-md-6 col-lg-6">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.institution_type') }}</label>
+                  <select class="form-select" v-model="branchForm.institution_type">
+                    <option value="money_changer">{{ $t('system_maintenance.branch_management.institution_types.money_changer') }}</option>
+                    <option value="bank">{{ $t('system_maintenance.branch_management.institution_types.bank') }}</option>
+                    <option value="financial_institution">{{ $t('system_maintenance.branch_management.institution_types.financial_institution') }}</option>
+                    <option value="other">{{ $t('system_maintenance.branch_management.institution_types.other') }}</option>
+                  </select>
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.institution_type_help') }}</small>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.amlo_institution_code') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.amlo_institution_code"
+                    maxlength="3"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.amlo_institution_code_help') }}</small>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.amlo_branch_code') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.amlo_branch_code"
+                    maxlength="3"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.amlo_branch_code_help') }}</small>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.bot_sender_code') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.bot_sender_code"
+                    maxlength="20"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.bot_sender_code_help') }}</small>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.bot_branch_area_code') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.bot_branch_area_code"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.bot_branch_area_code_help') }}</small>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label">{{ $t('system_maintenance.branch_management.bot_license_number') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="branchForm.bot_license_number"
+                  />
+                  <small class="text-muted">{{ $t('system_maintenance.branch_management.bot_license_number_help') }}</small>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="is_active" 
+                      v-model="branchForm.is_active"
+                    />
+                    <label class="form-check-label" for="is_active">{{ $t('system_maintenance.form.enable_status') }}</label>
+                  </div>
                 </div>
               </div>
             </form>
@@ -352,6 +422,13 @@ export default {
       base_currency_id: '',
       company_full_name: '',
       tax_registration_number: '',
+      license_number: '',
+      institution_type: 'money_changer',
+      amlo_institution_code: '',
+      amlo_branch_code: '',
+      bot_sender_code: '',
+      bot_branch_area_code: '',
+      bot_license_number: '',
       is_active: true
     });
 
@@ -469,6 +546,15 @@ export default {
         manager_name: '',
         phone_number: '',
         base_currency_id: '',
+        company_full_name: '',
+        tax_registration_number: '',
+        license_number: '',
+        institution_type: 'money_changer',
+        amlo_institution_code: '',
+        amlo_branch_code: '',
+        bot_sender_code: '',
+        bot_branch_area_code: '',
+        bot_license_number: '',
         is_active: true
       };
       if (!branchModal.value) {
@@ -493,6 +579,15 @@ export default {
         manager_name: branch.manager_name || '',
         phone_number: branch.phone_number || '',
         base_currency_id: branch.base_currency_id,
+        company_full_name: branch.company_full_name || '',
+        tax_registration_number: branch.tax_registration_number || '',
+        license_number: branch.license_number || '',
+        institution_type: branch.institution_type || 'money_changer',
+        amlo_institution_code: branch.amlo_institution_code || '',
+        amlo_branch_code: branch.amlo_branch_code || '',
+        bot_sender_code: branch.bot_sender_code || '',
+        bot_branch_area_code: branch.bot_branch_area_code || '',
+        bot_license_number: branch.bot_license_number || '',
         is_active: branch.is_active
       };
       if (!branchModal.value) {

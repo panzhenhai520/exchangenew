@@ -85,15 +85,38 @@ def get_currencies_with_denominations(current_user):
                         })
 
                 if denomination_rates:
-                    # 检查该币种今日是否已发布
+                    # 检查该币种今日是否已发布且汇率未过期
+                    # 导入发布记录相关模型
                     from models.exchange_models import RatePublishRecord, DenominationPublishDetail
 
-                    today_published = session.query(RatePublishRecord).join(
+                    # 检查是否有今日发布记录
+                    publish_record = session.query(RatePublishRecord).join(
                         DenominationPublishDetail
                     ).filter(
-                        func.date(RatePublishRecord.created_at) == today,
+                        RatePublishRecord.publish_date == today,
                         DenominationPublishDetail.currency_id == currency.id
-                    ).first() is not None
+                    ).first()
+                    
+                    # 如果有发布记录，还需要检查汇率是否过期
+                    today_published = False
+                    if publish_record:
+                        # 检查所有面值汇率是否都未过期
+                        current_time = datetime.now()
+                        
+                        # 获取该币种的所有面值汇率
+                        # DenominationRate已经在顶部导入
+                        active_rates = session.query(DenominationRate).filter(
+                            DenominationRate.currency_id == currency.id,
+                            DenominationRate.is_active == True
+                        ).all()
+                        
+                        # 如果所有汇率都未过期，才认为已发布
+                        if active_rates:
+                            all_not_expired = all(
+                                rate.expires_at is None or rate.expires_at > current_time
+                                for rate in active_rates
+                            )
+                            today_published = all_not_expired
 
                     # 计算最后更新时间
                     last_updated = max(
@@ -123,7 +146,7 @@ def get_currencies_with_denominations(current_user):
 
         return jsonify({
             'success': True,
-            'data': result
+            'currencies': result  # 修改为 'currencies' 以匹配前端期望
         })
         
     except Exception as e:

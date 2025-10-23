@@ -14,7 +14,7 @@ export const useUserStore = defineStore('user', {
     async login(credentials) {
       this.loading = true;
       try {
-        const response = await api.post('/api/auth/login', credentials);
+        const response = await api.post('auth/login', credentials);
         
         if (response.data.success) {
           const { token, user, permissions } = response.data;
@@ -50,7 +50,7 @@ export const useUserStore = defineStore('user', {
     async logout() {
       try {
         // 调用后端API记录退出日志
-        await api.post('/api/auth/logout');
+        await api.post('auth/logout');
       } catch (error) {
         console.error('退出登录API调用失败:', error);
         // 即使API调用失败，也继续清除本地数据

@@ -1,0 +1,4 @@
+请在浏览器控制台运行以下命令检查权限：
+console.log('用户信息:', JSON.parse(localStorage.getItem('user')));
+console.log('用户权限:', JSON.parse(localStorage.getItem('userPermissions')));
+

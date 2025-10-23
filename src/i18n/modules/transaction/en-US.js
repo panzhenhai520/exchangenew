@@ -8,6 +8,8 @@ export default {
     "amount": "Transaction Amount",
     "exchange_amount": "Exchange Amount",
     "exchange_rate": "Exchange Rate",
-    "print_receipt": "Print Receipt"
+    "print_receipt": "Print Receipt",
+    "buy": "Buy",
+    "sell": "Sell"
   }
 }

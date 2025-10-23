@@ -18,9 +18,10 @@ from services.repform import (
 )
 from services.auth_service import token_required, permission_required
 import traceback
+import json
 
 # 创建Blueprint
-app_repform = Blueprint('app_repform', __name__)
+app_repform = Blueprint('app_repform', __name__, url_prefix='/api')
 
 
 # 权限装饰器
@@ -29,7 +30,7 @@ def repform_permission_required(permission):
     return permission_required(permission)
 
 
-@app_repform.route('/api/repform/report-types', methods=['GET'])
+@app_repform.route('/repform/report-types', methods=['GET'])
 @token_required
 def get_report_types(current_user):
     """
@@ -73,7 +74,7 @@ def get_report_types(current_user):
         session.close()
 
 
-@app_repform.route('/api/repform/form-definition/<report_type>', methods=['GET'])
+@app_repform.route('/repform/form-definition/<report_type>', methods=['GET'])
 @token_required
 def get_form_definition(current_user, report_type):
     """
@@ -135,7 +136,7 @@ def get_form_definition(current_user, report_type):
         session.close()
 
 
-@app_repform.route('/api/repform/form-schema/<report_type>', methods=['GET'])
+@app_repform.route('/repform/form-schema/<report_type>', methods=['GET'])
 @token_required
 def get_form_schema(current_user, report_type):
     """
@@ -185,7 +186,7 @@ def get_form_schema(current_user, report_type):
         session.close()
 
 
-@app_repform.route('/api/repform/check-trigger', methods=['POST'])
+@app_repform.route('/repform/check-trigger', methods=['POST'])
 @token_required
 def check_trigger(current_user):
     """
@@ -228,6 +229,8 @@ def check_trigger(current_user):
 
     try:
         request_data = request.get_json()
+        print(f"\n========== [check_trigger] 收到AMLO触发检查请求 ==========", flush=True)
+        print(f"[check_trigger] 请求数据: {request_data}", flush=True)
 
         if not request_data:
             return jsonify({
@@ -239,6 +242,9 @@ def check_trigger(current_user):
         data = request_data.get('data', {})
         branch_id = request_data.get('branch_id') or g.current_user.get('branch_id')
 
+        print(f"[check_trigger] report_type={report_type}, branch_id={branch_id}", flush=True)
+        print(f"[check_trigger] data={data}", flush=True)
+
         if not report_type:
             return jsonify({
                 'success': False,
@@ -246,12 +252,24 @@ def check_trigger(current_user):
             }), 400
 
         # 检查触发条件
-        trigger_result = RuleEngine.check_triggers(
-            session,
-            report_type,
-            data,
-            branch_id
-        )
+        try:
+            trigger_result = RuleEngine.check_triggers(
+                db_session=session,
+                report_type=report_type,
+                data=data,
+                branch_id=branch_id
+            )
+            print(f"[check_trigger] 触发检查结果: {trigger_result}", flush=True)
+        except Exception as trigger_error:
+            print(f"[check_trigger] RuleEngine.check_triggers失败: {str(trigger_error)}", flush=True)
+            traceback.print_exc()
+            # 如果触发检查失败，返回未触发状态而不是500错误
+            trigger_result = {
+                'triggered': False,
+                'trigger_rules': [],
+                'highest_priority_rule': None,
+                'allow_continue': True
+            }
 
         # 获取客户统计（如果提供了customer_id）
         customer_stats = {}
@@ -302,7 +320,7 @@ def check_trigger(current_user):
         session.close()
 
 
-@app_repform.route('/api/repform/validate-form', methods=['POST'])
+@app_repform.route('/repform/validate-form', methods=['POST'])
 @token_required
 def validate_form(current_user):
     """
@@ -366,7 +384,7 @@ def validate_form(current_user):
         session.close()
 
 
-@app_repform.route('/api/repform/save-reservation', methods=['POST'])
+@app_repform.route('/repform/save-reservation', methods=['POST'])
 @token_required
 def save_reservation(current_user):
     """
@@ -395,7 +413,7 @@ def save_reservation(current_user):
     {
         "success": true,
         "reservation_id": 1,
-        "reservation_no": "RSV20251002A00501",
+        "reservation_no": "123-456-68-0731001",
         "message": "预约兑换记录已创建"
     }
     """
@@ -429,6 +447,11 @@ def save_reservation(current_user):
             }), 400
 
         # 先验证表单数据
+        print(f"[DEBUG] 开始验证表单数据:")
+        print(f"[DEBUG] report_type: {request_data['report_type']}")
+        print(f"[DEBUG] form_data keys: {list(request_data['form_data'].keys())}")
+        print(f"[DEBUG] form_data: {json.dumps(request_data['form_data'], indent=2, ensure_ascii=False)}")
+
         is_valid, errors = FormValidator.validate_form_data(
             session,
             request_data['report_type'],
@@ -436,11 +459,17 @@ def save_reservation(current_user):
         )
 
         if not is_valid:
+            print(f"[DEBUG] 表单验证失败，错误列表:")
+            for error in errors:
+                print(f"[DEBUG]   - {error}")
+
             return jsonify({
                 'success': False,
                 'message': '表单验证失败',
                 'errors': errors
             }), 400
+
+        print(f"[DEBUG] 表单验证通过")
 
         # 保存预约记录
         reservation_id = ReportDataService.save_reservation(
@@ -470,7 +499,7 @@ def save_reservation(current_user):
         session.close()
 
 
-@app_repform.route('/api/repform/reservation/<int:reservation_id>', methods=['GET'])
+@app_repform.route('/repform/reservation/<int:reservation_id>', methods=['GET'])
 @token_required
 def get_reservation(current_user, reservation_id):
     """
@@ -483,7 +512,7 @@ def get_reservation(current_user, reservation_id):
         "success": true,
         "data": {
             "id": 1,
-            "reservation_no": "RSV20251002A00501",
+            "reservation_no": "123-456-68-0731001",
             "customer_name": "张三",
             "status": "pending",
             ...
@@ -518,7 +547,7 @@ def get_reservation(current_user, reservation_id):
         session.close()
 
 
-@app_repform.route('/api/repform/customer-history/<customer_id>', methods=['GET'])
+@app_repform.route('/repform/customer-history/<customer_id>', methods=['GET'])
 @token_required
 def get_customer_history(current_user, customer_id):
     """

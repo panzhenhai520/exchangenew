@@ -1,5 +1,6 @@
 import axios from 'axios';
 import router from '@/router';
+import { API_PREFIX } from '@/config/apiConfig';
 import { translateErrorMessage } from '../../utils/errorTranslator';
 
 // 全局i18n实例（稍后设置）
@@ -10,9 +11,12 @@ export const setGlobalI18n = (i18n) => {
   globalI18n = i18n;
 };
 
+// 调试：打印API_PREFIX的值
+console.log('[axios实例] API_PREFIX值:', API_PREFIX);
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001/api' : '/api'),
+  baseURL: API_PREFIX,
   timeout: 60000,  // 增加超时时间到60秒
   headers: {
     'Content-Type': 'application/json'
@@ -26,6 +30,8 @@ const api = axios.create({
     return data;
   }]
 });
+
+console.log('[axios实例] baseURL已设置为:', api.defaults.baseURL);
 
 // 生成或获取日结会话ID
 const getEODSessionId = () => {
@@ -122,12 +128,19 @@ api.interceptors.request.use(
     }
 
     // 添加当前语言到请求头
-    if (globalI18n && globalI18n.global && globalI18n.global.locale) {
-      config.headers['X-Language'] = globalI18n.global.locale.value;
-    } else if (globalI18n && globalI18n.locale) {
-      config.headers['X-Language'] = globalI18n.locale;
+    if (globalI18n && globalI18n.locale) {
+      // globalI18n 是 i18n.global，它的 locale 是一个 ref
+      const localeValue = globalI18n.locale.value || globalI18n.locale;
+      config.headers['X-Language'] = localeValue;
     }
-    
+
+    // 调试：打印完整的请求URL
+    if (config.url && config.url.includes('amlo')) {
+      console.log('[API调试] baseURL:', config.baseURL);
+      console.log('[API调试] url:', config.url);
+      console.log('[API调试] 完整URL:', config.baseURL + config.url);
+    }
+
     return config;
   },
   (error) => {

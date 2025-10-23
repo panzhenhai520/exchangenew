@@ -513,7 +513,7 @@ const routes = [
         path: 'standards-management',
         name: 'standards-management',
         component: () => import('../views/StandardsManagementView.vue'),
-        meta: { 
+        meta: {
           requiresAuth: true,
           permission: 'branch_manage',
           title: '规范管理'
@@ -542,7 +542,7 @@ const routes = [
       {
         path: 'amlo/reservations',
         name: 'AMLOReservations',
-        component: () => import('../views/amlo/ReservationAuditView.vue'),
+        component: () => import('../views/amlo/ReservationListSimple.vue'),  // 使用Bootstrap简化版
         meta: {
           requiresAuth: true,
           permission: 'amlo_reservation_view',
@@ -552,7 +552,7 @@ const routes = [
       {
         path: 'amlo/reports',
         name: 'AMLOReports',
-        component: () => import('../views/amlo/ReportListView.vue'),
+        component: () => import('../views/amlo/ReportListSimple.vue'),  // 使用Bootstrap简化版
         meta: {
           requiresAuth: true,
           permission: 'amlo_report_view',
@@ -562,11 +562,21 @@ const routes = [
       {
         path: 'bot/reports',
         name: 'BOTReports',
-        component: () => import('../views/bot/BOTReportView.vue'),
+        component: () => import('../views/bot/BOTReportSimple.vue'),  // 使用Bootstrap简化版
         meta: {
           requiresAuth: true,
           permission: 'bot_report_view',
           title: 'BOT报表查询'
+        }
+      },
+      {
+        path: 'bot/t1-submit',
+        name: 'BOTT1Submit',
+        component: () => import('../views/bot/T1SubmitView.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'bot_report_export',
+          title: 'BOT T+1上报'
         }
       },
       {
@@ -681,10 +691,21 @@ router.beforeEach((to, from, next) => {
     console.log(`🔍 检查权限: ${to.meta.permission}`)
     const hasPerm = hasPermission(to.meta.permission)
     console.log(`📊 权限检查结果: ${hasPerm}`)
-    
+
     if (!hasPerm) {
+      console.warn(`❌ 权限不足: 缺少 ${to.meta.permission} 权限`)
+
+      // 避免重定向循环：如果目标就是dashboard，则不再重定向
+      if (to.path === '/dashboard') {
+        console.log('✅ 目标是dashboard，允许访问')
+        next()
+        return
+      }
+
       // 权限不足，根据用户角色重定向
       const user = JSON.parse(localStorage.getItem('user') || '{}')
+      console.warn(`⚠️ 权限不足，重定向用户 (角色: ${user.role_name})`)
+
       if (user.role_name === 'App' || user.role_name === 'APP') {
         next('/app')
       } else {

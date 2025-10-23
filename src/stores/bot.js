@@ -4,9 +4,8 @@
  */
 
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://127.0.0.1:5001'
+import api from '@/services/api'  // 使用配置好baseURL的axios实例
+// import { API_PREFIX } from '@/config/apiConfig' // 不再需要，axios已配置baseURL
 
 export const useBOTStore = defineStore('bot', {
   state: () => ({
@@ -62,7 +61,7 @@ export const useBOTStore = defineStore('bot', {
       try {
         const queryDate = date || this.queryDate || this.getYesterdayDate()
 
-        const response = await axios.get(`${API_BASE_URL}/api/bot/t1-buy-fx`, {
+        const response = await api.get('bot/t1-buy-fx', {
           params: { date: queryDate },
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -92,7 +91,7 @@ export const useBOTStore = defineStore('bot', {
       try {
         const queryDate = date || this.queryDate || this.getYesterdayDate()
 
-        const response = await axios.get(`${API_BASE_URL}/api/bot/t1-sell-fx`, {
+        const response = await api.get('bot/t1-sell-fx', {
           params: { date: queryDate },
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -120,7 +119,7 @@ export const useBOTStore = defineStore('bot', {
       try {
         const queryDate = date || this.queryDate || this.getYesterdayDate()
 
-        const response = await axios.get(`${API_BASE_URL}/api/bot/export-buy-fx`, {
+        const response = await api.get('bot/export-buy-fx', {
           params: { date: queryDate },
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -152,7 +151,7 @@ export const useBOTStore = defineStore('bot', {
       try {
         const queryDate = date || this.queryDate || this.getYesterdayDate()
 
-        const response = await axios.get(`${API_BASE_URL}/api/bot/export-sell-fx`, {
+        const response = await api.get('bot/export-sell-fx', {
           params: { date: queryDate },
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -182,8 +181,8 @@ export const useBOTStore = defineStore('bot', {
      */
     async saveBuyFX(transactionId, reportDate, jsonData) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/bot/save-buy-fx`,
+        const response = await api.post(
+          'bot/save-buy-fx',
           {
             transaction_id: transactionId,
             report_date: reportDate,
@@ -208,8 +207,8 @@ export const useBOTStore = defineStore('bot', {
      */
     async saveSellFX(transactionId, reportDate, jsonData) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/bot/save-sell-fx`,
+        const response = await api.post(
+          'bot/save-sell-fx',
           {
             transaction_id: transactionId,
             report_date: reportDate,

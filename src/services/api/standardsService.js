@@ -4,11 +4,9 @@
  */
 
 import axios from 'axios';
+import { API_PREFIX } from '@/config/apiConfig';
 
-// API基础URL
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api/standards' 
-  : 'http://192.168.0.18:5001/api/standards';
+const API_BASE_URL = `${API_PREFIX}/standards`;
 
 // 创建axios实例
 const apiClient = axios.create({
@@ -148,8 +146,16 @@ const standardsService = {
    * 这样规范管理可以提前设置所有币种的规范，不依赖汇率发布状态
    */
   getAvailableCurrencies() {
-    // 使用currency_templates端点获取完整的币种信息，包括custom_flag_filename
-    return apiClient.get('/rates/currency_templates');
+    // 直接调用rates API获取币种模板
+    return axios.get(`${API_PREFIX}/rates/currency_templates`, {
+      headers: {
+        'Authorization': localStorage.getItem('token') ? 
+          (localStorage.getItem('token').startsWith('Bearer ') ? 
+            localStorage.getItem('token') : 
+            `Bearer ${localStorage.getItem('token')}`) : '',
+        'Content-Type': 'application/json'
+      }
+    });
   }
 };
 

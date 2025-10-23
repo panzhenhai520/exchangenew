@@ -8,6 +8,8 @@ export default {
     "amount": "จำนวนเงินธุรกรรม",
     "exchange_amount": "จำนวนเงินแลกเปลี่ยน",
     "exchange_rate": "อัตราแลกเปลี่ยน",
-    "print_receipt": "พิมพ์ใบเสร็จ"
+    "print_receipt": "พิมพ์ใบเสร็จ",
+    "buy": "ซื้อ",
+    "sell": "ขาย"
   }
 }

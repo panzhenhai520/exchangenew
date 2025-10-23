@@ -26,5 +26,6 @@ PDF生成器模块
 """
 
 from .amlo_pdf_generator import AMLOPDFGenerator
+from .amlo_form_filler import AMLOFormFiller, generate_amlo_pdf, adapt_route_data_to_pdf_data
 
-__all__ = ['AMLOPDFGenerator']
+__all__ = ['AMLOPDFGenerator', 'AMLOFormFiller', 'generate_amlo_pdf', 'adapt_route_data_to_pdf_data']

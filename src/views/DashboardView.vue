@@ -457,7 +457,7 @@
                     <h6 class="text-info">{{ $t('dashboard.performance_monitor.debug_info') }}</h6>
                     <small class="text-muted">
                       {{ $t('dashboard.performance_monitor.performance_monitor_enabled') }}: {{ performanceMonitorEnabled }}<br>
-                      {{ $t('dashboard.performance_monitor.browser_environment') }}: {{ typeof window !== 'undefined' }}<br>
+                      {{ $t('dashboard.performance_monitor.browser_environment') }}: {{ isBrowserEnvironment }}<br>
                       {{ $t('dashboard.performance_monitor.current_time') }}: {{ new Date().toLocaleTimeString() }}
                     </small>
                   </div>
@@ -530,6 +530,7 @@ export default {
     // 性能监控控制
     const isDevelopmentMode = ref(process.env.NODE_ENV === 'development');
     const performanceMonitorEnabled = ref(true); // 强制开启，方便调试
+    const isBrowserEnvironment = computed(() => typeof window !== 'undefined');
     console.log('性能监控状态：', performanceMonitorEnabled.value);
     
     // 性能监控数据
@@ -920,7 +921,7 @@ export default {
         
         // 使用统一的API服务，自动处理401错误
         try {
-          const response = await this.$api.get('/transaction-alerts/statistics?days=7');
+          const response = await api.get('transaction-alerts/statistics?days=7');
           
           if (response.data.success) {
             transactionAlerts.value = response.data;
@@ -1321,6 +1322,7 @@ export default {
       // 性能监控控制
       isDevelopmentMode,
       performanceMonitorEnabled,
+      isBrowserEnvironment,
       togglePerformanceMonitor,
       // 性能监控数据和方法
       performanceRefreshing,

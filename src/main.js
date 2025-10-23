@@ -7,8 +7,12 @@ import i18n from './i18n'
 import pageLogMixin from './mixins/pageLogMixin'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import 'ant-design-vue/dist/antd.css'
 import './assets/main.css'
 import * as bootstrap from 'bootstrap'
+
+// Ant Design Vue
+import Antd from 'ant-design-vue'
 
 // 将bootstrap挂载到全局对象上
 window.bootstrap = bootstrap
@@ -129,8 +133,43 @@ app.mixin(pageLogMixin)
 app.use(router)
 app.use(pinia)
 app.use(i18n)
+app.use(Antd)
 
 // 设置全局i18n实例用于API错误翻译
 setGlobalI18n(i18n.global)
 
-app.mount('#app')
+// 抑制 ResizeObserver 错误（这是 Ant Design Vue 的已知问题，不影响功能）
+const resizeObserverLoopErr = (e) => {
+  if (e.message && e.message.includes('ResizeObserver loop')) {
+    e.stopImmediatePropagation()
+    return false
+  }
+}
+window.addEventListener('error', resizeObserverLoopErr)
+
+// 应用启动时验证和恢复用户权限
+async function initializeApp() {
+  const token = localStorage.getItem('token')
+  const user = localStorage.getItem('user')
+  const userPermissions = localStorage.getItem('userPermissions')
+
+  // 如果有token和user但缺少权限，尝试重新获取
+  if (token && user && !userPermissions) {
+    console.log('🔄 检测到缺少权限信息，尝试重新获取...')
+    try {
+      const response = await api.get('auth/validate-token')
+      if (response.data && response.data.permissions) {
+        localStorage.setItem('userPermissions', JSON.stringify(response.data.permissions))
+        console.log('✅ 权限信息已恢复:', response.data.permissions)
+      }
+    } catch (error) {
+      console.warn('⚠️ 重新获取权限失败，清除认证信息:', error)
+      localStorage.clear()
+      sessionStorage.clear()
+    }
+  }
+
+  app.mount('#app')
+}
+
+initializeApp()

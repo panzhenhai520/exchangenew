@@ -604,11 +604,14 @@
                   <div class="card-body">
                     <div class="mb-3">
                       <label for="trend-currency" class="form-label">{{ $t('rates.select_currency') }}</label>
-                      <select id="trend-currency" class="form-select" v-model="selectedCurrency">
-                        <option v-for="rate in validRates" :key="rate.currency_code" :value="rate.currency_id">
-                          {{ rate.currency_code }} - {{ getCurrencyNameTranslated(rate.currency_code, rate.currency_name, rate.custom_flag_filename) }}
-                        </option>
-                      </select>
+                      <CurrencySelect
+                        id="trend-currency"
+                        v-model="selectedCurrencyCode"
+                        :currencies="validRates"
+                        :api-endpoint="'/system/currencies'"
+                        @change="handleTrendCurrencyChange"
+                        class="w-100"
+                      />
                     </div>
                     <AsyncChart
                       ref="rateChart"
@@ -1222,6 +1225,7 @@ import { ref, reactive, onMounted, computed, watch, onBeforeUnmount, nextTick, g
 import rateService from '@/services/api/rateService';
 import { Modal } from 'bootstrap';
 import CurrencyFlag from '@/components/CurrencyFlag.vue'
+import CurrencySelect from '@/components/CurrencySelect.vue'
 import AsyncChart from '@/components/AsyncChart.vue'
 import draggable from 'vuedraggable'
 import DenominationRateManager from '@/components/DenominationRateManager.vue'
@@ -1263,6 +1267,7 @@ export default {
   name: 'RateManagementView',
   components: {
     CurrencyFlag,
+    CurrencySelect,
     AsyncChart,
     draggable,
     DenominationRateManager
@@ -1300,6 +1305,7 @@ export default {
     const dailyRatesPublished = ref(false);
     const editValues = reactive({});
     const selectedCurrency = ref('');
+    const selectedCurrencyCode = ref('');
     const selectedTheme = ref('light');
     const selectedLanguage = ref('zh');
     const publishNotes = ref('');
@@ -2696,6 +2702,22 @@ export default {
       console.error('Rate management chart error:', error);
     };
 
+    // 处理趋势图币种选择变更
+    const handleTrendCurrencyChange = (currencyCode, currency) => {
+      console.log('趋势图币种变更:', currencyCode, currency);
+      selectedCurrencyCode.value = currencyCode;
+      
+      // 找到对应的币种ID
+      const rate = validRates.value.find(r => r.currency_code === currencyCode);
+      if (rate) {
+        selectedCurrency.value = rate.currency_id;
+        console.log('设置selectedCurrency为:', rate.currency_id);
+      } else {
+        selectedCurrency.value = '';
+        console.warn('未找到对应的币种ID:', currencyCode);
+      }
+    };
+
     const onChartRefresh = () => {
       console.log('Rate management chart is refreshing...');
       if (selectedCurrency.value) {
@@ -3185,7 +3207,10 @@ export default {
       visibleCurrencyTemplatePages,
       changeCurrencyTemplatePage,
       copyingAll,
-      copying
+      copying,
+      // 趋势图币种选择
+      selectedCurrencyCode,
+      handleTrendCurrencyChange
     };
   }
 };

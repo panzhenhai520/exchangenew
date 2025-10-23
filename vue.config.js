@@ -1,5 +1,13 @@
 const path = require('path')
 
+const getApiTarget = () => {
+  const raw = (process.env.VUE_APP_API_BASE_URL || '').replace(/\/$/, '')
+  if (raw) {
+    return raw
+  }
+  return process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'http://localhost:5001'
+}
+
 module.exports = {
   publicPath: '/', // 修改：使用绝对路径，确保从根目录加载资源
   outputDir: path.resolve(__dirname, 'src/static/dist_frontend'), // ✅ 添加：设置输出目录
@@ -19,15 +27,34 @@ module.exports = {
     host: '0.0.0.0',  // 允许外部访问
     port: 8080,
     allowedHosts: 'all',  // 允许所有主机访问
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+        runtimeErrors: (error) => {
+          // 忽略 ResizeObserver 错误（这是 Ant Design Vue 的已知问题）
+          const ignoreErrors = [
+            'ResizeObserver loop completed with undelivered notifications',
+            'ResizeObserver loop limit exceeded'
+          ];
+          if (ignoreErrors.some(msg => error.message.includes(msg))) {
+            return false;
+          }
+          return true;
+        }
+      }
+    },
     // 强制显示网络地址的配置
     onListening: function(devServer) {
       if (!devServer) {
         throw new Error('webpack-dev-server is not defined');
       }
       const port = devServer.server.address().port;
+      // 从环境变量读取IP地址
+      const currentIp = process.env.CURRENT_IP || 'localhost';
       console.log(`\n  App running at:`);
       console.log(`  - Local:   http://localhost:${port}/`);
-      console.log(`  - Network: http://192.168.13.56:${port}/`);
+      console.log(`  - Network: http://${currentIp}:${port}/`);
     },
     historyApiFallback: {
       // 配置SPA路由fallback，解决刷新页面404问题
@@ -61,14 +88,14 @@ module.exports = {
     },
     proxy: {
       '/api': {
-        target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001'),
+        target: getApiTarget(),
         changeOrigin: true,
         logLevel: 'warn',
         secure: false,
         timeout: 60000,
         onError: function(err, req, res) {
           console.error('代理错误:', err.message);
-          console.log('代理目标:', process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001'));
+          console.log('代理目标:', getApiTarget());
           // 返回JSON格式的错误响应而不是HTML
           res.writeHead(502, {
             'Content-Type': 'application/json',
@@ -78,7 +105,7 @@ module.exports = {
             success: false,
             message: '服务器连接失败，请检查后端服务是否正常运行',
             error: 'PROXY_ERROR',
-            target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001')
+            target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'http://localhost:5001')
           }));
         },
         onProxyReq: function(proxyReq, req, res) {
@@ -89,7 +116,7 @@ module.exports = {
         }
       },
       '/static': {
-        target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001'),
+        target: getApiTarget(),
         changeOrigin: true,
         logLevel: 'warn',
         secure: false,
@@ -103,7 +130,7 @@ module.exports = {
         }
       },
       '/flags': {
-        target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001'),
+        target: getApiTarget(),
         changeOrigin: true,
         logLevel: 'warn',
         secure: false,
@@ -117,7 +144,7 @@ module.exports = {
         }
       },
       '/help': {
-        target: process.env.VUE_APP_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://192.168.13.56:5001' : 'http://192.168.13.56:5001'),
+        target: getApiTarget(),
         changeOrigin: true,
         logLevel: 'warn',
         secure: false,

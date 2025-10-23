@@ -30,6 +30,16 @@ class Branch(Base):
     company_full_name = Column(String(255))  # 公司全称
     tax_registration_number = Column(String(100))  # 税务登记号
 
+    # 机构类型（用于AMLO报告）
+    institution_type = Column(String(50), default='money_changer')  # 机构类型：money_changer/bank/financial_institution/other
+
+    # AMLO / BOT 监管字段
+    amlo_institution_code = Column(String(10))  # 央行分配的3位机构代码
+    amlo_branch_code = Column(String(10))  # 报告使用的3位网点代码
+    bot_sender_code = Column(String(20))  # BOT数据报送机构代码
+    bot_branch_area_code = Column(String(20))  # BOT要求的营业场所区域代码
+    bot_license_number = Column(String(20))  # BOT专用许可证编号
+
     operators = relationship("Operator", back_populates="branch")
     balances = relationship("CurrencyBalance", back_populates="branch")
     transactions = relationship("ExchangeTransaction", back_populates="branch")
@@ -180,15 +190,19 @@ class ExchangeTransaction(Base):
     __tablename__ = 'exchange_transactions'
 
     id = Column(Integer, primary_key=True)
+    seqno = Column(Integer)  # 交易序列号
     transaction_no = Column(String(20), nullable=False, unique=True)
     branch_id = Column(Integer, ForeignKey('branches.id'), nullable=False)
     currency_id = Column(Integer, ForeignKey('currencies.id'), nullable=False)
     type = Column(String(20), nullable=False)
+    exchange_type = Column(String(50), default='normal')  # 兑换类型: normal, large_amount, asset_mortgage
+    approval_serial = Column(String(30))  # 审批流水号
     amount = Column(Numeric(15, 2), nullable=False)
     rate = Column(Numeric(10, 4), nullable=False)
     local_amount = Column(Numeric(15, 2), nullable=False)
     customer_name = Column(String(100))
     customer_id = Column(String(50))
+    id_expiry_date = Column(Date)  # 证件有效期
     operator_id = Column(Integer, ForeignKey('operators.id'), nullable=False)
     transaction_date = Column(Date, nullable=False)
     transaction_time = Column(String(10), nullable=False)
@@ -197,10 +211,19 @@ class ExchangeTransaction(Base):
     balance_before = Column(Numeric(15, 2))
     balance_after = Column(Numeric(15, 2))
     status = Column(String(20), default='completed')
-    
+
     # 新增字段：用途、备注、票据文件名、打印次数
     purpose = Column(String(100))  # 交易用途
     remarks = Column(Text)  # 备注信息
+    asset_details = Column(Text)  # 资产明细
+    bot_flag = Column(Integer, default=0)  # BOT标记
+    fcd_flag = Column(Integer, default=0)  # FCD标记
+    use_fcd = Column(Boolean, default=False)  # 是否使用FCD账户
+    payment_method = Column(String(50), default='cash')  # 付款方式: cash, bank_transfer, fcd_account, other
+    payment_method_note = Column(String(200))  # 付款方式备注（当选择"其他"时填写）
+    receipt_language = Column(String(5), default='zh')  # 收据打印语言: zh, en, th
+    issuing_country_code = Column(String(2))  # 签发国家代码
+    funding_source = Column(String(50))  # 资金来源
     receipt_filename = Column(String(255))  # 票据文件名
     print_count = Column(Integer, default=0)  # 票据打印次数
 
@@ -212,12 +235,9 @@ class ExchangeTransaction(Base):
     # 增强客户信息字段（用于80mm收据）
     customer_country_code = Column(String(5))  # 客户国家代码
     customer_address = Column(Text)  # 客户地址
-
-    # 付款方式和收据语言字段
-    payment_method = Column(String(50), default='cash')  # 付款方式: cash, bank_transfer, fcd_account, other
-    payment_method_note = Column(String(200))  # 付款方式备注（当选择"其他"时填写）
-    receipt_language = Column(String(5), default='zh')  # 收据打印语言: zh, en, th
-    issuing_country_code = Column(String(2))  # 签发国家代码
+    occupation = Column(String(100))  # 职业
+    workplace = Column(String(200))  # 工作单位
+    work_phone = Column(String(20))  # 工作电话
 
     branch = relationship("Branch", back_populates="transactions")
     currency = relationship("Currency", back_populates="transactions")
@@ -311,48 +331,57 @@ class EODStatus(Base):
     starter = relationship('Operator', foreign_keys=[started_by], backref='started_eods')
     completer = relationship('Operator', foreign_keys=[completed_by], backref='completed_eods')
     print_operator = relationship('Operator', foreign_keys=[print_operator_id], backref='printed_eods')
-    history = relationship('EODHistory', backref='eod_status', uselist=False)
+    # history = relationship('EODHistory', backref='eod_status', uselist=False)  # 已废弃
     print_logs = relationship('EODPrintLog', backref='eod_status')
     balance_verifications = relationship('EODBalanceVerification', backref='eod_status')
 
-class EODHistory(Base):
-    __tablename__ = 'eod_history'
+# ============================================================================
+# 【已废弃】旧EOD表模型 - 2025-10-10 简化后不再使用
+# 说明：
+# - 已迁移到新表：EODBalanceVerification
+# - 期初余额统一从 EODBalanceVerification.actual_balance 获取
+# - 保留定义仅为向后兼容，实际数据已备份到 backup/ 目录
+# - 如需删除，请先确认系统稳定运行1-2个月
+# ============================================================================
 
-    id = Column(Integer, primary_key=True)
-    eod_status_id = Column(Integer, ForeignKey('eod_status.id'), nullable=False)
-    branch_id = Column(Integer, ForeignKey('branches.id'), nullable=False)
-    date = Column(Date, nullable=False)
-    total_transactions = Column(Integer, nullable=False, default=0)
-    total_buy_amount = Column(Numeric(20, 2), nullable=False, default=0)
-    total_sell_amount = Column(Numeric(20, 2), nullable=False, default=0)
-    total_adjust_amount = Column(Numeric(20, 2), nullable=False, default=0)
-    cash_out_amount = Column(Numeric(20, 2), nullable=False, default=0)  # 交款金额
-    cash_out_operator_id = Column(Integer, ForeignKey('operators.id'))  # 交款人
-    cash_receiver_id = Column(Integer, ForeignKey('operators.id'))  # 收款人
-    created_at = Column(DateTime, default=func.now())  # 日结完成时间
-    
-    # Relationships
-    branch = relationship('Branch', backref='eod_histories')
-    cash_out_operator = relationship('Operator', foreign_keys=[cash_out_operator_id], backref='cash_out_eods')
-    cash_receiver = relationship('Operator', foreign_keys=[cash_receiver_id], backref='received_cash_eods')
-    balance_snapshots = relationship('EODBalanceSnapshot', backref='eod_history')
+# class EODHistory(Base):
+#     __tablename__ = 'eod_history'
+#
+#     id = Column(Integer, primary_key=True)
+#     eod_status_id = Column(Integer, ForeignKey('eod_status.id'), nullable=False)
+#     branch_id = Column(Integer, ForeignKey('branches.id'), nullable=False)
+#     date = Column(Date, nullable=False)
+#     total_transactions = Column(Integer, nullable=False, default=0)
+#     total_buy_amount = Column(Numeric(20, 2), nullable=False, default=0)
+#     total_sell_amount = Column(Numeric(20, 2), nullable=False, default=0)
+#     total_adjust_amount = Column(Numeric(20, 2), nullable=False, default=0)
+#     cash_out_amount = Column(Numeric(20, 2), nullable=False, default=0)
+#     cash_out_operator_id = Column(Integer, ForeignKey('operators.id'))
+#     cash_receiver_id = Column(Integer, ForeignKey('operators.id'))
+#     created_at = Column(DateTime, default=func.now())
+#     
+#     # Relationships
+#     branch = relationship('Branch', backref='eod_histories')
+#     cash_out_operator = relationship('Operator', foreign_keys=[cash_out_operator_id], backref='cash_out_eods')
+#     cash_receiver = relationship('Operator', foreign_keys=[cash_receiver_id], backref='received_cash_eods')
+#     balance_snapshots = relationship('EODBalanceSnapshot', backref='eod_history')
 
-class EODBalanceSnapshot(Base):
-    __tablename__ = 'eod_balance_snapshot'
-
-    id = Column(Integer, primary_key=True)
-    eod_history_id = Column(Integer, ForeignKey('eod_history.id'), nullable=False)
-    currency_id = Column(Integer, ForeignKey('currencies.id'), nullable=False)
-    opening_balance = Column(Numeric(20, 2), nullable=False, default=0)  # 期初余额
-    closing_balance = Column(Numeric(20, 2), nullable=False, default=0)  # 期末余额
-    theoretical_balance = Column(Numeric(20, 2), nullable=False, default=0)  # 理论余额
-    actual_balance = Column(Numeric(20, 2), nullable=False, default=0)  # 实际余额
-    difference = Column(Numeric(20, 2), nullable=False, default=0)  # 差额
-    cash_out_amount = Column(Numeric(20, 2), nullable=False, default=0)  # 交款金额
-    remaining_balance = Column(Numeric(20, 2), nullable=False, default=0)  # 剩余余额（下次期初）
-    
-    # Relationships
-    currency = relationship('Currency', backref='balance_snapshots')
+# class EODBalanceSnapshot(Base):
+#     __tablename__ = 'eod_balance_snapshot'
+#
+#     id = Column(Integer, primary_key=True)
+#     eod_history_id = Column(Integer, ForeignKey('eod_history.id'), nullable=False)
+#     currency_id = Column(Integer, ForeignKey('currencies.id'), nullable=False)
+#     opening_balance = Column(Numeric(20, 2), nullable=False, default=0)
+#     closing_balance = Column(Numeric(20, 2), nullable=False, default=0)
+#     theoretical_balance = Column(Numeric(20, 2), nullable=False, default=0)
+#     actual_balance = Column(Numeric(20, 2), nullable=False, default=0)
+#     difference = Column(Numeric(20, 2), nullable=False, default=0)
+#     cash_out_amount = Column(Numeric(20, 2), nullable=False, default=0)
+#     remaining_balance = Column(Numeric(20, 2), nullable=False, default=0)
+#     
+#     # Relationships
+#     currency = relationship('Currency', backref='balance_snapshots')
 
 class EODBalanceVerification(Base):
     __tablename__ = 'eod_balance_verification'
@@ -624,7 +653,9 @@ class DenominationPublishDetail(Base):
     # 外键关系
     publish_record = relationship("RatePublishRecord", backref="denomination_details")
     currency = relationship("Currency", backref="denomination_publish_details")
-    denomination = relationship("models.denomination_models.CurrencyDenomination", backref="publish_details")
+    # Note: CurrencyDenomination is defined in denomination_models.py
+    # This relationship requires both models to be imported together
+    # denomination = relationship("CurrencyDenomination", backref="publish_details", foreign_keys=[denomination_id])
     
     def to_dict(self):
         return {

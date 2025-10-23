@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>汇率展示 - 机顶盒</title>
+    <!-- 环境配置文件 - 优先加载 -->
+    <script src="/static/env-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; font-weight: bold; overflow: hidden; }
@@ -246,15 +248,15 @@ function getServerUrl() {
     // 修复：当直接访问文件时hostname为空的问题
     if (!currentHost || currentHost === '' || currentHost === 'file' || protocol === 'file:') {
         console.log('[服务器地址] 直接访问文件，尝试自动检测IP');
-        // 尝试从常见的开发机器IP中检测
+        // 尝试从常见的开发机器IP中检测 - 使用当前环境IP
         const possibleIPs = [
-            '192.168.13.56',  // 当前机器
-            '192.168.13.56',   // 旧机器
-            '192.168.1.100',  // 常见开发IP
-            '192.168.13.56'       // 本地回环
+            '192.168.0.4',   // 当前环境IP
+            '192.168.0.11',  // 备用IP
+            '192.168.1.100', // 常见开发IP
+            'localhost'       // 本地回环
         ];
 
-        // 使用最新的IP（优先使用192.168.13.56）
+        // 使用当前环境IP
         const detectedIP = possibleIPs[0];
         console.log('[服务器地址] 使用检测到的IP:', detectedIP);
         return `http://${detectedIP}:5001`;
@@ -262,8 +264,8 @@ function getServerUrl() {
 
     // 如果有端口号，使用当前端口，否则使用5001
     const port = currentPort || '5001';
-    const serverUrl = currentHost === 'localhost' || currentHost === '192.168.13.56'
-        ? `http://192.168.13.56:5001`
+    const serverUrl = currentHost === 'localhost' || currentHost === '192.168.0.4'
+        ? `http://192.168.0.4:5001`
         : `http://${currentHost}:${port}`;
     console.log('[服务器地址] 使用: ' + serverUrl);
     return serverUrl;
@@ -534,7 +536,7 @@ async function fetchRatesData() {
             
             // 如果是file://协议访问，给出特殊提示
             if (window.location.protocol === 'file:') {
-                statusMessage += `<br/><br/>⚠️ 检测到通过文件系统访问，建议通过HTTP服务器访问:<br/>http://192.168.13.56:5001/static/Show.html?branch=${CONFIG.branchCode}`;
+                statusMessage += `<br/><br/>⚠️ 检测到通过文件系统访问，建议通过HTTP服务器访问:<br/>http://192.168.0.4:5001/static/Show.html?branch=${CONFIG.branchCode}`;
             }
             
             updateStatus(statusMessage, true);
@@ -1217,7 +1219,7 @@ window.addEventListener("load", function() {
         console.log('[自动跳转] 检测到file://协议访问，准备自动跳转');
         
         // 构建HTTP服务器URL
-        const httpUrl = `http://192.168.13.56:5001/static/Show.html?branch=${CONFIG.branchCode}`;
+        const httpUrl = `http://192.168.0.4:5001/static/Show.html?branch=${CONFIG.branchCode}`;
         
         // 显示跳转提示
         updateStatus(`检测到通过文件系统访问，3秒后自动跳转到HTTP服务器...<br/><br/>如果未自动跳转，请点击：<a href="${httpUrl}" style="color: #fff; text-decoration: underline;">${httpUrl}</a>`, true);

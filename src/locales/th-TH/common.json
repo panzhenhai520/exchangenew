@@ -1,0 +1,21 @@
+{
+  "fields": "ฟิลด์",
+  "loading": "กำลังโหลด",
+  "cancel": "ยกเลิก",
+  "submit": "ส่ง",
+  "reset": "รีเซ็ต",
+  "search": "ค้นหา",
+  "close": "ปิด",
+  "yes": "ใช่",
+  "no": "ไม่",
+  "error": "ข้อผิดพลาด",
+  "success": "สำเร็จ",
+  "warning": "คำเตือน",
+  "info": "ข้อมูล",
+  "pleaseSelect": "กรุณาเลือก",
+  "fieldRequired": "ฟิลด์นี้จำเป็นต้องกรอก",
+  "totalItems": "ทั้งหมด {total} รายการ"
+}
+
+
+

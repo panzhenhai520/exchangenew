@@ -3,15 +3,17 @@ from sqlalchemy import func, desc, and_, or_
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from models.exchange_models import (
-    ExchangeTransaction, Currency, Branch, Operator, CurrencyBalance, EODBalanceSnapshot, EODHistory, EODBalanceVerification, EODStatus
+    ExchangeTransaction, Currency, Branch, Operator, CurrencyBalance, 
+    # EODBalanceSnapshot, EODHistory,  # 已废弃 - 2025-10-10
+    EODBalanceVerification, EODStatus
 )
 from services.db_service import DatabaseService
 from services.auth_service import token_required, has_permission
 from config.features import FeatureFlags
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger instance - DO NOT call basicConfig() here as it will override
+# the logging configuration already set in main.py
 logger = logging.getLogger('app_local_stock_query')
 
 local_stock_bp = Blueprint('local_stock', __name__, url_prefix='/api/reports')

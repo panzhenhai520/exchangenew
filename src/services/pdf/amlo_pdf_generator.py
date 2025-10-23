@@ -19,6 +19,7 @@ from reportlab.lib.colors import black
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 from datetime import datetime
+import re
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -235,27 +236,66 @@ class AMLOPDFGenerator:
             current_y -= row_height
 
     def _draw_report_number_box(self, c: canvas.Canvas, report_number: str = ''):
-        """绘制右上角报告编号框
+        """绘制AMLO报告右上角的编号方框组。"""
+        raw_number = (report_number or '').strip()
+        parts = raw_number.split('-') if '-' in raw_number else []
 
-        Args:
-            c: Canvas对象
-            report_number: 报告编号
-        """
-        box_x = PAGE_WIDTH - MARGIN_RIGHT*mm - 50*mm
-        box_y = PAGE_HEIGHT - MARGIN_TOP*mm - 20*mm
-        box_width = 50*mm
-        box_height = 15*mm
+        if len(parts) >= 4:
+            institution_code, branch_code, year_code = parts[0], parts[1], parts[2]
+            serial_code = '-'.join(parts[3:])
+        else:
+            digits = re.sub(r'[^0-9]', '', raw_number)
+            institution_code = digits[:3]
+            branch_code = digits[3:6]
+            year_code = digits[6:8]
+            serial_code = digits[8:] or raw_number
 
-        # 绘制外框
-        c.rect(box_x, box_y, box_width, box_height)
+        institution_code = institution_code[:3]
+        branch_code = branch_code[:3]
+        year_code = year_code[:2]
 
-        # 绘制标题
-        c.setFont(FONT_NAME_TH, FONT_SIZE_SMALL)
-        c.drawCentredString(box_x + box_width/2, box_y + box_height - 5*mm, 'เลขที่รายงาน')
+        box_size = 6 * mm
+        box_gap = 1 * mm
+        group_gap = 3 * mm
+        serial_width = 38 * mm
 
-        # 绘制编号
+        def group_width(count):
+            return count * box_size + (count - 1) * box_gap
+
+        group1_width = group_width(3)
+        group2_width = group_width(3)
+        group3_width = group_width(2)
+
+        total_width = group1_width + group2_width + group3_width + serial_width + group_gap * 3
+        start_x = PAGE_WIDTH - MARGIN_RIGHT * mm - total_width
+        start_y = PAGE_HEIGHT - MARGIN_TOP * mm - 18 * mm
+
+        cursor_x = start_x
+
+        self._draw_id_boxes(c, cursor_x, start_y, institution_code, 3)
+        group1_center = cursor_x + group1_width / 2
+        cursor_x += group1_width + group_gap
+
+        self._draw_id_boxes(c, cursor_x, start_y, branch_code, 3)
+        group2_center = cursor_x + group2_width / 2
+        cursor_x += group2_width + group_gap
+
+        self._draw_id_boxes(c, cursor_x, start_y, year_code, 2)
+        group3_center = cursor_x + group3_width / 2
+        cursor_x += group3_width + group_gap
+
+        c.rect(cursor_x, start_y, serial_width, box_size)
         c.setFont(FONT_NAME_EN, FONT_SIZE_NORMAL)
-        c.drawCentredString(box_x + box_width/2, box_y + 5*mm, report_number)
+        c.drawCentredString(cursor_x + serial_width / 2, start_y + 1.5 * mm, serial_code)
+        serial_center = cursor_x + serial_width / 2
+
+        label_y = start_y - 3.0 * mm
+        c.setFont(FONT_NAME_TH, FONT_SIZE_SMALL)
+        c.drawCentredString(group1_center, label_y, 'สถาบันการเงิน')
+        c.drawCentredString(group2_center, label_y, 'สาขา')
+        c.drawCentredString(group3_center, label_y, 'ปี พ.ศ.')
+        c.drawCentredString(group3_center, label_y - 3 * mm, '(ใช้ ๒ หลักสุดท้าย)')
+        c.drawCentredString(serial_center, label_y, 'เลขลำดับรายงาน')
 
     def _draw_footer_disclaimer(self, c: canvas.Canvas, page_num: int = 2):
         """绘制第2页的法律声明

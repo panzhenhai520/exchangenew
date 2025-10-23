@@ -43,6 +43,11 @@ nul
 *.tmp
 *.bak
 *.backup
+*.old
+
+# 自动生成的配置文件（由 setup_environment.py 生成）
+environment_config.json
+src/static/env-config.js
 
 # 调试和检查文件
 check_data.py

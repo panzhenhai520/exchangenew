@@ -8,6 +8,12 @@ from services.auth_service import token_required, has_permission
 from services.db_service import DatabaseService
 from services.unified_log_service import UnifiedLogService
 from sqlalchemy.exc import IntegrityError
+import logging
+
+# 设置日志记录器
+logger = logging.getLogger(__name__)
+
+
 
 # 添加data目录到路径
 data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')

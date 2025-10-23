@@ -1,20 +1,19 @@
 {
   "permissions": {
     "allow": [
+      "Bash(done)",
+      "Bash(for f in src/routes/app_amlo.py src/routes/app_balance.py src/routes/app_bot.py src/routes/app_cash_operations.py src/routes/app_currency_management.py)",
+      "Bash(ping:*)",
       "Bash(python:*)",
+      "Bash(node --version:*)",
+      "Bash(cat:*)",
+      "Bash(Get-Date)",
+      "Bash(findstr:*)",
       "Bash(curl:*)",
-      "Bash(dir)",
-      "Bash(tasklist:*)",
-      "Bash(npm run serve:*)",
-      "Bash(copy dual_direction_pdf_generator.py dual_direction_pdf_generator.py.backup)",
-      "Bash(copy exchange_pdf_generator.py exchange_pdf_generator.py.backup)",
-      "Bash(copy:*)",
-      "Bash(dir:*)",
-      "Read(//d/Code/ExchangeNew/Re/**)",
-      "Bash(cp:*)",
-      "Read(//d/Code/ExchangeNew/src/test_output/**)",
-      "Read(//d/Code/ExchangeNew/src/services/pdf/**)",
-      "Read(//d/Code/ExchangeNew/**)"
+      "Bash(if exist node_modules.cache rmdir /s /q node_modules.cache)",
+      "Read(//c/Users/Administrator/Desktop/**)",
+      "Bash(find:*)",
+      "Read(//d/**)"
     ],
     "deny": [],
     "ask": []

@@ -1,10 +1,18 @@
 # 特性开关配置
 # 用于控制新功能的逐步启用
+# 
+# 【2025-10-10 简化更新】
+# - FEATURE_NEW_BUSINESS_TIME_RANGE 已固化为 True（不可配置）
+# - FEATURE_NEW_PERIOD_BALANCE 已固化为 True（不可配置）
 
 class FeatureFlagsMeta(type):
     """元类，用于实现动态特性开关访问"""
     
     def __getattr__(cls, name):
+        # 检查是否是固化的特性
+        if name in ['FEATURE_NEW_BUSINESS_TIME_RANGE', 'FEATURE_NEW_PERIOD_BALANCE']:
+            return True  # 固定返回True
+        
         if name in cls._DEFAULT_FEATURES:
             return cls._get_feature_value(name)
         raise AttributeError(f"'{cls.__name__}' object has no attribute '{name}'")
@@ -12,10 +20,19 @@ class FeatureFlagsMeta(type):
 class FeatureFlags(metaclass=FeatureFlagsMeta):
     """特性开关配置 - 支持动态配置"""
     
-    # 默认配置（作为fallback）
+    # ============================================
+    # 固化的特性（不再可配置，永久启用）
+    # ============================================
+    FEATURE_NEW_BUSINESS_TIME_RANGE = True  # 使用业务时间范围计算（固定启用）
+    FEATURE_NEW_PERIOD_BALANCE = True       # 使用新期初余额方式（固定启用）
+    
+    # ============================================
+    # 可配置的特性开关
+    # ============================================
     _DEFAULT_FEATURES = {
-        'FEATURE_NEW_BUSINESS_TIME_RANGE': True,
-        'FEATURE_NEW_PERIOD_BALANCE': True,
+        # 已移除固化的特性开关（见上方常量）
+        # 'FEATURE_NEW_BUSINESS_TIME_RANGE': True,  # ← 已固化
+        # 'FEATURE_NEW_PERIOD_BALANCE': True,       # ← 已固化
         'ENABLE_ENHANCED_BALANCE_CALCULATION': False,
         'ENABLE_COMPREHENSIVE_STATISTICS': False,
         'ENABLE_BALANCE_CONSISTENCY_CHECK': False,

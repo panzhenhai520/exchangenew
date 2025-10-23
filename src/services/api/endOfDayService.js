@@ -1,5 +1,6 @@
 import api from './index';
 import axios from 'axios'; // Added missing import for axios
+import { API_PREFIX } from '@/config/apiConfig';
 
 /**
  * 日结操作相关API服务
@@ -240,8 +241,7 @@ export default {
       url = `/end_of_day/history/${eodId}/income-pdf/view`
     }
     
-    // 使用完整的URL路径，避免axios的baseURL问题
-    const fullUrl = `http://192.168.0.18:5001/api${url}`
+    const fullUrl = `${API_PREFIX}${url}`
     
     return axios.get(fullUrl, {
       headers: {

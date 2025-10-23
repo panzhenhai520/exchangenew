@@ -53,6 +53,12 @@ export default {
     })
 
     const precision = computed(() => {
+      // For INT type fields, use precision 0 (no decimal places)
+      if (props.field.field_type === 'INT') {
+        return 0
+      }
+
+      // For other numeric types, check validation rules
       if (props.field.validation_rules) {
         try {
           const rules = JSON.parse(props.field.validation_rules)

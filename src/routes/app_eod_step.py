@@ -204,8 +204,12 @@ def _smart_cancel_after_cash_out(session, eod_status, current_user, reason):
         eod_status.completed_at = None
         eod_status.completed_by = None
         
-        # 6. 保持营业锁定（因为还在日结流程中）
-        # 不解除锁定，因为用户可能要继续日结
+        # 6. 【优化】保持营业锁定，但更新会话锁定活动时间（避免被误判为孤立）
+        from models.exchange_models import EODSessionLock
+        session.query(EODSessionLock).filter_by(
+            eod_status_id=eod_status.id,
+            is_active=True
+        ).update({'last_activity': datetime.now()})
         
         return {
             'success': True, 
@@ -331,9 +335,47 @@ def rollback_step(current_user, eod_id, step_number):
                 eod_status.branch_id
             )
             
-            # 直接更新日结状态 - 不做任何复杂的清理
+            current_step = eod_status.step
+            cleaned_items = []
+            
+            # 【优化】清理目标步骤之后生成的数据
+            # 回退到步骤3之前：清理步骤4的验证记录
+            if step_number < 4 and current_step >= 4:
+                from models.exchange_models import EODBalanceVerification
+                deleted_count = session.query(EODBalanceVerification).filter_by(
+                    eod_status_id=eod_id
+                ).delete()
+                
+                if deleted_count > 0:
+                    cleaned_items.append(f'清理{deleted_count}条余额验证记录')
+                    logging.info(f"回退清理: 删除 {deleted_count} 条 EODBalanceVerification 记录")
+            
+            # 回退到步骤5之前：清理收入报表
+            if step_number < 5 and current_step >= 5:
+                from models.report_models import DailyIncomeReport
+                deleted_count = session.query(DailyIncomeReport).filter_by(
+                    eod_id=eod_id
+                ).delete()
+                
+                if deleted_count > 0:
+                    cleaned_items.append(f'清理{deleted_count}个收入报表')
+                    logging.info(f"回退清理: 删除 {deleted_count} 个 DailyIncomeReport")
+            
+            # 回退到步骤6之前：清理PDF文件
+            if step_number < 6 and current_step >= 6:
+                _delete_eod_pdf_files(eod_status, current_user)
+                cleaned_items.append('清理PDF文件')
+            
+            # 更新日结状态
             eod_status.step = step_number
             eod_status.step_status = 'pending'
+            
+            # 【优化】更新会话锁定的活动时间（避免被误判为孤立）
+            from models.exchange_models import EODSessionLock
+            session.query(EODSessionLock).filter_by(
+                eod_status_id=eod_id,
+                is_active=True
+            ).update({'last_activity': datetime.now()})
             
             db_service.commit_session(session)
             
@@ -371,7 +413,9 @@ def rollback_step(current_user, eod_id, step_number):
                     'message': translated_message,
                     'current_step': step_number,
                     'new_step': step_number,
-                    'eod_id': eod_id
+                    'previous_step': current_step,
+                    'eod_id': eod_id,
+                    'cleaned_items': cleaned_items
                 }
             ), 200
             

@@ -17,7 +17,7 @@
 
 <script>
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+// import { useI18n } from 'vue-i18n'
 import TextField from './FieldTypes/TextField.vue'
 import NumberField from './FieldTypes/NumberField.vue'
 import DateField from './FieldTypes/DateField.vue'
@@ -51,11 +51,11 @@ export default {
   },
   emits: ['update:value'],
   setup(props, { emit }) {
-    const { t } = useI18n()
+    // const { t } = useI18n()
 
-    // 字段标签
+    // 字段标签（使用后端返回的label字段，已根据语言选择）
     const fieldLabel = computed(() => {
-      return props.field.field_label || props.field.field_name
+      return props.field.label || props.field.field_label || props.field.field_name
     })
 
     // 是否必填
@@ -78,15 +78,26 @@ export default {
 
     // 字段组件映射
     const fieldComponent = computed(() => {
+      const fieldType = props.field.field_type
+
       const typeMap = {
         'text': 'TextField',
+        'VARCHAR': 'TextField',
         'number': 'NumberField',
+        'INT': 'NumberField',
+        'DECIMAL': 'NumberField',
         'date': 'DateField',
+        'DATE': 'DateField',
+        'DATETIME': 'DateField',
         'select': 'SelectField',
+        'ENUM': 'SelectField',
         'checkbox': 'CheckboxField',
-        'textarea': 'TextareaField'
+        'BOOLEAN': 'CheckboxField',  // BOOLEAN字段渲染为checkbox
+        'textarea': 'TextareaField',
+        'TEXT': 'TextareaField'
       }
-      return typeMap[props.field.field_type] || 'TextField'
+
+      return typeMap[fieldType] || 'TextField'
     })
 
     // 处理值更新

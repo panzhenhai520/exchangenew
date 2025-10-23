@@ -12,8 +12,8 @@ from sqlalchemy import text
 # 设置日志记录器
 logger = logging.getLogger(__name__)
 
-# JWT密钥
-SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'ExchangeOK-JWT-Secret-Key-2025-Fixed')  # 使用固定密钥
+# JWT密钥 - 优先使用JWT_SECRET_KEY，否则使用SECRET_KEY
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or os.environ.get('SECRET_KEY', 'ExchangeOK-JWT-Secret-Key-2025-Fixed')
 
 def generate_token(user_id, expires_in_hours=24):
     """生成JWT令牌"""
@@ -29,62 +29,126 @@ def decode_token(token):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         return payload['sub']
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
+        print(f"[decode_token] ❌ Token已过期: {e}", flush=True)
+        try:
+            logger.error(f"Token已过期: {e}")
+        except:
+            pass
         return None
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        print(f"[decode_token] ❌ Token无效: {e}", flush=True)
+        try:
+            logger.error(f"Token无效: {e}")
+        except:
+            pass
+        print(f"[decode_token] 使用的SECRET_KEY: {SECRET_KEY[:20]}...", flush=True)
+        return None
+    except Exception as e:
+        print(f"[decode_token] ❌ 未知错误: {e}", flush=True)
+        try:
+            logger.error(f"Token解码未知错误: {e}")
+        except:
+            pass
         return None
 
 def token_required(f):
     """JWT令牌验证装饰器"""
     @wraps(f)
     def decorated(*args, **kwargs):
+        # 添加请求日志
+        print(f"\n========== [token_required] 收到请求 ==========", flush=True)
+        print(f"[token_required] 请求路径: {request.path}", flush=True)
+        print(f"[token_required] 请求方法: {request.method}", flush=True)
+        print(f"[token_required] 请求头: Authorization = {request.headers.get('Authorization', '未提供')}", flush=True)
+
         token = None
-        
+
         # 先从Authorization头获取token
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization']
             try:
                 token = auth_header.split(" ")[1]  # Bearer <token>
+                print(f"[token_required] 从Authorization头提取token", flush=True)
             except IndexError:
-                logger.error("Token格式错误")
+                print(f"[token_required] ❌ Token格式错误", flush=True)
+                try:
+                    logger.error("Token格式错误")
+                except:
+                    pass
                 return jsonify({'message': 'Token格式错误'}), 401
-        
+
         # 如果头部没有token，尝试从URL参数获取
         if not token and 'token' in request.args:
             token = request.args.get('token')
-        
+            print(f"[token_required] 从URL参数提取token", flush=True)
+
         if not token:
-            logger.error("缺少访问令牌")
+            print(f"[token_required] ❌ 缺少访问令牌，返回401", flush=True)
+            try:
+                logger.error("缺少访问令牌")
+            except:
+                pass
             return jsonify({'message': '缺少访问令牌'}), 401
         
         try:
+            print(f"[token_required] 开始解码token...", flush=True)
             user_id = decode_token(token)
-            
+
             if user_id is None:
-                logger.error("Token解码失败或已过期")
+                print(f"[token_required] ❌ Token解码失败或已过期", flush=True)
+                try:
+                    logger.error("Token解码失败或已过期")
+                except:
+                    pass
                 return jsonify({'message': '无效或过期的令牌'}), 401
-            
+
+            print(f"[token_required] Token解码成功, user_id={user_id}", flush=True)
+
             # 获取用户信息
-            session = DatabaseService.get_session()
+            print(f"[token_required] 正在获取数据库会话...", flush=True)
             try:
+                session = DatabaseService.get_session()
+                print(f"[token_required] 数据库会话获取成功", flush=True)
+            except Exception as db_err:
+                print(f"[token_required] 数据库会话获取失败: {db_err}", flush=True)
+                import traceback
+                traceback.print_exc()
+                return jsonify({'message': '数据库连接失败'}), 500
+
+            try:
+                print(f"[token_required] 正在查询用户: user_id={user_id}", flush=True)
                 user = session.query(Operator).filter_by(id=user_id).first()
+                print(f"[token_required] 用户查询完成: user={'存在' if user else '不存在'}", flush=True)
+
                 if not user:
-                    logger.error(f"用户不存在: user_id={user_id}")
+                    print(f"[token_required] 用户不存在: user_id={user_id}", flush=True)
+                    try:
+                        logger.error(f"用户不存在: user_id={user_id}")
+                    except:
+                        pass
                     return jsonify({'message': '用户不存在或已禁用'}), 401
-                
+
                 if not user.is_active:
-                    logger.error(f"用户已禁用: user_id={user_id}")
+                    print(f"[token_required] 用户已禁用: user_id={user_id}", flush=True)
+                    try:
+                        logger.error(f"用户已禁用: user_id={user_id}")
+                    except:
+                        pass
                     return jsonify({'message': '用户不存在或已禁用'}), 401
                 
                 # 获取用户角色信息
+                print(f"[token_required] 正在查询角色: role_id={user.role_id}", flush=True)
                 role_query = session.execute(
                     text('SELECT role_name FROM roles WHERE id = :role_id'),
                     {'role_id': user.role_id}
                 ).fetchone()
-                
+
                 role_name = role_query[0] if role_query else ''
-                
+                print(f"[token_required] 角色查询完成: role_name={role_name}", flush=True)
+
                 # 获取用户权限 - 使用直接SQL查询确保与登录一致
+                print(f"[token_required] 正在查询权限...", flush=True)
                 permission_query = session.execute(
                     text('''SELECT p.permission_name 
                        FROM permissions p
@@ -93,9 +157,10 @@ def token_required(f):
                        ORDER BY p.permission_name'''),
                     {'role_id': user.role_id}
                 ).fetchall()
-                
+
                 permission_list = [row[0] for row in permission_query]
-                
+                print(f"[token_required] 权限查询完成: 共{len(permission_list)}个权限", flush=True)
+
                 # 判断是否为管理员或App角色
                 is_admin = role_name in ['系统管理员', 'System Administrator', 'admin', 'administrator']
                 is_app_role = role_name == 'App' or role_name == 'APP'
@@ -115,14 +180,25 @@ def token_required(f):
                 
                 # 将用户信息存储到g对象中
                 g.current_user = current_user
-                
+                print(f"[token_required] 用户信息构建完成，准备调用目标函数", flush=True)
+
             finally:
                 DatabaseService.close_session(session)
-            
-            return f(current_user, *args, **kwargs)
-            
+                print(f"[token_required] 数据库会话已关闭", flush=True)
+
+            print(f"[token_required] 正在调用目标函数: {f.__name__}", flush=True)
+            result = f(current_user, *args, **kwargs)
+            print(f"[token_required] 目标函数调用成功", flush=True)
+            return result
+
         except Exception as e:
-            logger.error(f"Token验证失败: {str(e)}")
+            print(f"[token_required] 异常: {type(e).__name__}: {str(e)}", flush=True)
+            import traceback
+            traceback.print_exc()
+            try:
+                logger.error(f"Token验证失败: {str(e)}")
+            except:
+                print(f"[token_required] ⚠️ logger.error也失败了", flush=True)
             return jsonify({'message': '令牌验证失败'}), 401
     
     return decorated
@@ -220,21 +296,21 @@ def check_eod_session_permission(f):
             # 简化处理，不查询数据库，直接生成会话ID
             session_id = f"eod_{current_user['id']}_{datetime.now().timestamp()}"
             session['eod_session_id'] = session_id
-            print(f"简化处理生成会话ID: {session_id}")
+            logger.info(f"简化处理生成会话ID: {session_id}")
         
         # 方法4: 生成新的会话ID（最后手段）
         if not session_id:
             session_id = f"eod_{current_user['id']}_{datetime.now().timestamp()}"
             session['eod_session_id'] = session_id
-            print(f"生成新的会话ID: {session_id}")
+            logger.info(f"生成新的会话ID: {session_id}")
         
-        print(f"检查日结会话权限 - 用户ID: {current_user['id']}, 分支ID: {current_user['branch_id']}, 会话ID: {session_id}")
+        logger.info(f"检查日结会话权限 - 用户ID: {current_user['id']}, 分支ID: {current_user['branch_id']}, 会话ID: {session_id}")
         
         # 简化权限检查 - 暂时移除严格的会话锁定检查
         # 只检查基本的日结权限，不检查会话锁定
         has_permission = True  # 简化处理，允许所有有日结权限的用户操作
         
-        print(f"简化权限检查 - 用户ID: {current_user['id']}, 分支ID: {current_user['branch_id']}, 会话ID: {session_id}")
+        logger.info(f"简化权限检查 - 用户ID: {current_user['id']}, 分支ID: {current_user['branch_id']}, 会话ID: {session_id}")
         
         if not has_permission:
             return jsonify({

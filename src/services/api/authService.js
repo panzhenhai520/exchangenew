@@ -17,21 +17,22 @@ export default {
       if (loginResponse.data.success) {
         // 保存token
         localStorage.setItem('token', loginResponse.data.token);
-        
-        // 获取用户信息
-        const userResponse = await api.get('/auth/user');
-        if (userResponse.data.success) {
-          // 获取网点本币信息
-          const currencyResponse = await api.get(`/currencies/${userResponse.data.user.branch_currency_id}`);
-          if (currencyResponse.data.success) {
-            const user = {
-              ...userResponse.data.user,
-              branch_currency: currencyResponse.data.currency
-            };
-            localStorage.setItem('user', JSON.stringify(user));
+
+        const loginUser = { ...(loginResponse.data.user || {}) };
+
+        if (!loginUser.branch_currency && loginUser.branch_currency_id) {
+          try {
+            const currencyResponse = await api.get(`/currencies/${loginUser.branch_currency_id}`);
+            if (currencyResponse.data.success) {
+              loginUser.branch_currency = currencyResponse.data.currency;
+            }
+          } catch (currencyError) {
+            console.warn('Failed to hydrate branch currency info:', currencyError);
           }
         }
-        
+
+        localStorage.setItem('user', JSON.stringify(loginUser));
+
         return loginResponse;
       }
       

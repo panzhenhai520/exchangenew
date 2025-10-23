@@ -11,13 +11,13 @@
         <table class="table table-sm table-bordered">
           <thead class="table-light">
             <tr>
-              <th width="12%">{{ $t('exchange.currency') }}</th>
-              <th width="18%">{{ $t('exchange.denomination') }}</th>
-              <th width="12%">{{ $t('exchange.direction') }}</th>
-              <th width="8%">{{ $t('exchange.quantity') }}</th>
+              <th width="11%">{{ $t('exchange.currency') }}</th>
+              <th width="11%">{{ $t('exchange.denomination') }}</th>
+              <th width="11%">{{ $t('exchange.direction') }}</th>
+              <th width="15%">{{ $t('exchange.quantity') }}</th>
               <th width="12%">{{ $t('exchange.exchange_rate') }}</th>
-              <th width="13%">{{ $t('exchange.subtotal') }}</th>
-              <th width="13%">{{ $t('exchange.local_amount') }}</th>
+              <th width="14%">{{ $t('exchange.subtotal') }}</th>
+              <th width="14%">{{ $t('exchange.local_amount') }}</th>
               <th width="12%">{{ $t('exchange.actions') }}</th>
             </tr>
           </thead>

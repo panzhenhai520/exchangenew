@@ -4,9 +4,8 @@
  */
 
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://127.0.0.1:5001'
+import api from '@/services/api'  // 使用配置好baseURL的axios实例
+// import { API_PREFIX } from '@/config/apiConfig' // 不再需要，axios已配置baseURL
 
 export const useAMLOStore = defineStore('amlo', {
   state: () => ({
@@ -74,7 +73,7 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async fetchReportTypes() {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/repform/report-types`, {
+        const response = await api.get('repform/report-types', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -96,8 +95,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async fetchFormDefinition(reportType, language = 'zh') {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/repform/form-definition/${reportType}`,
+        const response = await api.get(
+          `repform/form-definition/${reportType}`,
           {
             params: { language },
             headers: {
@@ -122,8 +121,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async checkTrigger(reportType, data) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/repform/check-trigger`,
+        const response = await api.post(
+          'repform/check-trigger',
           { report_type: reportType, data },
           {
             headers: {
@@ -144,8 +143,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async saveReservation(reservationData) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/repform/save-reservation`,
+        const response = await api.post(
+          'repform/save-reservation',
           reservationData,
           {
             headers: {
@@ -168,7 +167,10 @@ export const useAMLOStore = defineStore('amlo', {
       this.reservationsLoading = true
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/amlo/reservations`, {
+        const apiPath = 'amlo/reservations'; // 移除前导斜杠，axios会自动拼接
+        console.log('[AMLO Store] 开始获取预约列表，参数:', params);
+        console.log('[AMLO Store] API路径:', apiPath);
+        const response = await api.get(apiPath, {
           params: {
             page: this.reservationsPage,
             page_size: this.reservationsPageSize,
@@ -178,6 +180,7 @@ export const useAMLOStore = defineStore('amlo', {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
+        console.log('[AMLO Store] API响应:', response.data);
 
         if (response.data.success) {
           this.reservations = response.data.data.items
@@ -199,8 +202,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async auditReservation(reservationId, action, data = {}) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/amlo/reservations/${reservationId}/audit`,
+        const response = await api.post(
+          `amlo/reservations/${reservationId}/audit`,
           { action, ...data },
           {
             headers: {
@@ -226,8 +229,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async reverseAuditReservation(reservationId, remarks = '') {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/amlo/reservations/${reservationId}/reverse-audit`,
+        const response = await api.post(
+          `amlo/reservations/${reservationId}/reverse-audit`,
           { remarks },
           {
             headers: {
@@ -253,8 +256,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async completeReservation(reservationId, transactionId) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/amlo/reservations/${reservationId}/complete`,
+        const response = await api.post(
+          `amlo/reservations/${reservationId}/complete`,
           { linked_transaction_id: transactionId },
           {
             headers: {
@@ -277,7 +280,7 @@ export const useAMLOStore = defineStore('amlo', {
       this.reportsLoading = true
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/amlo/reports`, {
+        const response = await api.get('amlo/reports', {
           params: {
             page: this.reportsPage,
             page_size: this.reportsPageSize,
@@ -308,8 +311,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async batchReportSubmit(reportIds) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/amlo/reports/batch-report`,
+        const response = await api.post(
+          'amlo/reports/batch-report',
           { report_ids: reportIds },
           {
             headers: {
@@ -335,8 +338,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async generatePDF(reportId) {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/amlo/reports/${reportId}/generate-pdf`,
+        const response = await api.get(
+          `amlo/reports/${reportId}/generate-pdf`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -367,8 +370,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async batchGeneratePDF(reportIds) {
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/api/amlo/reports/batch-generate-pdf`,
+        const response = await api.post(
+          'amlo/reports/batch-generate-pdf',
           { report_ids: reportIds },
           {
             headers: {
@@ -401,8 +404,8 @@ export const useAMLOStore = defineStore('amlo', {
      */
     async fetchCustomerHistory(customerId, days = 30) {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/repform/customer-history/${customerId}`,
+        const response = await api.get(
+          `repform/customer-history/${customerId}`,
           {
             params: { days },
             headers: {

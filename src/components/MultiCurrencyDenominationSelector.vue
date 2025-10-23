@@ -13,23 +13,14 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">{{ $t('exchange.currency') }}</label>
-              <select
-                v-model="selectedCurrency"
+              <CurrencySelect
+                id="multiCurrencySelect"
+                v-model="selectedCurrencyCode"
+                :currencies="availableCurrencies"
+                :api-endpoint="'/system/currencies'"
                 @change="onCurrencyChange"
-                class="form-select"
-                required
-              >
-                <option value="">{{ $t('exchange.select_currency') }}</option>
-                <option
-                  v-for="currency in availableCurrencies"
-                  :key="currency.id"
-                  :value="currency"
-                >
-                  <span class="currency-option">
-                    {{ currency.currency_code }} - {{ currency.currency_name }}
-                  </span>
-                </option>
-              </select>
+                class="w-100"
+              />
             </div>
             <div class="col-md-6">
               <label class="form-label">{{ $t('exchange.direction') }}</label>
@@ -72,7 +63,6 @@
                 v-model.number="quantity"
                 class="form-control"
                 min="1"
-                max="999"
                 required
               />
             </div>
@@ -139,8 +129,13 @@
 </template>
 
 <script>
+import CurrencySelect from '@/components/CurrencySelect.vue'
+
 export default {
   name: 'MultiCurrencyDenominationSelector',
+  components: {
+    CurrencySelect
+  },
   props: {
     baseCurrency: {
       type: String,
@@ -154,6 +149,7 @@ export default {
   emits: ['add-combination'],
   data() {
     return {
+      selectedCurrencyCode: '',
       selectedCurrency: null,
       selectedDirection: '',
       selectedDenomination: null,
@@ -247,7 +243,11 @@ export default {
     }
   },
   methods: {
-    async onCurrencyChange() {
+    async onCurrencyChange(currencyCode, currency) {
+      // 更新选中的币种代码和对象
+      this.selectedCurrencyCode = currencyCode
+      this.selectedCurrency = currency
+      
       if (!this.selectedCurrency) {
         this.availableDenominations = []
         this.currentRates = null
@@ -457,52 +457,21 @@ export default {
             }
           }
         } else {
-          console.warn('[MultiCurrencyDenominationSelector] 面额汇率API失败，尝试标准汇率API...')
-
-          // 如果面额汇率失败，回退到标准汇率
-          const response = await this.$api.get('/rates/current?published_only=false')
-          console.log('[MultiCurrencyDenominationSelector] 标准汇率API响应:', response.data)
-
-          if (response.data.success) {
-            const currencyRate = response.data.rates.find(rate => rate.currency_id === this.selectedCurrency.id)
-            console.log('[MultiCurrencyDenominationSelector] 找到的标准汇率:', currencyRate)
-
-            if (currencyRate && (currencyRate.buy_rate > 0 || currencyRate.sell_rate > 0)) {
-              this.currentRates = {
-                buy_rate: currencyRate.buy_rate,
-                sell_rate: currencyRate.sell_rate
-              }
-              console.log('[MultiCurrencyDenominationSelector] 设置标准汇率成功:', this.currentRates)
-            } else {
-              console.warn('[MultiCurrencyDenominationSelector] 标准汇率也无效，使用测试汇率')
-              throw new Error('No valid rates found')
-            }
-          } else {
-            throw new Error(response.data.message || 'Failed to load exchange rates')
-          }
+          // 没有找到有效的面值汇率，不应该回退到标准汇率
+          console.error('[MultiCurrencyDenominationSelector] 当日未发布面值汇率')
+          throw new Error(this.$t('exchange.no_denomination_rates_published'))
         }
       } catch (error) {
-        console.error('[MultiCurrencyDenominationSelector] 获取汇率失败:', error)
-        console.log('[MultiCurrencyDenominationSelector] 使用临时测试汇率...')
+        console.error('[MultiCurrencyDenominationSelector] 获取面值汇率失败:', error)
 
-        // 临时解决方案：使用测试汇率数据
-        const testRates = {
-          'CNY': { buy_rate: 4.8, sell_rate: 5.2 },    // 人民币对泰铢
-          'USD': { buy_rate: 35.0, sell_rate: 36.0 },  // 美元对泰铢
-          'EUR': { buy_rate: 38.0, sell_rate: 39.0 },  // 欧元对泰铢
-          'JPY': { buy_rate: 0.24, sell_rate: 0.26 },  // 日元对泰铢
-          'SGD': { buy_rate: 25.0, sell_rate: 26.0 }   // 新加坡元对泰铢
-        }
+        // 清空汇率数据
+        this.currentRates = null
+        this.allDenominationRates = []
 
-        const currencyCode = this.selectedCurrency.currency_code
-        if (testRates[currencyCode]) {
-          this.currentRates = testRates[currencyCode]
-          console.log('[MultiCurrencyDenominationSelector] 使用测试汇率:', currencyCode, this.currentRates)
-        } else {
-          // 如果没有预设汇率，使用默认值
-          this.currentRates = { buy_rate: 1.0, sell_rate: 1.0 }
-          console.log('[MultiCurrencyDenominationSelector] 使用默认汇率:', this.currentRates)
-        }
+        // 显示错误提示
+        this.$message?.error?.(
+          error.message || this.$t('exchange.no_denomination_rates_published')
+        )
       }
     },
 
