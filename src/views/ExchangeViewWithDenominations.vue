@@ -710,7 +710,7 @@ export default {
              this.selectedPurpose &&
              this.customerName.trim() &&
              this.customerId.trim();
-    }
+    },
   },
   mounted() {
     this.initializeData();
@@ -990,7 +990,7 @@ export default {
       }
     },
     
-            async executeTransaction() {
+    async executeTransaction() {
       if (!this.canConfirm) return;
       if (this.disableExchange) {
         this.$toast?.warning?.('Reservation is pending review. Please complete the approval before executing the exchange.');
@@ -1055,7 +1055,7 @@ export default {
       } finally {
         this.executing = false;
       }
-    }
+    },
 
     resetForm() {
       this.foreignCurrency = '';
@@ -1166,11 +1166,12 @@ export default {
     },
     
     getLanguageTitle() {
-      return this.currentLanguage === 'zh' ? '切换到英文' : 'Switch to Chinese';
+      const isChinese = this.currentLanguage === 'zh';
+      return isChinese ? '切换到英文' : 'Switch to Chinese';
     },
     
     getLanguageDisplay() {
-      return this.currentLanguage === 'zh' ? 'EN' : '中';
+      return this.currentLanguage === 'zh' ? 'EN' : '中文';
     },
     
     onBalanceUpdated() {

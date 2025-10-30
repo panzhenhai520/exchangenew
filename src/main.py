@@ -37,7 +37,7 @@ VUE_APP_FRONTEND_PORT={frontend_port}
 """
         with open(env_local_path, 'w', encoding='utf-8') as f:
             f.write(env_local_content)
-        print(f"[ENV] ✓ .env.local 已同步")
+        print(f"[ENV] [OK] .env.local 已同步")
 
         # 2. 更新 environment_config.json
         config_path = os.path.join(project_root, 'environment_config.json')
@@ -63,28 +63,36 @@ VUE_APP_FRONTEND_PORT={frontend_port}
         }
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(config_data, f, indent=2, ensure_ascii=False)
-        print(f"[ENV] ✓ environment_config.json 已同步")
+        print(f"[ENV] [OK] environment_config.json 已同步")
 
         # 3. 更新 src/static/env-config.js
+        default_branch = os.getenv('DEFAULT_BRANCH', 'A005')
         env_config_js = f"""// Auto-generated runtime config - {dt_datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 window.ENV_CONFIG = {{
   API_BASE_URL: '{backend_url}',
   CURRENT_IP: '{current_ip}',
   BACKEND_PORT: {backend_port},
-  FRONTEND_PORT: {frontend_port}
+  FRONTEND_PORT: {frontend_port},
+  BACKEND_URL: '{backend_url}',
+  FRONTEND_URL: '{frontend_url}',
+  DEFAULT_BRANCH: '{default_branch}'
 }};
+
+console.log('[ENV_CONFIG] Runtime configuration loaded successfully');
+console.log('[ENV_CONFIG] API_BASE_URL:', window.ENV_CONFIG.API_BASE_URL);
+console.log('[ENV_CONFIG] CURRENT_IP:', window.ENV_CONFIG.CURRENT_IP);
 """
         static_dir = os.path.join(project_root, 'src', 'static')
         os.makedirs(static_dir, exist_ok=True)
         env_config_path = os.path.join(static_dir, 'env-config.js')
         with open(env_config_path, 'w', encoding='utf-8') as f:
             f.write(env_config_js)
-        print(f"[ENV] ✓ src/static/env-config.js 已同步")
+        print(f"[ENV] [OK] src/static/env-config.js 已同步")
 
         print(f"[ENV] 所有配置文件已自动同步！")
         return True
     except Exception as e:
-        print(f"[ENV] ⚠️  配置同步失败: {e}")
+        print(f"[ENV] [WARNING] 配置同步失败: {e}")
         return False
 
 # 启动时自动同步环境配置

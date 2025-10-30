@@ -1,4 +1,4 @@
-{
+﻿{
   "fields": "字段",
   "loading": "加载中",
   "cancel": "取消",
@@ -14,8 +14,10 @@
   "info": "信息",
   "pleaseSelect": "请选择",
   "fieldRequired": "此字段为必填项",
-  "totalItems": "共 {total} 项"
+  "totalItems": "共 {total} 条",
+  "view": "查看",
+  "downloadPdf": "下载PDF",
+  "downloadSuccess": "下载成功",
+  "downloadFailed": "下载失败",
+  "action": "操作"
 }
-
-
-

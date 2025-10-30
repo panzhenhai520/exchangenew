@@ -105,6 +105,9 @@ class AMLOFormFiller:
         """从业务数据提取PDF字段值"""
         pdf_values = {}
 
+        # 记录transaction_type以便调试
+        print(f"[_extract_field_values] 输入data中的transaction_type='{data.get('transaction_type')}'")
+
         for pdf_field, source in db_mapping.items():
             try:
                 # 如果source是函数，调用函数
@@ -129,6 +132,10 @@ class AMLOFormFiller:
                         value = default
 
                 pdf_values[pdf_field] = value
+
+                # 记录关键字段的值
+                if 'amount' in pdf_field or 'type' in pdf_field:
+                    print(f"[_extract_field_values] {pdf_field}={value}")
 
             except Exception as e:
                 print(f"[AMLOFormFiller] Error extracting {pdf_field}: {e}")
@@ -298,6 +305,43 @@ def adapt_route_data_to_pdf_data(route_data):
     """
     from datetime import datetime
 
+    form_data = route_data.get('form_data') or {}
+
+    def form_value(key, default=''):
+        value = form_data.get(key)
+        if value in (None, ''):
+            return default
+        return value
+
+    def combine_name(prefix, fallback=''):
+        title = form_value(f'{prefix}_title', '')
+        first = form_value(f'{prefix}_firstname', '')
+        last = form_value(f'{prefix}_lastname', '')
+        company = form_value(f'{prefix}_company_name', '')
+        full = form_value(f'{prefix}_full_name', '')
+        parts = [p for p in [title, first, last] if p]
+        if company:
+            parts.append(company)
+        candidate = full or ' '.join(parts).strip()
+        return candidate or fallback
+
+    def combine_address(prefix):
+        parts = []
+        for suffix in ['number', 'village', 'lane', 'road', 'subdistrict', 'district', 'province', 'postalcode']:
+            val = form_value(f'{prefix}_{suffix}', '')
+            if val:
+                parts.append(str(val))
+        return ' '.join(parts).strip()
+
+    def parse_bool(value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in ('1', 'true', 'yes', 'y', 'on')
+        if isinstance(value, (int, float)):
+            return value != 0
+        return False
+
     # 解析日期字符串
     transaction_date_str = route_data.get('transaction_date', '')
     try:
@@ -310,37 +354,66 @@ def adapt_route_data_to_pdf_data(route_data):
         transaction_date = datetime.now()
 
     # 转换交易类型 (exchange -> buy/sell)
-    transaction_type = 'buy'  # 默认为买入
-    if route_data.get('transaction_type') == 'sell':
-        transaction_type = 'sell'
+    transaction_type = route_data.get('transaction_type') or 'buy'
+    if transaction_type not in ('buy', 'sell'):
+        transaction_type = 'buy'
+
+    beneficiary_name = route_data.get('beneficiary_name') or combine_name('joint_party', '本人')
+    maker_name = route_data.get('maker_name') or combine_name('maker')
+    maker_address = route_data.get('maker_address') or combine_address('maker_address')
+    maker_phone = route_data.get('maker_phone') or form_value('maker_phone', '')
+    maker_occupation = route_data.get('maker_occupation') or form_value('maker_occupation_type', '')
+    if not maker_occupation:
+        maker_occupation = form_value('maker_occupation_business_type', '')
+
+    customer_id = route_data.get('maker_id') or form_value('maker_id_number', '')
+    if not customer_id:
+        customer_id = route_data.get('customer_id', '')
+
+    is_on_behalf = route_data.get('maker_type') == 'agent'
+    joint_party_exists = parse_bool(form_value('joint_party_exists', False))
+    joint_party_has_name = any(form_value(k, '') for k in ['joint_party_firstname', 'joint_party_lastname', 'joint_party_company_name'])
+    if joint_party_exists or joint_party_has_name:
+        is_on_behalf = True
+
+    foreign_amount = route_data.get('foreign_amount')
+    if foreign_amount is None or foreign_amount == '':
+        foreign_amount = route_data.get('amount_thb', 0)
+
+    transaction_purpose = route_data.get('transaction_purpose') or form_value('transaction_purpose', '') or form_value('exchange_other_transaction', '')
+
+    institution_code = route_data.get('institution_code', '001')
+    branch_code = route_data.get('branch_code', '001')
 
     # 构建适配后的数据
     adapted_data = {
         # 客户信息
-        'customer_id': route_data.get('maker_id', ''),
-        'customer_name': route_data.get('maker_name', ''),
-        'customer_address': route_data.get('maker_address', ''),
-        'customer_phone': route_data.get('maker_phone', ''),
-        'customer_occupation': route_data.get('maker_occupation', ''),
+        'customer_id': customer_id,
+        'customer_name': maker_name,
+        'customer_address': maker_address or route_data.get('customer_address', ''),
+        'customer_phone': maker_phone,
+        'customer_occupation': maker_occupation,
 
         # 交易信息
         'transaction_date': transaction_date,
         'transaction_type': transaction_type,
-        'foreign_amount': float(route_data.get('amount_thb', 0)),
-        'transaction_purpose': route_data.get('remarks', ''),
-        'beneficiary_name': route_data.get('joint_party_name') or '本人',
+        'foreign_amount': float(foreign_amount or 0),
+        'transaction_purpose': transaction_purpose,
+        'beneficiary_name': beneficiary_name,
 
         # 预约信息
         'reservation_no': route_data.get('report_number', ''),
         'is_original': not route_data.get('is_amendment', False),
-        'is_on_behalf': route_data.get('maker_type') == 'agent',
+        'is_on_behalf': is_on_behalf,
 
         # 分支信息
         'branch': {
-            'institution_code': route_data.get('institution_code', '001'),
-            'branch_code': route_data.get('branch_code', '001')
+            'institution_code': str(institution_code).zfill(3),
+            'branch_code': str(branch_code).zfill(3)
         }
     }
+
+    print(f"[adapt_route_data_to_pdf_data] 输入transaction_type={route_data.get('transaction_type')}, 输出transaction_type={adapted_data['transaction_type']}, foreign_amount={adapted_data['foreign_amount']}")
 
     return adapted_data
 

@@ -580,13 +580,30 @@ export default {
           // 如果验证通过，继续提交预约
           submitting.value = true
 
+          // 🔧 修复: 直接使用exchangeMode作为direction，不要重新计算！
+          // exchangeMode可能是: 'buy', 'sell', 'dual_direction'
+          let direction = props.transactionData.exchangeMode
+
+          // 只有当exchangeMode是旧格式'buy_foreign'/'sell_foreign'时才转换
+          if (direction === 'buy_foreign') {
+            direction = 'sell'  // 网点卖出外币（客户买入）
+          } else if (direction === 'sell_foreign') {
+            direction = 'buy'   // 网点买入外币（客户卖出）
+          }
+          // 否则保持原值: 'buy', 'sell', 'dual_direction'
+
+          console.log('[ReservationModal] 确定direction:', {
+            exchangeMode: props.transactionData.exchangeMode,
+            finalDirection: direction
+          })
+
           const reservationData = {
             report_type: props.reportType,
             customer_id: props.transactionData.customerId,
             customer_name: props.transactionData.customerName,
             customer_country_code: props.transactionData.customerCountryCode,
             currency_id: props.transactionData.currencyId,
-            direction: props.transactionData.exchangeMode === 'buy_foreign' ? 'sell' : 'buy',
+            direction: direction,  // 使用修复后的direction
             amount: Math.abs(parseFloat(props.transactionData.fromAmount)),
             local_amount: Math.abs(parseFloat(props.transactionData.toAmount)),
             rate: props.transactionData.rate,
@@ -625,15 +642,31 @@ export default {
       } else {
         // 如果动态表单没有准备好，直接提交现有数据
         submitting.value = true
-        
+
         try {
+        // 🔧 修复: 使用相同的direction逻辑
+        let direction = props.transactionData.exchangeMode
+
+        // 只有当exchangeMode是旧格式时才转换
+        if (direction === 'buy_foreign') {
+          direction = 'sell'
+        } else if (direction === 'sell_foreign') {
+          direction = 'buy'
+        }
+        // 否则保持原值: 'buy', 'sell', 'dual_direction'
+
+        console.log('[ReservationModal] (简化路径) 确定direction:', {
+          exchangeMode: props.transactionData.exchangeMode,
+          finalDirection: direction
+        })
+
         const reservationData = {
             report_type: props.reportType,
             customer_id: props.transactionData.customerId,
             customer_name: props.transactionData.customerName,
             customer_country_code: props.transactionData.customerCountryCode,
             currency_id: props.transactionData.currencyId,
-            direction: props.transactionData.fromCurrency === 'THB' ? 'sell' : 'buy',
+            direction: direction,  // 使用修复后的direction
             amount: props.transactionData.fromAmount,
             local_amount: props.transactionData.toAmount,
             rate: props.transactionData.rate,

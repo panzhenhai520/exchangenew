@@ -132,9 +132,7 @@ python init_countries_simple.py
 
 ### Environment Configuration
 ```bash
-# Sync all config files from .env settings
-python setup_environment.py
-# Windows alternative:
+# Manual sync (if needed) - note: backend auto-syncs on startup
 setup_environment.bat
 ```
 
@@ -174,7 +172,7 @@ setup_environment.bat
 **Initial Setup Process:**
 1. **Create `.env`**: Copy from existing `.env` or create manually with required variables (see above)
 2. **Edit `.env`**: Configure `CURRENT_IP`, database credentials, ports, etc.
-3. **Sync configuration**: `python setup_environment.py` (syncs `.env` → all config files)
+3. **Sync configuration**: Run `setup_environment.bat` or just start backend (auto-syncs)
 4. **Install dependencies**:
    - Backend: `pip install -r requirements.txt`
    - Frontend: `npm install`
@@ -191,14 +189,14 @@ setup_environment.bat
 - **Auto-sync**: Backend startup automatically detects `.env` changes and updates all config files
 - **Never manually edit** `.env.local`, `environment_config.json`, or `src/static/env-config.js`
 - These files are auto-generated and will be overwritten on next backend restart
-- **Optional**: Run `python setup_environment.py` to sync configs without starting backend
+- **Optional**: Run `setup_environment.bat` to sync configs without starting backend
 
 ## Architecture
 
 ### Backend Structure
 
 **Core Directories:**
-- `src/routes/`: Flask blueprints for API endpoints (42 route files)
+- `src/routes/`: Flask blueprints for API endpoints (43 route files)
   - Main routes: `app_exchange.py`, `app_auth.py`, `app_dashboard.py`
   - Query routes: `app_query_transactions.py`, `app_query_balances.py`, `app_*_query.py`
   - Management routes: `app_user_management.py`, `app_currency_management.py`, `app_standards_management.py`

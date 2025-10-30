@@ -17,6 +17,7 @@
 
 <script>
 import { computed } from 'vue'
+import { resolveFieldLabel } from './fieldHelpers.js'
 // import { useI18n } from 'vue-i18n'
 import TextField from './FieldTypes/TextField.vue'
 import NumberField from './FieldTypes/NumberField.vue'
@@ -54,9 +55,7 @@ export default {
     // const { t } = useI18n()
 
     // 字段标签（使用后端返回的label字段，已根据语言选择）
-    const fieldLabel = computed(() => {
-      return props.field.label || props.field.field_label || props.field.field_name
-    })
+    const fieldLabel = computed(() => resolveFieldLabel(props.field))
 
     // 是否必填
     const isRequired = computed(() => {

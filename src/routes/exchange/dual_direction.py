@@ -64,7 +64,8 @@ def validate_dual_direction_exchange(*args):
 
             transaction_groups = TransactionSplitService.analyze_denomination_combinations(
                 denomination_data,
-                branch.base_currency_id
+                branch.base_currency_id,
+                data.get('exchange_mode')  # 传递交易方向
             )
 
             if not transaction_groups:
@@ -220,7 +221,8 @@ def perform_dual_direction_exchange(*args):
                 base_currency_id=branch.base_currency_id,
                 operator_id=current_user['id'],
                 customer_info=data['customer_info'],
-                purpose_id=data.get('purpose_id')
+                purpose_id=data.get('purpose_id'),
+                exchange_mode=data.get('exchange_mode')  # 传递交易方向
             )
 
             if result['success']:

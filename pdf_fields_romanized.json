@@ -1,0 +1,1658 @@
+{
+  "AMLO-1-01": [
+    {
+      "field": "fill_3",
+      "alt": "เพมเตม ครงท",
+      "roman": "phemtem khrongt",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_1",
+      "alt": "ลงวนท",
+      "roman": "lo-ngwant",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_2",
+      "alt": "รวมเอกสารจานวนทงสน",
+      "roman": "ruam-ekkasanchanuanthongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_1",
+      "alt": "โปรดระบเลขทบตรประจาตวประชาชน",
+      "roman": "protraplektphatprachatataaprachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_4",
+      "alt": "๑.๑ ชอ-นามสกล",
+      "roman": "cocho cho namsakon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_5",
+      "alt": "๑.๒ ทอย",
+      "roman": "cocho thoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "undefined",
+      "alt": "undefined",
+      "roman": "yaithaitaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_7",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_8",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_9",
+      "alt": "๑.๓ อาชพ",
+      "roman": "cocho achop",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_10",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_11",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_12",
+      "alt": "๑.๔ สถานทสะดวกในการตดตอ",
+      "roman": "cocho sathanthasaduaknaikattotto",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_13",
+      "alt": "๑.๕ หลกฐานทใชในการทาธรกรรม",
+      "roman": "cocho lokthanthachaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaich",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_57",
+      "alt": "บตรประจาตวประชาชน",
+      "roman": "botprachataprachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_56",
+      "alt": "ขาราชการ",
+      "roman": "kharatchakan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_55",
+      "alt": "พนกงานรฐวสาหกจ",
+      "roman": "phanoknganonthawasahakot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_14",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_15",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_16",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_17",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_18",
+      "alt": "เมอ",
+      "roman": "moe",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_19",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_54",
+      "alt": "สวนท ๒. ผรวมทาธรกรรม ผมอบหมาย หรอผมอบอานาจ",
+      "roman": "sawant chut phruamthatharakam phamopmai rophamop-anat",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_2",
+      "alt": "ผรวมทาธรกรรม",
+      "roman": "phruamthatharakam",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_20",
+      "alt": "๒.๑ ชอ",
+      "roman": "cocho cho",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_21",
+      "alt": "สถานทตง",
+      "roman": "sathanthot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_22",
+      "alt": "๒.๒ ทอย",
+      "roman": "cocho thoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_23",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_24",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_25",
+      "alt": "๒.๓ อาชพ",
+      "roman": "cocho achop",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_26",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_27",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_28",
+      "alt": "ในกรณเปนนตบคคลใหระบประเภทการประกอบการ",
+      "roman": "naikronpennotkhonrairairairairairairairairairairairairairairairairairairairairairairairairairairaira",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_29",
+      "alt": "๒.๔ สถานทสะดวกในการตดตอ",
+      "roman": "cocho sathanthasaduaknaikattotto",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_30",
+      "alt": "๒.๕ หลกฐานทใชในการทาธรกรรม",
+      "roman": "cocho lokthanthachaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaich",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_60",
+      "alt": "บตรประจาตวประชาชน",
+      "roman": "botprachataprachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_59",
+      "alt": "ขาราชการ",
+      "roman": "kharatchakan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_58",
+      "alt": "พนกงานรฐวสาหกจ",
+      "roman": "phanoknganonthawasahakot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_31",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_32",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_33",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_34",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_35",
+      "alt": "เมอ",
+      "roman": "moe",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_36",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_37",
+      "alt": "วนททาธรกรรม",
+      "roman": "wonthatharakam",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_38",
+      "alt": "เดอน",
+      "roman": "doen",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_39",
+      "alt": "พ.ศ",
+      "roman": "phosa",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_3",
+      "alt": "เขาบญชเลขท",
+      "roman": "khaobonchalekhot",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_5",
+      "alt": "บญชทเกยวของ",
+      "roman": "bonchokhayakkoeokhong",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_48",
+      "alt": "จานวน (บาท)_ฝาก งน  ซอตราสารการเงน  เชค  ดราฟต  อนๆ  ซอเงนตราตางประเทศ (โปรดระบสกลเงน)  อนๆ(ระบ) เขาบญชเลขท บญชทเกยวของ (หากม)",
+      "roman": "chanuan phabat afak ngon a sottrasankanngon a chek a drafot a ano a so-ngentratangprathet phaprotrapsakonngn a anophrabo khaobonchalekhot bonchokhayakkoeokhong phahakmo",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_4",
+      "alt": "จากบญชเลขท",
+      "roman": "chakbonchalekhot",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_6",
+      "alt": "บญชทเกยวของ",
+      "roman": "bonchokhayakkoeokhong",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_40",
+      "alt": "อนๆ",
+      "roman": "ano",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_41",
+      "alt": "อนๆ",
+      "roman": "ano",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_42",
+      "alt": "อนๆ(ระบ",
+      "roman": "anophrap",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_43",
+      "alt": "อนๆ(ระบ",
+      "roman": "anophrap",
+      "type": "/Tx"
+    },
+    {
+      "field": "undefined_2",
+      "alt": "undefined",
+      "roman": "yaithaitaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_49",
+      "alt": "จานวน (บาท)_Row_1",
+      "roman": "chanuan phabat tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha t",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_45",
+      "alt": "รวมเงน",
+      "roman": "ruamngen",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_50",
+      "alt": "จานวน (บาท)_",
+      "roman": "chanuan phabatha a",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_51",
+      "alt": "จานวน (บาท)_Row_2",
+      "roman": "chanuan phabat tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha tha t",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_46",
+      "alt": "๓.๒ ชอผรบประโยชนในการทาธรกรรม (ถาม",
+      "roman": "cocho chophropprayotchannaiathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa phatham",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_47",
+      "alt": "๓.๓ วตถประสงคในการทาธรกรรม",
+      "roman": "cocho wottpharasongkhanaikanthathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_1_2",
+      "alt": "การรายงานทงหมดในชอง  “รวมเอกสารจานวนทงสน",
+      "roman": "kanrai-nganthongmotnaichong a ruam-ekkasanchanuanthongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_52",
+      "alt": "แบบรายงานการทาธรกรรมทใชเงนสด",
+      "roman": "baeprai-ngankanthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatthatt",
+      "type": "/Tx"
+    },
+    {
+      "field": "Check Box2",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box3",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box4",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box5",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box6",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box7",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box8",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box9",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box10",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box11",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box12",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box13",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box14",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box15",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box16",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box17",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box18",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box19",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box20",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box21",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box22",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box23",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box24",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box25",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box26",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box27",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box28",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box29",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box30",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box31",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box32",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box33",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    }
+  ],
+  "AMLO-1-02": [
+    {
+      "field": "fill_1",
+      "alt": "เพมเตม ครงท",
+      "roman": "phemtem khrongt",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_2",
+      "alt": "ลงวนท",
+      "roman": "lo-ngwant",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_3",
+      "alt": "๑.๑ ชอ-นามสกล",
+      "roman": "cocho cho namsakon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_5",
+      "alt": "๑.๓ อาชพ",
+      "roman": "cocho achop",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_6",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_7",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_8",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_9",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_10",
+      "alt": "๑.๔ สถานทสะดวกในการตดตอ [1]",
+      "roman": "cocho sathanthasaduaknaikattotto aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_11",
+      "alt": "๑.๔ สถานทสะดวกในการตดตอ [2]",
+      "roman": "cocho sathanthasaduaknaikattotto rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_68",
+      "alt": "๑.๔ สถานทสะดวกในการตดตอ [3]",
+      "roman": "cocho sathanthasaduaknaikattotto aaho",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_67",
+      "alt": "๑.๔ สถานทสะดวกในการตดตอ [4]",
+      "roman": "cocho sathanthasaduaknaikattotto aipa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_12",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_13",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_14",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_15",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_16",
+      "alt": "เมอ",
+      "roman": "moe",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_17",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_18",
+      "alt": "๒.๑ ชอ",
+      "roman": "cocho cho",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_19",
+      "alt": "สถานทตง",
+      "roman": "sathanthot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_20",
+      "alt": "๒.๒ ทอย",
+      "roman": "cocho thoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_21",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_22",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_23",
+      "alt": "๒.๓ อาชพ",
+      "roman": "cocho achop",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_24",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_25",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_26",
+      "alt": "ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [1]",
+      "roman": "naikranthapenentopkkhon rairappraphetkanprakopkan aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_28",
+      "alt": "ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [2]",
+      "roman": "naikranthapenentopkkhon rairappraphetkanprakopkan rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_71",
+      "alt": "ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [3]",
+      "roman": "naikranthapenentopkkhon rairappraphetkanprakopkan aaho",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_70",
+      "alt": "ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [4]",
+      "roman": "naikranthapenentopkkhon rairappraphetkanprakopkan aipa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_69",
+      "alt": "ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [5]",
+      "roman": "naikranthapenentopkkhon rairappraphetkanprakopkan ray",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_27",
+      "alt": "๒.๔ สถานทสะดวกในการตดตอ",
+      "roman": "cocho sathanthasaduaknaikattotto",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_29",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_30",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_31",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_32",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_33",
+      "alt": "เมอ",
+      "roman": "moe",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_34",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_35",
+      "alt": "วนททาธรกรรม",
+      "roman": "wonthatharakam",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_36",
+      "alt": "เดอน",
+      "roman": "doen",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_37",
+      "alt": "พ.ศ",
+      "roman": "phosa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_38",
+      "alt": "โปรดระบรายละเอยดของทรพยสน",
+      "roman": "protrabraila-aetkhongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_41",
+      "alt": "๓.๓ มลคาทรพยสนททาธรกรรมรวมทงสน",
+      "roman": "cocho monkhathonphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_42",
+      "alt": "หากมลคาทรพยสนเปนเงนตราตางประเทศ โปรดระบจานวนและสกลเงน",
+      "roman": "hakamonkhathonphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa protrapchanuanlaesakonnngngn",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_66",
+      "alt": "(จานวนเงนทเปนตวอกษร)",
+      "roman": "phachanuanngentpentawekson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_43",
+      "alt": "ชอเจาของบญช",
+      "roman": "chochaokhongboncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_45",
+      "alt": "ชอเจาของบญช",
+      "roman": "chochaokhongboncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_44",
+      "alt": "ชอบญช",
+      "roman": "chopncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_46",
+      "alt": "เกยวของโดย",
+      "roman": "koeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeo",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_47",
+      "alt": "๓.๖ ชอผรบประโยชนในการทาธรกรรม (ถาม",
+      "roman": "cocho chophropprayotchannaiathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa phatham",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_48",
+      "alt": "๓.๗ วตถประสงคในการทาธรกรรม",
+      "roman": "cocho wottpharasongkhanaikanthathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_1_2",
+      "alt": "การรายงานทงหมดในชอง “รวมเอกสารจานวนทงสน",
+      "roman": "kanrai-nganthongmotnaichong ruam-ekkasanchanuanthongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_52",
+      "alt": "รายงานฉบบหลก",
+      "roman": "rai-nganchaboplok",
+      "type": "/Tx"
+    },
+    {
+      "field": "Check Box34",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box35",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box36",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box37",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box38",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box39",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box40",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box41",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box42",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box43",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box44",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box45",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box46",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box47",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box48",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box49",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box50",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box51",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box52",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box53",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box54",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box55",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box56",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box57",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box58",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box59",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "comb_1",
+      "alt": "๓.๔ เลขทบญชททาธรกรรม",
+      "roman": "cocho lekthabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanc",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_2",
+      "alt": "๓.๕ บญชทเกยวของ (หากม",
+      "roman": "cocho bonchokhayakkoeokhong phahakom",
+      "type": "/Tx"
+    },
+    {
+      "field": "t1",
+      "alt": "[1]",
+      "roman": "aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "t2",
+      "alt": "[2]",
+      "roman": "rako",
+      "type": "/Tx"
+    }
+  ],
+  "AMLO-1-03": [
+    {
+      "field": "fill_51",
+      "alt": "รายงานฉบบหลก",
+      "roman": "rai-nganchaboplok",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_1",
+      "alt": "รวมเอกสารจานวนทงสน",
+      "roman": "ruam-ekkasanchanuanthongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_1",
+      "alt": "โปรดระบเลขที่บตรประจาตวประชาชน",
+      "roman": "protraplekthibotprachatatatrachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_2",
+      "alt": "๑.๑ ชื่อ-นามสกล",
+      "roman": "cocho chue namsakon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_3",
+      "alt": "ู่",
+      "roman": "<PAD>",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_4",
+      "alt": "๑.๒ ทอย",
+      "roman": "cocho thoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_5",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_6",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_7",
+      "alt": "๑.๓ อาชีพ",
+      "roman": "cocho achip",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_8",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_9",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_10",
+      "alt": "๑.๔ สถานทสะดวกในการตดต่อ",
+      "roman": "cocho sathanthasaduaknaikattotto",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_11",
+      "alt": "๑.๕ หลกฐานทใชในการทาธรกรรม",
+      "roman": "cocho lokthanthachaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaichaich",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_56",
+      "alt": "บตรประจาตวประชาชน",
+      "roman": "botprachataprachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_55",
+      "alt": "ขาราชการ",
+      "roman": "kharatchakan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_54",
+      "alt": "พนกงานรฐวสาหกิจ",
+      "roman": "phanoknganonthawasahakit",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_12",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_13",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_14",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_15",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_16",
+      "alt": "เมื่อ",
+      "roman": "muea",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_17",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_2",
+      "alt": "โปรดระบเลขที่บตรประจาตวประชาชน",
+      "roman": "protraplekthibotprachatatatrachachon",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_18",
+      "alt": "๒.๑ ชื่อ",
+      "roman": "cocho chue",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_19",
+      "alt": "สถานที่ตั้ง",
+      "roman": "sathanthitang",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_20",
+      "alt": "๒.๒ ทอย",
+      "roman": "cocho thoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_21",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_22",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_23",
+      "alt": "๒.๓ อาชีพ",
+      "roman": "cocho achip",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_24",
+      "alt": "สถานททางาน",
+      "roman": "sathantha-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_25",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_26",
+      "alt": "กรณเปนนิติบคคลใหระบุลกษณะการประกอบการ [1]",
+      "roman": "koranapennitipkhonhairairairairairairairairairairairairairairairairairairairairairairairairairairair aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_28",
+      "alt": "กรณเปนนิติบคคลใหระบุลกษณะการประกอบการ [2]",
+      "roman": "koranapennitipkhonhairairairairairairairairairairairairairairairairairairairairairairairairairairair rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_59",
+      "alt": "กรณเปนนิติบคคลใหระบุลกษณะการประกอบการ [3]",
+      "roman": "koranapennitipkhonhairairairairairairairairairairairairairairairairairairairairairairairairairairair aaho",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_58",
+      "alt": "กรณเปนนิติบคคลใหระบุลกษณะการประกอบการ [4]",
+      "roman": "koranapennitipkhonhairairairairairairairairairairairairairairairairairairairairairairairairairairair aipa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_57",
+      "alt": "กรณเปนนิติบคคลใหระบุลกษณะการประกอบการ [5]",
+      "roman": "koranapennitipkhonhairairairairairairairairairairairairairairairairairairairairairairairairairairair ray",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_27",
+      "alt": "๒.๔ สถานทสะดวกในการตดต่อ",
+      "roman": "cocho sathanthasaduaknaikattotto",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_29",
+      "alt": "โทรศพท",
+      "roman": "sorotphot",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_30",
+      "alt": "โทรสาร",
+      "roman": "thorsan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_31",
+      "alt": "เลขท",
+      "roman": "lekha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_32",
+      "alt": "ออกใหโดย",
+      "roman": "okhaidoi",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_33",
+      "alt": "เมื่อ",
+      "roman": "muea",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_34",
+      "alt": "หมดอาย",
+      "roman": "mot-ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_35",
+      "alt": "วนที่ทาธรกรรม",
+      "roman": "wonthithathonakam",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_36",
+      "alt": "เดอน",
+      "roman": "doen",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_37",
+      "alt": "พ.ศ",
+      "roman": "phosa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_38",
+      "alt": "๓.๑ มลคาของธรกรรม",
+      "roman": "cocho monkhakhongthonakam",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_39",
+      "alt": "โปรดระบุจานวนและสกลเงน",
+      "roman": "protrabuchanuanlaesakonnngngn",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_53",
+      "alt": "(จานวนเงนทเปนตวอกษร)",
+      "roman": "phachanuanngentpentawekson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_40",
+      "alt": "ชอบญช",
+      "roman": "chopncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_3",
+      "alt": "ชอเจาของบญช",
+      "roman": "chochaokhongboncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_42",
+      "alt": "ชอบญช",
+      "roman": "chopncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "comb_4",
+      "alt": "ชอเจาของบญช",
+      "roman": "chochaokhongboncha",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_44",
+      "alt": "เกยวของโดย [1]",
+      "roman": "koeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeo aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_45",
+      "alt": "เกยวของโดย [2]",
+      "roman": "koeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeo rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_46",
+      "alt": "๓.๕ ชอผู้รบประโยชนในการทาธรกรรม (ถาม",
+      "roman": "cocho chophuropprayotchonnaiaiathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa phatham",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_47",
+      "alt": "๓.๖ วตถประสงคในการทาธรกรรม",
+      "roman": "cocho wottpharasongkhanaikanthathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_49",
+      "alt": "เลขลาดบรายงาน",
+      "roman": "leklatbrai-ngan",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_50",
+      "alt": "๒",
+      "roman": "a",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_14_2",
+      "alt": "การรายงานทงหมดในชอง “รวมเอกสารจานวนทงสน",
+      "roman": "kanrai-nganthongmotnaichong ruam-ekkasanchanuanthongson",
+      "type": "/Tx"
+    },
+    {
+      "field": "fill_52",
+      "alt": "สถาบนการเงิน",
+      "roman": "sathabonkanngoen",
+      "type": "/Tx"
+    },
+    {
+      "field": "Check Box61",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box62",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box63",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box64",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box65",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box66",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box67",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box68",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box69",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box70",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box71",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box72",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box73",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box74",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box75",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box76",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box77",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "Check Box78",
+      "alt": "",
+      "roman": "",
+      "type": "/Btn"
+    },
+    {
+      "field": "t1",
+      "alt": "[1]",
+      "roman": "aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "t2",
+      "alt": "[2]",
+      "roman": "rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_1",
+      "alt": "[1]",
+      "roman": "aa b",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_2",
+      "alt": "[2]",
+      "roman": "rako",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_3",
+      "alt": "[3]",
+      "roman": "aaho",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_4",
+      "alt": "[4]",
+      "roman": "aipa",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_5",
+      "alt": "[5]",
+      "roman": "ray",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_6",
+      "alt": "[6]",
+      "roman": "oi-i",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_7",
+      "alt": "[7]",
+      "roman": "abo",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_8",
+      "alt": "[8]",
+      "roman": "aapo",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_9",
+      "alt": "[9]",
+      "roman": "ai",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_10",
+      "alt": "[10]",
+      "roman": "aiphopa",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_11",
+      "alt": "[11]",
+      "roman": "ro  a",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_12",
+      "alt": "[12]",
+      "roman": "ro  a",
+      "type": "/Tx"
+    },
+    {
+      "field": "m_13",
+      "alt": "[13]",
+      "roman": "aiphoho",
+      "type": "/Tx"
+    }
+  ]
+}

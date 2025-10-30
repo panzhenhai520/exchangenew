@@ -1,4 +1,4 @@
-{
+﻿{
   "fields": "ฟิลด์",
   "loading": "กำลังโหลด",
   "cancel": "ยกเลิก",
@@ -14,8 +14,10 @@
   "info": "ข้อมูล",
   "pleaseSelect": "กรุณาเลือก",
   "fieldRequired": "ฟิลด์นี้จำเป็นต้องกรอก",
-  "totalItems": "ทั้งหมด {total} รายการ"
+  "totalItems": "ทั้งหมด {total} รายการ",
+  "view": "ดู",
+  "downloadPdf": "ดาวน์โหลด PDF",
+  "downloadSuccess": "ดาวน์โหลดสำเร็จ",
+  "downloadFailed": "ดาวน์โหลดล้มเหลว",
+  "action": "การดำเนินการ"
 }
-
-
-

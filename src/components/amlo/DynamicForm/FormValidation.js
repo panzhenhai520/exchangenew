@@ -1,3 +1,5 @@
+import { readValidationRules, resolveFieldLabel } from './fieldHelpers.js'
+
 /**
  * 表单验证逻辑
  * 支持5种验证类型：type, length, range, pattern, enum
@@ -11,46 +13,50 @@
  */
 export function validateField(value, field) {
   const errors = []
+  const fieldLabel = resolveFieldLabel(field)
+
+  const isEmptyString = typeof value === 'string' && value.trim() === ''
+  const isEmptyArray = Array.isArray(value) && value.length === 0
+  const isEmpty =
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    isEmptyString ||
+    isEmptyArray
 
   // 必填验证
-  if (field.is_required && (value === null || value === undefined || value === '')) {
-    errors.push(`${field.field_label} 是必填项`)
+  if (field.is_required && isEmpty) {
+    errors.push(`${fieldLabel} 是必填项`)
     return errors // 必填验证失败，不再进行其他验证
   }
 
   // 如果字段为空且非必填，跳过其他验证
-  if (value === null || value === undefined || value === '') {
+  if (isEmpty) {
     return errors
   }
 
   // 解析验证规则
-  let rules = {}
-  if (field.validation_rules) {
-    try {
-      rules = JSON.parse(field.validation_rules)
-    } catch (e) {
-      console.error('解析验证规则失败:', e)
-      return errors
-    }
-  }
+  const rules = readValidationRules(field)
 
   // 1. 类型验证
-  const typeError = validateType(value, field.field_type, field.field_label)
+  const typeError = validateType(value, field.field_type, fieldLabel)
   if (typeError) {
     errors.push(typeError)
   }
 
+  const normalizedType = (field.field_type || '').toUpperCase()
+
   // 2. 长度验证
-  if (field.field_type === 'text' || field.field_type === 'textarea') {
-    const lengthError = validateLength(value, rules, field.field_label)
+  if (normalizedType === 'TEXT' || normalizedType === 'VARCHAR' || normalizedType === 'TEXTAREA') {
+    const lengthError = validateLength(value, rules, fieldLabel)
     if (lengthError) {
       errors.push(lengthError)
     }
   }
 
   // 3. 范围验证
-  if (field.field_type === 'number') {
-    const rangeError = validateRange(value, rules, field.field_label)
+  if (['NUMBER', 'DECIMAL', 'INT', 'FLOAT', 'DOUBLE'].includes(normalizedType)) {
+    const rangeError = validateRange(value, rules, fieldLabel)
     if (rangeError) {
       errors.push(rangeError)
     }
@@ -58,7 +64,7 @@ export function validateField(value, field) {
 
   // 4. 正则验证
   if (rules.pattern) {
-    const patternError = validatePattern(value, rules.pattern, field.field_label)
+    const patternError = validatePattern(value, rules.pattern, fieldLabel)
     if (patternError) {
       errors.push(patternError)
     }
@@ -66,9 +72,27 @@ export function validateField(value, field) {
 
   // 5. 枚举验证
   if (rules.enum_values && Array.isArray(rules.enum_values)) {
-    const enumError = validateEnum(value, rules.enum_values, field.field_label)
+    const enumError = validateEnum(value, rules.enum_values, fieldLabel)
     if (enumError) {
       errors.push(enumError)
+    }
+  } else if (Array.isArray(rules.options)) {
+    const values = rules.options
+      .map(option => {
+        if (typeof option === 'string') {
+          return option
+        }
+        if (option && typeof option === 'object') {
+          return option.value
+        }
+        return null
+      })
+      .filter(option => option !== null)
+    if (values.length > 0) {
+      const enumError = validateEnum(value, values, fieldLabel)
+      if (enumError) {
+        errors.push(enumError)
+      }
     }
   }
 
@@ -79,21 +103,33 @@ export function validateField(value, field) {
  * 类型验证
  */
 function validateType(value, fieldType, fieldLabel) {
-  switch (fieldType) {
-    case 'number':
-      if (typeof value !== 'number' || isNaN(value)) {
+  const normalizedType = (fieldType || '').toUpperCase()
+
+  switch (normalizedType) {
+    case 'NUMBER':
+    case 'DECIMAL':
+    case 'FLOAT':
+    case 'DOUBLE':
+    case 'INT':
+      if (typeof value !== 'number' || Number.isNaN(value)) {
         return `${fieldLabel} 必须是数字`
       }
       break
-    case 'checkbox':
+    case 'CHECKBOX':
+    case 'BOOLEAN':
       if (typeof value !== 'boolean') {
         return `${fieldLabel} 必须是布尔值`
       }
       break
-    case 'date':
+    case 'DATE':
       // 日期格式验证（DD/MM/YYYY）
-      if (typeof value !== 'string' || !/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-        return `${fieldLabel} 日期格式不正确（应为 DD/MM/YYYY）`
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return `${fieldLabel} 日期格式不正确（应为 YYYY-MM-DD）`
+      }
+      break
+    case 'DATETIME':
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T?\d{0,2}:?\d{0,2}/.test(value)) {
+        return `${fieldLabel} 日期时间格式不正确`
       }
       break
   }
@@ -121,11 +157,16 @@ function validateLength(value, rules, fieldLabel) {
  * 范围验证
  */
 function validateRange(value, rules, fieldLabel) {
-  if (rules.min_value !== undefined && value < rules.min_value) {
+  const numericValue = Number(value)
+  if (Number.isNaN(numericValue)) {
+    return null
+  }
+
+  if (rules.min_value !== undefined && numericValue < rules.min_value) {
     return `${fieldLabel} 不能小于 ${rules.min_value}`
   }
 
-  if (rules.max_value !== undefined && value > rules.max_value) {
+  if (rules.max_value !== undefined && numericValue > rules.max_value) {
     return `${fieldLabel} 不能大于 ${rules.max_value}`
   }
 

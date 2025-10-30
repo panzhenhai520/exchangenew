@@ -546,7 +546,7 @@ const routes = [
         meta: {
           requiresAuth: true,
           permission: 'amlo_reservation_view',
-          title: 'AMLO预约审核'
+          title: 'AMLO预约查询'
         }
       },
       {

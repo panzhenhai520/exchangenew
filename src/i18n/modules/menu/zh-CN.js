@@ -10,7 +10,7 @@ export default {
     "foreign_stock_query": "外币库存",
     "local_stock_query": "本币库存",
     "amlo_audit": "AMLO审计",
-    "amlo_reservation_audit": "预约审核",
+    "amlo_reservation_audit": "AMLO预约查询",
     "amlo_report_list": "报告管理",
     "bot_report": "BOT报告",
     "bot_compliance": "BOT合规",

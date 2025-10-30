@@ -10,6 +10,7 @@
 
 <script>
 import { computed } from 'vue'
+import { resolveFieldLabel } from '../fieldHelpers.js'
 
 export default {
   name: 'CheckboxField',
@@ -26,7 +27,7 @@ export default {
   emits: ['update:value'],
   setup(props, { emit }) {
     const checkboxLabel = computed(() => {
-      return props.field.placeholder || ''
+      return props.field.placeholder || resolveFieldLabel(props.field)
     })
 
     const handleChange = (checked) => {

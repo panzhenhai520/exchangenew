@@ -1,5 +1,5 @@
-{
-  "fields": "fields",
+﻿{
+  "fields": "Fields",
   "loading": "Loading",
   "cancel": "Cancel",
   "submit": "Submit",
@@ -12,10 +12,12 @@
   "success": "Success",
   "warning": "Warning",
   "info": "Info",
-  "pleaseSelect": "Please Select",
+  "pleaseSelect": "Please select",
   "fieldRequired": "This field is required",
-  "totalItems": "Total {total} items"
+  "totalItems": "Total {total} items",
+  "view": "View",
+  "downloadPdf": "Download PDF",
+  "downloadSuccess": "Download successful",
+  "downloadFailed": "Download failed",
+  "action": "Action"
 }
-
-
-

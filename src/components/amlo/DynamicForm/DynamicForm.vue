@@ -82,6 +82,7 @@ import { useAMLOStore } from '@/stores/amlo'
 import FormField from './FormField.vue'
 import { validateForm } from './FormValidation.js'
 import { buildFormData, resetFormData } from './FormUtils.js'
+import { normalizeFieldDefinition } from './fieldHelpers.js'
 
 export default {
   name: 'DynamicForm',
@@ -144,9 +145,10 @@ export default {
       try {
         const response = await amloStore.fetchFormDefinition(props.reportType, currentLanguage.value)
         if (response.success) {
-          formFields.value = response.data.fields || []
+          const normalizedFields = (response.data.fields || []).map(normalizeFieldDefinition)
+          formFields.value = normalizedFields
           // 初始化表单数据
-          formData.value = buildFormData(formFields.value, props.initialData)
+          formData.value = buildFormData(normalizedFields, props.initialData)
         } else {
           message.error(response.message || t('amlo.form.loadFailed'))
         }

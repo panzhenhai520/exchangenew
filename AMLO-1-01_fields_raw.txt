@@ -1,0 +1,98 @@
+fill_3	เพมเตม ครงท
+fill_1	ลงวนท
+fill_2	รวมเอกสารจานวนทงสน
+comb_1	โปรดระบเลขทบตรประจาตวประชาชน
+fill_4	๑.๑ ชอ-นามสกล
+fill_5	๑.๒ ทอย
+undefined	undefined
+fill_7	โทรศพท
+fill_8	โทรสาร
+fill_9	๑.๓ อาชพ
+fill_10	สถานททางาน
+fill_11	โทรศพท
+fill_12	๑.๔ สถานทสะดวกในการตดตอ
+fill_13	๑.๕ หลกฐานทใชในการทาธรกรรม
+fill_57	บตรประจาตวประชาชน
+fill_56	ขาราชการ
+fill_55	พนกงานรฐวสาหกจ
+fill_14	โทรศพท
+fill_15	โทรสาร
+fill_16	เลขท
+fill_17	ออกใหโดย
+fill_18	เมอ
+fill_19	หมดอาย
+fill_54	สวนท ๒. ผรวมทาธรกรรม ผมอบหมาย หรอผมอบอานาจ
+comb_2	ผรวมทาธรกรรม
+fill_20	๒.๑ ชอ
+fill_21	สถานทตง
+fill_22	๒.๒ ทอย
+fill_23	โทรศพท
+fill_24	โทรสาร
+fill_25	๒.๓ อาชพ
+fill_26	สถานททางาน
+fill_27	โทรศพท
+fill_28	ในกรณเปนนตบคคลใหระบประเภทการประกอบการ
+fill_29	๒.๔ สถานทสะดวกในการตดตอ
+fill_30	๒.๕ หลกฐานทใชในการทาธรกรรม
+fill_60	บตรประจาตวประชาชน
+fill_59	ขาราชการ
+fill_58	พนกงานรฐวสาหกจ
+fill_31	โทรศพท
+fill_32	โทรสาร
+fill_33	เลขท
+fill_34	ออกใหโดย
+fill_35	เมอ
+fill_36	หมดอาย
+fill_37	วนททาธรกรรม
+fill_38	เดอน
+fill_39	พ.ศ
+comb_3	เขาบญชเลขท
+comb_5	บญชทเกยวของ
+fill_48	จานวน (บาท)_ฝาก งน  ซอตราสารการเงน  เชค  ดราฟต  อนๆ  ซอเงนตราตางประเทศ (โปรดระบสกลเงน)  อนๆ(ระบ) เขาบญชเลขท บญชทเกยวของ (หากม)
+comb_4	จากบญชเลขท
+comb_6	บญชทเกยวของ
+fill_40	อนๆ
+fill_41	อนๆ
+fill_42	อนๆ(ระบ
+fill_43	อนๆ(ระบ
+undefined_2	undefined
+fill_49	จานวน (บาท)_Row_1
+fill_45	รวมเงน
+fill_50	จานวน (บาท)_
+fill_51	จานวน (บาท)_Row_2
+fill_46	๓.๒ ชอผรบประโยชนในการทาธรกรรม (ถาม
+fill_47	๓.๓ วตถประสงคในการทาธรกรรม
+fill_1_2	การรายงานทงหมดในชอง  “รวมเอกสารจานวนทงสน
+fill_52	แบบรายงานการทาธรกรรมทใชเงนสด
+Check Box2	
+Check Box3	
+Check Box4	
+Check Box5	
+Check Box6	
+Check Box7	
+Check Box8	
+Check Box9	
+Check Box10	
+Check Box11	
+Check Box12	
+Check Box13	
+Check Box14	
+Check Box15	
+Check Box16	
+Check Box17	
+Check Box18	
+Check Box19	
+Check Box20	
+Check Box21	
+Check Box22	
+Check Box23	
+Check Box24	
+Check Box25	
+Check Box26	
+Check Box27	
+Check Box28	
+Check Box29	
+Check Box30	
+Check Box31	
+Check Box32	
+Check Box33	

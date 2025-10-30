@@ -17,32 +17,33 @@ from services.db_service import DatabaseService  # noqa: E402
 
 
 AMLO_FILLPOS_MAPPINGS = {
+    # The mappings below capture fill positions that have been manually
+    # verified against the annotated PDFs.  (Fields that still need
+    # confirmation remain unmapped for now to avoid polluting data.)
     "AMLO-1-01": {
-        "customer_id": "comb_1",
-        "customer_name": "fill_13",
-        "customer_address": "fill_13",
-        "customer_phone": "fill_57",
-        "customer_occupation": "fill_13",
-        "transaction_purpose": "fill_42",
-        "beneficiary_name": "fill_50",
+        "report_number": "fill_52",
+        "total_amount": "fill_45",
+        "transaction_date_day": "fill_37",
+        "transaction_date_month": "fill_38",
+        "transaction_date_year": "fill_39",
+        "transaction_purpose": "fill_47",
+        "maker_id_number": "comb_1",
+        "maker_phone": "fill_7",
+        "maker_occupation_type": "fill_9",
+        "maker_occupation_employer": "fill_10",
+        "maker_occupation_business_type": "fill_28",
+        "joint_party_firstname": "fill_20",
+        "joint_party_lastname": "fill_20",
+        "joint_party_address": "fill_22",
+        "joint_party_phone": "fill_23",
     },
     "AMLO-1-02": {
-        "customer_id": "fill_7",
-        "customer_name": "fill_11",
-        "customer_address": "fill_11",
-        "customer_phone": "fill_68",
-        "customer_occupation": "fill_11",
-        "transaction_purpose": "fill_44",
-        "beneficiary_name": "fill_44",
+        "report_number": "fill_52",
     },
     "AMLO-1-03": {
-        "customer_id": "comb_1",
-        "customer_name": "fill_7",
-        "customer_address": "fill_11",
-        "customer_phone": "fill_56",
-        "customer_occupation": "fill_11",
-        "transaction_purpose": "fill_42",
-        "beneficiary_name": "comb_4",
+        "transaction_date_day": "fill_37",
+        "transaction_date_month": "fill_38",
+        "transaction_date_year": "fill_39",
     },
 }
 
@@ -65,15 +66,31 @@ def ensure_fillpos_column(session):
         return
 
     print("[Migration 011] Adding fillpos column to report_fields...")
-    session.execute(
-        text(
-            """
+    # Attempt to place the new column after ``is_readonly`` when the column exists,
+    # otherwise fall back to appending the column to avoid OperationalError (1054).
+    inspector_sql = text(
+        """
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'report_fields'
+          AND COLUMN_NAME = 'is_readonly'
+        """
+    )
+    has_is_readonly = session.execute(inspector_sql).scalar()
+
+    if has_is_readonly:
+        add_column_sql = """
             ALTER TABLE report_fields
             ADD COLUMN fillpos VARCHAR(64) NULL COMMENT 'Target PDF field identifier'
             AFTER is_readonly
-            """
-        )
-    )
+        """
+    else:
+        add_column_sql = """
+            ALTER TABLE report_fields
+            ADD COLUMN fillpos VARCHAR(64) NULL COMMENT 'Target PDF field identifier'
+        """
+
+    session.execute(text(add_column_sql))
     session.commit()
     print("[Migration 011] Column fillpos added successfully.")
 

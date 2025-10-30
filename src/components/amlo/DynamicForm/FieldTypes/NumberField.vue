@@ -1,7 +1,7 @@
 <template>
   <a-input-number
     :value="value"
-    :placeholder="field.placeholder || field.field_label"
+    :placeholder="placeholder"
     :min="minValue"
     :max="maxValue"
     :precision="precision"
@@ -13,6 +13,7 @@
 
 <script>
 import { computed } from 'vue'
+import { readValidationRules, resolveFieldLabel } from '../fieldHelpers.js'
 
 export default {
   name: 'NumberField',
@@ -28,44 +29,39 @@ export default {
   },
   emits: ['update:value'],
   setup(props, { emit }) {
+    const rules = computed(() => readValidationRules(props.field))
+
+    const placeholder = computed(() => {
+      return props.field.placeholder || resolveFieldLabel(props.field)
+    })
+
     const minValue = computed(() => {
-      if (props.field.validation_rules) {
-        try {
-          const rules = JSON.parse(props.field.validation_rules)
-          return rules.min_value !== undefined ? rules.min_value : undefined
-        } catch (e) {
-          return undefined
-        }
+      const currentRules = rules.value
+      if (currentRules.min_value !== undefined) {
+        return currentRules.min_value
       }
-      return undefined
+      return props.field.min_value !== undefined ? props.field.min_value : undefined
     })
 
     const maxValue = computed(() => {
-      if (props.field.validation_rules) {
-        try {
-          const rules = JSON.parse(props.field.validation_rules)
-          return rules.max_value !== undefined ? rules.max_value : undefined
-        } catch (e) {
-          return undefined
-        }
+      const currentRules = rules.value
+      if (currentRules.max_value !== undefined) {
+        return currentRules.max_value
       }
-      return undefined
+      return props.field.max_value !== undefined ? props.field.max_value : undefined
     })
 
     const precision = computed(() => {
-      // For INT type fields, use precision 0 (no decimal places)
-      if (props.field.field_type === 'INT') {
+      const fieldType = (props.field.field_type || '').toUpperCase()
+      if (fieldType === 'INT') {
         return 0
       }
-
-      // For other numeric types, check validation rules
-      if (props.field.validation_rules) {
-        try {
-          const rules = JSON.parse(props.field.validation_rules)
-          return rules.precision !== undefined ? rules.precision : 2
-        } catch (e) {
-          return 2
-        }
+      const currentRules = rules.value
+      if (currentRules.precision !== undefined) {
+        return currentRules.precision
+      }
+      if (props.field.field_scale !== undefined) {
+        return props.field.field_scale
       }
       return 2
     })
@@ -78,6 +74,7 @@ export default {
       minValue,
       maxValue,
       precision,
+      placeholder,
       handleChange
     }
   }

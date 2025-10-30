@@ -1,152 +1,208 @@
 <template>
   <div class="container-fluid py-4">
-    <div class="card">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">
-          <i class="fas fa-clipboard-list me-2"></i>
-          AMLO预约审核
-        </h5>
-      </div>
-      <div class="card-body">
-        <!-- 筛选器 -->
-        <div class="row mb-3">
-          <div class="col-md-3">
-            <input 
-              type="text" 
-              class="form-control" 
-              v-model="filter.customer_id"
-              placeholder="客户证件号"
-            />
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <div class="d-flex align-items-center gap-3">
+            <h2 class="page-title-bold mb-0 d-flex align-items-center gap-2">
+              <font-awesome-icon :icon="['fas', 'calendar-check']" />
+              {{ t('amlo.reservation.title') }}
+            </h2>
+            <span class="amlo-tag badge rounded-pill d-inline-flex align-items-center gap-2">
+              <font-awesome-icon :icon="['fas', 'bookmark']" />
+              <span>{{ t('amlo.reservation.title') }}</span>
+            </span>
           </div>
-          <div class="col-md-3">
-            <select class="form-select" v-model="filter.status">
-              <option value="">全部状态</option>
-              <option value="pending">待审核</option>
-              <option value="approved">已通过</option>
-              <option value="rejected">已拒绝</option>
-            </select>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            @click="loadReservations"
+            :disabled="loading"
+          >
+            <font-awesome-icon :icon="['fas', 'rotate-right']" :spin="loading" class="me-2" />
+            {{ t('amlo.reservation.refresh') }}
+          </button>
+        </div>
+
+        <div class="card mb-4 filter-card">
+          <div class="card-header">
+            <h5 class="mb-0 d-flex align-items-center">
+              <font-awesome-icon :icon="['fas', 'filter']" class="me-2" />
+              {{ t('amlo.reservation.filtersTitle') }}
+            </h5>
           </div>
-          <div class="col-md-2">
-            <button class="btn btn-primary w-100" @click="loadReservations">
-              <i class="fas fa-search me-1"></i>查询
-            </button>
-          </div>
-          <div class="col-md-2">
-            <button class="btn btn-secondary w-100" @click="resetFilter">
-              <i class="fas fa-redo me-1"></i>重置
-            </button>
+          <div class="card-body">
+            <form @submit.prevent="handleSearch">
+              <div class="row g-3 align-items-end">
+                <div class="col-sm-6 col-lg-3">
+                  <label class="form-label">{{ t('amlo.reservation.customerId') }}</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="filter.customer_id"
+                    :placeholder="t('amlo.reservation.customerIdPlaceholder')"
+                  />
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <label class="form-label">{{ t('amlo.reservation.status') }}</label>
+                  <select class="form-select" v-model="filter.status">
+                    <option value="">{{ t('amlo.reservation.allStatus') }}</option>
+                    <option value="pending">{{ t('amlo.reservation.pending') }}</option>
+                    <option value="approved">{{ t('amlo.reservation.approved') }}</option>
+                    <option value="rejected">{{ t('amlo.reservation.rejected') }}</option>
+                  </select>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <button type="submit" class="btn btn-primary">
+                      <font-awesome-icon :icon="['fas', 'search']" class="me-2" />
+                      {{ t('common.search') }}
+                    </button>
+                    <button type="button" class="btn btn-secondary" @click="resetFilter">
+                      <font-awesome-icon :icon="['fas', 'redo']" class="me-2" />
+                      {{ t('common.reset') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
 
-        <!-- 预约列表 -->
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>预约ID</th>
-                <th>报告类型</th>
-                <th>客户</th>
-                <th>证件号</th>
-                <th>交易金额</th>
-                <th>状态</th>
-                <th>创建时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="8" class="text-center py-5">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">加载中...</span>
-                  </div>
-                </td>
-              </tr>
-              <tr v-else-if="reservations.length === 0">
-                <td colspan="8" class="text-center text-muted py-5">
-                  暂无预约记录
-                </td>
-              </tr>
-              <tr v-else v-for="item in reservations" :key="item.id">
-                <td>{{ item.reservation_id }}</td>
-                <td>
-                  <span class="badge bg-info">{{ item.report_type }}</span>
-                </td>
-                <td>{{ item.customer_name }}</td>
-                <td>{{ item.customer_id }}</td>
-                <td class="text-end">{{ formatAmount(item.local_amount) }} THB</td>
-                <td>
-                  <span 
-                    class="badge" 
-                    :class="{
-                      'bg-warning': item.status === 'pending',
-                      'bg-success': item.status === 'approved',
-                      'bg-danger': item.status === 'rejected'
-                    }"
+        <div class="card reservation-card">
+          <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="amlo-tag badge rounded-pill d-inline-flex align-items-center gap-2">
+                <font-awesome-icon :icon="['fas', 'bookmark']" />
+                <span>{{ t('amlo.reservation.title') }}</span>
+              </span>
+              <h5 class="mb-0 d-flex align-items-center gap-2">
+                <font-awesome-icon :icon="['fas', 'clipboard-list']" />
+                {{ t('amlo.reservation.recordsTitle') }}
+              </h5>
+            </div>
+            <span class="text-muted small">
+              {{ t('amlo.reservation.totalCount', { count: total }) }}
+            </span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>{{ t('amlo.reservation.id') }}</th>
+                    <th>{{ t('amlo.reservation.reportType') }}</th>
+                    <th>{{ t('amlo.reservation.direction') }}</th>
+                    <th>{{ t('amlo.reservation.customerName') }}</th>
+                    <th>{{ t('amlo.reservation.customerIdShort') }}</th>
+                    <th class="text-end">{{ t('amlo.reservation.transactionAmount') }}</th>
+                    <th>{{ t('amlo.reservation.status') }}</th>
+                    <th>{{ t('amlo.reservation.createdAt') }}</th>
+                    <th>{{ t('common.action') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="loading">
+                    <td colspan="9" class="text-center py-5">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">{{ t('common.loading') }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-else-if="reservations.length === 0">
+                    <td colspan="9" class="text-center text-muted py-5">
+                      {{ t('amlo.reservation.empty') }}
+                    </td>
+                  </tr>
+                  <tr v-else v-for="item in reservations" :key="item.id">
+                    <td>{{ item.reservation_id || item.reservation_no || item.id }}</td>
+                    <td>
+                      <span class="badge bg-info">{{ item.report_type }}</span>
+                    </td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="{
+                          'bg-success': item.direction === 'buy',
+                          'bg-warning': item.direction === 'sell',
+                          'bg-info': item.direction === 'dual_direction'
+                        }"
+                      >
+                        {{ getDirectionText(item.direction) }}
+                      </span>
+                    </td>
+                    <td>{{ item.customer_name }}</td>
+                    <td>{{ item.customer_id }}</td>
+                    <td class="text-end">{{ formatAmount(item.local_amount) }} THB</td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="{
+                          'bg-warning': item.status === 'pending',
+                          'bg-success': item.status === 'approved',
+                          'bg-danger': item.status === 'rejected'
+                        }"
+                      >
+                        {{ getStatusText(item.status) }}
+                      </span>
+                    </td>
+                    <td>{{ formatDateTime(item.created_at) }}</td>
+                    <td>
+                      <div class="d-flex gap-2 flex-wrap">
+                        <button
+                          class="btn btn-info btn-sm"
+                          @click="viewPDF(item)"
+                          style="min-width: 120px;"
+                        >
+                          <i class="fas fa-file-pdf me-1"></i>{{ t('amlo.reservation.viewReport') }}
+                        </button>
+                        <button
+                          class="btn btn-primary btn-sm"
+                          @click="viewDetail(item)"
+                          style="min-width: 120px;"
+                        >
+                          <i class="fas fa-clipboard-check me-1"></i>{{ t('amlo.reservation.openAudit') }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div
+            class="card-footer bg-white d-flex justify-content-end"
+            v-if="total > pageSize"
+          >
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                  <a
+                    class="page-link"
+                    href="#"
+                    role="button"
+                    @click.prevent="changePage(currentPage - 1)"
                   >
-                    {{ getStatusText(item.status) }}
-                  </span>
-                </td>
-                <td>{{ formatDateTime(item.created_at) }}</td>
-                <td>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <!-- 查看详情按钮 - 总是显示 -->
-                    <button
-                      class="btn btn-primary btn-sm"
-                      @click="viewDetail(item)"
-                      style="min-width: 90px;"
-                    >
-                      <i class="fas fa-eye me-1"></i>查看详情
-                    </button>
-
-                    <!-- 审核按钮 - 仅待审核状态显示 -->
-                    <button
-                      v-if="item.status === 'pending'"
-                      class="btn btn-success btn-sm"
-                      @click="openAuditModal(item, 'approve')"
-                      style="min-width: 90px;"
-                    >
-                      <i class="fas fa-check me-1"></i>审核通过
-                    </button>
-
-                    <button
-                      v-if="item.status === 'pending'"
-                      class="btn btn-danger btn-sm"
-                      @click="openAuditModal(item, 'reject')"
-                      style="min-width: 90px;"
-                    >
-                      <i class="fas fa-times me-1"></i>审核拒绝
-                    </button>
-
-                    <!-- PDF按钮 - 已通过状态显示 -->
-                    <button
-                      v-if="item.status === 'approved'"
-                      class="btn btn-info btn-sm"
-                      @click="viewPDF(item)"
-                      style="min-width: 90px;"
-                    >
-                      <i class="fas fa-file-pdf me-1"></i>查看PDF
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    {{ t('amlo.reservation.prevPage') }}
+                  </a>
+                </li>
+                <li class="page-item active">
+                  <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+                </li>
+                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                  <a
+                    class="page-link"
+                    href="#"
+                    role="button"
+                    @click.prevent="changePage(currentPage + 1)"
+                  >
+                    {{ t('amlo.reservation.nextPage') }}
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
-
-        <!-- 分页 -->
-        <nav v-if="total > pageSize">
-          <ul class="pagination justify-content-end mb-0">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <a class="page-link" @click="changePage(currentPage - 1)">上一页</a>
-            </li>
-            <li class="page-item active">
-              <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
-            </li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <a class="page-link" @click="changePage(currentPage + 1)">下一页</a>
-            </li>
-          </ul>
-        </nav>
       </div>
     </div>
 
@@ -156,32 +212,32 @@
         <div class="modal-content" v-if="currentReservation">
           <div class="modal-header bg-light">
             <h5 class="modal-title">
-              <i class="fas fa-clipboard-list me-2"></i>预约详情
+              <i class="fas fa-clipboard-list me-2"></i>{{ t('amlo.reservation.detail') }}
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <!-- 基本信息 -->
             <h6 class="border-bottom pb-2 mb-3">
-              <i class="fas fa-info-circle me-1 text-primary"></i>基本信息
+              <i class="fas fa-info-circle me-1 text-primary"></i>{{ t('amlo.reservation.basicInfo') }}
             </h6>
             <div class="row mb-3">
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">预约编号</label>
+                <label class="text-muted small">{{ t('amlo.reservation.reservationNo') }}</label>
                 <div class="fw-bold">{{ currentReservation.reservation_no || currentReservation.id }}</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">报告类型</label>
+                <label class="text-muted small">{{ t('amlo.reservation.reportType') }}</label>
                 <div>
                   <span class="badge bg-info">{{ currentReservation.report_type }}</span>
                 </div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">创建时间</label>
+                <label class="text-muted small">{{ t('amlo.reservation.createdAt') }}</label>
                 <div>{{ formatDateTime(currentReservation.created_at) }}</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">状态</label>
+                <label class="text-muted small">{{ t('amlo.reservation.status') }}</label>
                 <div>
                   <span
                     class="badge fs-6"
@@ -199,44 +255,44 @@
 
             <!-- 客户信息 -->
             <h6 class="border-bottom pb-2 mb-3">
-              <i class="fas fa-user me-1 text-primary"></i>客户信息
+              <i class="fas fa-user me-1 text-primary"></i>{{ t('amlo.reservation.customerInfo') }}
             </h6>
             <div class="row mb-3">
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">客户姓名</label>
+                <label class="text-muted small">{{ t('amlo.reservation.customerName') }}</label>
                 <div class="fw-bold">{{ currentReservation.customer_name }}</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">证件号码</label>
+                <label class="text-muted small">{{ t('amlo.reservation.customerId') }}</label>
                 <div>{{ currentReservation.customer_id }}</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">国家/地区</label>
+                <label class="text-muted small">{{ t('amlo.reservation.country') }}</label>
                 <div>{{ currentReservation.customer_country_code || '-' }}</div>
               </div>
             </div>
 
             <!-- 交易信息 -->
             <h6 class="border-bottom pb-2 mb-3">
-              <i class="fas fa-money-bill-wave me-1 text-primary"></i>交易信息
+              <i class="fas fa-money-bill-wave me-1 text-primary"></i>{{ t('amlo.reservation.transactionInfo') }}
             </h6>
             <div class="row mb-3">
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">交易金额（本币）</label>
+                <label class="text-muted small">{{ t('amlo.reservation.localAmount') }}</label>
                 <div class="fw-bold fs-5 text-success">{{ formatAmount(currentReservation.local_amount) }} THB</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">交易币种</label>
+                <label class="text-muted small">{{ t('amlo.reservation.currency') }}</label>
                 <div>{{ currentReservation.currency_id || '-' }}</div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">交易方向</label>
+                <label class="text-muted small">{{ t('amlo.reservation.direction') }}</label>
                 <div>
-                  <span class="badge bg-secondary">{{ currentReservation.direction === 'buy' ? '买入' : '卖出' }}</span>
+                  <span class="badge bg-secondary">{{ getDirectionText(currentReservation.direction) }}</span>
                 </div>
               </div>
               <div class="col-md-6 mb-2">
-                <label class="text-muted small">外币金额</label>
+                <label class="text-muted small">{{ t('amlo.reservation.foreignAmount') }}</label>
                 <div>{{ formatAmount(currentReservation.amount) }}</div>
               </div>
             </div>
@@ -244,31 +300,47 @@
             <!-- 审核信息 -->
             <div v-if="currentReservation.status !== 'pending'">
               <h6 class="border-bottom pb-2 mb-3">
-                <i class="fas fa-check-circle me-1 text-primary"></i>审核信息
+                <i class="fas fa-check-circle me-1 text-primary"></i>{{ t('amlo.reservation.auditInfo') }}
               </h6>
               <div class="row mb-3">
                 <div class="col-md-6 mb-2">
-                  <label class="text-muted small">审核时间</label>
+                  <label class="text-muted small">{{ t('amlo.reservation.auditedAt') }}</label>
                   <div>{{ formatDateTime(currentReservation.audit_time) || '-' }}</div>
                 </div>
                 <div class="col-md-6 mb-2">
-                  <label class="text-muted small">审核人</label>
+                  <label class="text-muted small">{{ t('amlo.reservation.auditor') }}</label>
                   <div>{{ currentReservation.auditor_id || '-' }}</div>
                 </div>
                 <div class="col-12 mb-2" v-if="currentReservation.rejection_reason">
-                  <label class="text-muted small">拒绝原因</label>
+                  <label class="text-muted small">{{ t('amlo.reservation.rejectionReason') }}</label>
                   <div class="alert alert-danger mb-0">{{ currentReservation.rejection_reason }}</div>
                 </div>
                 <div class="col-12 mb-2" v-if="currentReservation.remarks">
-                  <label class="text-muted small">备注</label>
+                  <label class="text-muted small">{{ t('amlo.reservation.remarks') }}</label>
                   <div class="alert alert-info mb-0">{{ currentReservation.remarks }}</div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer d-flex flex-wrap gap-2 justify-content-end">
+            <button
+              v-if="currentReservation && currentReservation.status === 'pending'"
+              type="button"
+              class="btn btn-success"
+              @click="openAuditModal(currentReservation, 'approve')"
+            >
+              <i class="fas fa-check me-1"></i>{{ t('amlo.reservation.approve') }}
+            </button>
+            <button
+              v-if="currentReservation && currentReservation.status === 'pending'"
+              type="button"
+              class="btn btn-danger"
+              @click="openAuditModal(currentReservation, 'reject')"
+            >
+              <i class="fas fa-times me-1"></i>{{ t('amlo.reservation.reject') }}
+            </button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              <i class="fas fa-times me-1"></i>关闭
+              <i class="fas fa-times me-1"></i>{{ t('common.close') }}
             </button>
           </div>
         </div>
@@ -282,7 +354,7 @@
           <div class="modal-header" :class="auditAction === 'approve' ? 'bg-success text-white' : 'bg-danger text-white'">
             <h5 class="modal-title">
               <i class="fas me-2" :class="auditAction === 'approve' ? 'fa-check-circle' : 'fa-times-circle'"></i>
-              {{ auditAction === 'approve' ? '审核通过' : '审核拒绝' }}
+              {{ auditModalTitle }}
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
@@ -290,13 +362,13 @@
             <!-- 显示预约基本信息 -->
             <div class="alert alert-light border">
               <div class="mb-2">
-                <strong>预约编号：</strong>{{ auditingItem.reservation_no || auditingItem.id }}
+                <strong>{{ t('amlo.reservation.reservationNo') }}：</strong>{{ auditingItem.reservation_no || auditingItem.id }}
               </div>
               <div class="mb-2">
-                <strong>客户姓名：</strong>{{ auditingItem.customer_name }}
+                <strong>{{ t('amlo.reservation.customerName') }}：</strong>{{ auditingItem.customer_name }}
               </div>
               <div class="mb-2">
-                <strong>交易金额：</strong>
+                <strong>{{ t('amlo.reservation.localAmount') }}：</strong>
                 <span class="text-success fw-bold">{{ formatAmount(auditingItem.local_amount) }} THB</span>
               </div>
             </div>
@@ -304,38 +376,38 @@
             <!-- 拒绝时需要填写原因 -->
             <div v-if="auditAction === 'reject'" class="mb-3">
               <label class="form-label text-danger fw-bold">
-                <i class="fas fa-exclamation-triangle me-1"></i>拒绝原因 <span class="text-danger">*</span>
+                <i class="fas fa-exclamation-triangle me-1"></i>{{ t('amlo.reservation.rejectionReason') }} <span class="text-danger">*</span>
               </label>
               <textarea
                 class="form-control"
                 v-model="auditForm.rejection_reason"
                 rows="4"
-                placeholder="请详细说明拒绝审核的原因..."
+                :placeholder="t('amlo.reservation.rejectionReasonPlaceholder')"
                 required
               ></textarea>
-              <div class="form-text">此信息将反馈给操作员</div>
+              <div class="form-text">{{ t('amlo.reservation.rejectionReasonHelper') }}</div>
             </div>
 
             <!-- 通过时可选填备注 -->
             <div class="mb-3">
-              <label class="form-label">审核备注（可选）</label>
+              <label class="form-label">{{ t('amlo.reservation.reviewRemarkOptional') }}</label>
               <textarea
                 class="form-control"
                 v-model="auditForm.remarks"
                 rows="3"
-                placeholder="填写审核备注信息..."
+                :placeholder="t('amlo.reservation.reviewRemarkPlaceholder')"
               ></textarea>
             </div>
 
             <!-- 确认提示 -->
             <div class="alert" :class="auditAction === 'approve' ? 'alert-success' : 'alert-danger'">
               <i class="fas fa-info-circle me-1"></i>
-              {{ auditAction === 'approve' ? '审核通过后，该预约将进入已通过状态，允许完成交易' : '审核拒绝后，该预约将被驳回，需重新提交' }}
+              {{ auditAction === 'approve' ? t('amlo.reservation.approveNotice') : t('amlo.reservation.rejectNotice') }}
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              <i class="fas fa-times me-1"></i>取消
+              <i class="fas fa-times me-1"></i>{{ t('common.cancel') }}
             </button>
             <button
               type="button"
@@ -345,7 +417,7 @@
               :disabled="auditAction === 'reject' && !auditForm.rejection_reason"
             >
               <i class="fas me-1" :class="auditAction === 'approve' ? 'fa-check' : 'fa-times'"></i>
-              {{ auditAction === 'approve' ? '确认通过' : '确认拒绝' }}
+              {{ auditAction === 'approve' ? t('amlo.reservation.confirmApprove') : t('amlo.reservation.confirmReject') }}
             </button>
           </div>
         </div>
@@ -356,12 +428,14 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Modal } from 'bootstrap'
 import api from '@/services/api'
 
 export default {
   name: 'ReservationListSimple',
   setup() {
+    const { t } = useI18n()
     const loading = ref(false)
     const reservations = ref([])
     const total = ref(0)
@@ -387,6 +461,11 @@ export default {
     let auditModal = null
 
     const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+    const auditModalTitle = computed(() =>
+      auditAction.value === 'approve'
+        ? t('amlo.reservation.approveTitle')
+        : t('amlo.reservation.rejectTitle')
+    )
 
     const loadReservations = async () => {
       loading.value = true
@@ -397,14 +476,14 @@ export default {
           ...filter.value
         }
         
-        const response = await api.get('amlo/reservations', { params })
+        const response = await api.get('/amlo/reservations', { params })
         
         if (response.data.success) {
           reservations.value = response.data.data.items || []
           total.value = response.data.data.total || 0
         }
       } catch (error) {
-        console.error('加载预约列表失败:', error)
+        console.error('[ReservationListSimple] Failed to load reservations:', error)
       } finally {
         loading.value = false
       }
@@ -423,6 +502,11 @@ export default {
       }
     }
 
+    const handleSearch = () => {
+      currentPage.value = 1
+      loadReservations()
+    }
+
     const viewDetail = (item) => {
       currentReservation.value = item
       if (!detailModal && detailModalRef.value) {
@@ -439,6 +523,7 @@ export default {
         rejection_reason: '',
         remarks: ''
       }
+      // 先关闭详情模态框，避免遮挡
       // 打开审核模态框
       if (!auditModal && auditModalRef.value) {
         auditModal = new Modal(auditModalRef.value)
@@ -451,7 +536,7 @@ export default {
 
       // 验证拒绝原因
       if (auditAction.value === 'reject' && !auditForm.value.rejection_reason) {
-        alert('请填写拒绝原因')
+        alert(t('amlo.reservation.rejectionReasonRequired'))
         return
       }
 
@@ -463,7 +548,7 @@ export default {
         }
 
         const response = await api.post(
-          `amlo/reservations/${auditingItem.value.id}/audit`,
+          `/amlo/reservations/${auditingItem.value.id}/audit`,
           payload
         )
 
@@ -475,13 +560,13 @@ export default {
           await loadReservations()
 
           // 显示简洁的Toast通知（可选）
-          showToast(auditAction.value === 'approve' ? '审核通过' : '审核已拒绝')
+          showToast(auditAction.value === 'approve' ? t('amlo.reservation.toastApprove') : t('amlo.reservation.toastReject'))
         } else {
-          alert('审核失败: ' + (response.data.message || '未知错误'))
+          alert(`${t('amlo.reservation.auditFailed')}: ${response.data.message || t('amlo.reservation.unknownError')}`)
         }
       } catch (error) {
-        console.error('审核失败:', error)
-        alert('审核失败: ' + (error.response?.data?.message || error.message))
+        console.error('[ReservationListSimple] Audit failed:', error)
+        alert(`${t('amlo.reservation.auditFailed')}: ${error.response?.data?.message || error.message || t('amlo.reservation.unknownError')}`)
       }
     }
 
@@ -517,43 +602,76 @@ export default {
 
     const formatDateTime = (dt) => {
       if (!dt) return '-'
-      return new Date(dt).toLocaleString('zh-CN')
+      return new Date(dt).toLocaleString()
     }
     
     const viewPDF = async (item) => {
       if (!item.id) {
-        alert('无效的预约记录')
+        alert(t('amlo.reservation.invalidReservation'))
         return
       }
-      
+
       try {
-        // 查找该预约对应的AMLO报告
-        const reportResponse = await api.get('amlo/reports', {
-          params: {
-            reservation_id: item.id
-          }
+        // Generate PDF directly from reservation (no need to wait for approval)
+        console.log('[ReservationListSimple] Generating PDF - reservation ID:', item.id)
+
+        // Download PDF via API (token automatically attached)
+        const response = await api.get(`/amlo/reports/${item.id}/generate-pdf`, {
+          responseType: 'blob'  // Receive binary data
         })
 
-        if (reportResponse.data.success && reportResponse.data.data && reportResponse.data.data.length > 0) {
-          const report = reportResponse.data.data[0]
-          const pdfUrl = `amlo/reports/${report.id}/generate-pdf`
-          window.open(pdfUrl, '_blank')
-        } else {
-          alert('该预约暂无关联的PDF报告\n\n可能原因：\n1. 预约尚未审核\n2. 尚未完成交易\n3. PDF尚未生成')
+        console.log('[ReservationListSimple] PDF response:', response)
+
+        // 创建Blob对象
+        const blob = new Blob([response.data], { type: 'application/pdf' })
+        const blobUrl = window.URL.createObjectURL(blob)
+
+        console.log('[ReservationListSimple] PDF file size:', blob.size, 'bytes')
+
+        // 在新窗口打开PDF
+        const pdfWindow = window.open(blobUrl, '_blank')
+
+        if (!pdfWindow) {
+          // Fallback to download when popup blocked
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = `${item.report_type}_${item.reservation_no || item.id}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          console.log('[ReservationListSimple] Popup blocked, triggered download')
         }
+
+        // Delay revoke to allow browser load
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl)
+        }, 60000)  // 60秒后释放
       } catch (error) {
-        console.error('打开PDF失败:', error)
-        alert('打开PDF失败: ' + (error.response?.data?.message || error.message))
+        console.error('[ReservationListSimple] Failed to open PDF:', error)
+        const errorMsg = error.response?.data?.message || error.message
+        alert(`${t('amlo.reservation.viewReportFailed')}: ${errorMsg}`)
       }
     }
 
     const getStatusText = (status) => {
-      const map = {
-        'pending': '待审核',
-        'approved': '已通过',
-        'rejected': '已拒绝'
+      const keyMap = {
+        'pending': 'pending',
+        'approved': 'approved',
+        'rejected': 'rejected',
+        'completed': 'completed'
       }
-      return map[status] || status
+      const key = keyMap[status]
+      return key ? t(`amlo.reservation.${key}`) : (status || '-')
+    }
+
+    const getDirectionText = (direction) => {
+      const keyMap = {
+        'buy': 'buyForeign',
+        'sell': 'sellForeign',
+        'dual_direction': 'dualDirection'
+      }
+      const key = keyMap[direction]
+      return key ? t(`amlo.reservation.${key}`) : (direction || '-')
     }
 
     onMounted(() => {
@@ -567,6 +685,8 @@ export default {
       currentPage,
       pageSize,
       totalPages,
+      auditModalTitle,
+      t,
       filter,
       currentReservation,
       detailModalRef,
@@ -576,6 +696,7 @@ export default {
       auditModalRef,
       loadReservations,
       resetFilter,
+      handleSearch,
       changePage,
       viewDetail,
       viewPDF,
@@ -584,13 +705,59 @@ export default {
       showToast,
       formatAmount,
       formatDateTime,
-      getStatusText
+      getStatusText,
+      getDirectionText
     }
   }
 }
 </script>
 
 <style scoped>
+.page-title-bold {
+  font-weight: 700;
+  color: #212529;
+}
+
+.amlo-tag {
+  background-color: rgba(33, 37, 41, 0.04);
+  color: #495057;
+  padding: 0.35rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(73, 80, 87, 0.2);
+}
+
+.filter-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 0;
+}
+
+.filter-card .btn {
+  min-width: 120px;
+}
+
+.reservation-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 0;
+}
+
+.reservation-card .card-footer {
+  border-top: 1px solid #f1f3f5;
+}
+
+.card-footer .page-link {
+  cursor: pointer;
+}
+
+.card-footer .page-link:focus {
+  box-shadow: none;
+}
+
+.card-footer .page-item.disabled .page-link {
+  cursor: not-allowed;
+}
+
 .table th {
   white-space: nowrap;
 }
@@ -639,6 +806,10 @@ pre {
 
 /* 响应式调整 */
 @media (max-width: 768px) {
+  .filter-card .btn {
+    width: 100%;
+  }
+
   .d-flex.gap-2 {
     flex-direction: column;
     gap: 0.5rem !important;

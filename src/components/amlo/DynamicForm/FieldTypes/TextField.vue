@@ -1,7 +1,7 @@
 <template>
   <a-input
     :value="value"
-    :placeholder="field.placeholder || field.field_label"
+    :placeholder="placeholder"
     :maxlength="maxLength"
     :disabled="field.is_readonly"
     @update:value="handleChange"
@@ -10,6 +10,7 @@
 
 <script>
 import { computed } from 'vue'
+import { readValidationRules, resolveFieldLabel } from '../fieldHelpers.js'
 
 export default {
   name: 'TextField',
@@ -25,14 +26,19 @@ export default {
   },
   emits: ['update:value'],
   setup(props, { emit }) {
+    const rules = computed(() => readValidationRules(props.field))
+
+    const placeholder = computed(() => {
+      return props.field.placeholder || resolveFieldLabel(props.field)
+    })
+
     const maxLength = computed(() => {
-      if (props.field.validation_rules) {
-        try {
-          const rules = JSON.parse(props.field.validation_rules)
-          return rules.max_length || undefined
-        } catch (e) {
-          return undefined
-        }
+      const currentRules = rules.value
+      if (currentRules.max_length) {
+        return currentRules.max_length
+      }
+      if (props.field.field_length) {
+        return props.field.field_length
       }
       return undefined
     })
@@ -43,6 +49,7 @@ export default {
 
     return {
       maxLength,
+      placeholder,
       handleChange
     }
   }

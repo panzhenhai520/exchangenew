@@ -1,0 +1,83 @@
+fill_1	เพมเตม ครงท	phemtem khrongt
+fill_2	ลงวนท	lo-ngwant
+fill_3	๑.๑ ชอ-นามสกล	cocho cho namsakon
+fill_5	๑.๓ อาชพ	cocho achop
+fill_6	โทรศพท	sorotphot
+fill_7	โทรสาร	thorsan
+fill_8	สถานททางาน	sathantha-ngan
+fill_9	โทรศพท	sorotphot
+fill_10	๑.๔ สถานทสะดวกในการตดตอ [1]	cocho sathanthasaduaknaikattotto aa b
+fill_11	๑.๔ สถานทสะดวกในการตดตอ [2]	cocho sathanthasaduaknaikattotto rako
+fill_68	๑.๔ สถานทสะดวกในการตดตอ [3]	cocho sathanthasaduaknaikattotto aaho
+fill_67	๑.๔ สถานทสะดวกในการตดตอ [4]	cocho sathanthasaduaknaikattotto aipa
+fill_12	โทรศพท	sorotphot
+fill_13	โทรสาร	thorsan
+fill_14	เลขท	lekha
+fill_15	ออกใหโดย	okhaidoi
+fill_16	เมอ	moe
+fill_17	หมดอาย	mot-ai
+fill_18	๒.๑ ชอ	cocho cho
+fill_19	สถานทตง	sathanthot
+fill_20	๒.๒ ทอย	cocho thoi
+fill_21	โทรศพท	sorotphot
+fill_22	โทรสาร	thorsan
+fill_23	๒.๓ อาชพ	cocho achop
+fill_24	สถานททางาน	sathantha-ngan
+fill_25	โทรศพท	sorotphot
+fill_26	ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [1]	naikranthapenentopkkhon rairappraphetkanprakopkan aa b
+fill_28	ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [2]	naikranthapenentopkkhon rairappraphetkanprakopkan rako
+fill_71	ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [3]	naikranthapenentopkkhon rairappraphetkanprakopkan aaho
+fill_70	ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [4]	naikranthapenentopkkhon rairappraphetkanprakopkan aipa
+fill_69	ในกรณทเปนนตบคคล ใหระบประเภทการประกอบการ [5]	naikranthapenentopkkhon rairappraphetkanprakopkan ray
+fill_27	๒.๔ สถานทสะดวกในการตดตอ	cocho sathanthasaduaknaikattotto
+fill_29	โทรศพท	sorotphot
+fill_30	โทรสาร	thorsan
+fill_31	เลขท	lekha
+fill_32	ออกใหโดย	okhaidoi
+fill_33	เมอ	moe
+fill_34	หมดอาย	mot-ai
+fill_35	วนททาธรกรรม	wonthatharakam
+fill_36	เดอน	doen
+fill_37	พ.ศ	phosa
+fill_38	โปรดระบรายละเอยดของทรพยสน	protrabraila-aetkhongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongsongson
+fill_41	๓.๓ มลคาทรพยสนททาธรกรรมรวมทงสน	cocho monkhathonphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+fill_42	หากมลคาทรพยสนเปนเงนตราตางประเทศ โปรดระบจานวนและสกลเงน	hakamonkhathonphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa protrapchanuanlaesakonnngngn
+fill_66	(จานวนเงนทเปนตวอกษร)	phachanuanngentpentawekson
+fill_43	ชอเจาของบญช	chochaokhongboncha
+fill_45	ชอเจาของบญช	chochaokhongboncha
+fill_44	ชอบญช	chopncha
+fill_46	เกยวของโดย	koeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeoeo
+fill_47	๓.๖ ชอผรบประโยชนในการทาธรกรรม (ถาม	cocho chophropprayotchannaiathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa phatham
+fill_48	๓.๗ วตถประสงคในการทาธรกรรม	cocho wottpharasongkhanaikanthathaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+fill_1_2	การรายงานทงหมดในชอง “รวมเอกสารจานวนทงสน	kanrai-nganthongmotnaichong ruam-ekkasanchanuanthongson
+fill_52	รายงานฉบบหลก	rai-nganchaboplok
+Check Box34		
+Check Box35		
+Check Box36		
+Check Box37		
+Check Box38		
+Check Box39		
+Check Box40		
+Check Box41		
+Check Box42		
+Check Box43		
+Check Box44		
+Check Box45		
+Check Box46		
+Check Box47		
+Check Box48		
+Check Box49		
+Check Box50		
+Check Box51		
+Check Box52		
+Check Box53		
+Check Box54		
+Check Box55		
+Check Box56		
+Check Box57		
+Check Box58		
+Check Box59		
+comb_1	๓.๔ เลขทบญชททาธรกรรม	cocho lekthabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanchabanc
+comb_2	๓.๕ บญชทเกยวของ (หากม	cocho bonchokhayakkoeokhong phahakom
+t1	[1]	aa b
+t2	[2]	rako

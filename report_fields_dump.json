@@ -1,0 +1,1009 @@
+{
+  "AMLO-1-01": [
+    {
+      "field_name": "report_number",
+      "field_en_name": "Report Number",
+      "field_cn_name": "报告编号",
+      "field_th_name": "เลขที่รายงาน",
+      "fillpos": "fill_52"
+    },
+    {
+      "field_name": "total_amount",
+      "field_en_name": "Transaction Amount",
+      "field_cn_name": "交易金额",
+      "field_th_name": "จำนวนเงินธุรกรรม",
+      "fillpos": "fill_45"
+    },
+    {
+      "field_name": "report_date_day",
+      "field_en_name": "Report Date - Day",
+      "field_cn_name": "报告日期-日",
+      "field_th_name": "วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_month",
+      "field_en_name": "Report Date - Month",
+      "field_cn_name": "报告日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_year",
+      "field_en_name": "Report Date - Year",
+      "field_cn_name": "报告日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_en_name": "Origin Report Number",
+      "field_cn_name": "原报告编号",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_first_report",
+      "field_en_name": "Is First Report",
+      "field_cn_name": "是否首次报告",
+      "field_th_name": "รายงานฉบับแรก",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_en_name": "Is Amendment Report",
+      "field_cn_name": "是否修改报告",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fillpos": null
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_en_name": "Reference Report Number",
+      "field_cn_name": "参考报告编号",
+      "field_th_name": "ที่อ้างถึงรายงานฉบับแรก เลขที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_en_name": "Maker Type - Person",
+      "field_cn_name": "交易者类型-个人",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_en_name": "Maker Type - Juristic",
+      "field_cn_name": "交易者类型-法人",
+      "field_th_name": "ทำธุรกรรมด้วยตนเอง",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_name_title",
+      "field_en_name": "Maker Name Title",
+      "field_cn_name": "交易者姓名-称谓",
+      "field_th_name": "ชื่อ (ข้างหน้านามสกุล)",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_en_name": "Maker First Name",
+      "field_cn_name": "交易者名字",
+      "field_th_name": "ชื่อ",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_en_name": "Maker Last Name",
+      "field_cn_name": "交易者姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_company_name",
+      "field_en_name": "Maker Company Name",
+      "field_cn_name": "交易者法人名称",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_type_national",
+      "field_en_name": "ID Type - National ID",
+      "field_cn_name": "ID类型-身份证",
+      "field_th_name": "เลขประจำตัวประชาชน",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_type_passport",
+      "field_en_name": "ID Type - Passport",
+      "field_cn_name": "ID类型-护照",
+      "field_th_name": "หนังสือเดินทาง เลขที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_type_company",
+      "field_en_name": "ID Type - Company Registration",
+      "field_cn_name": "ID类型-法人注册号",
+      "field_th_name": "เลขทะเบียนนิติบุคคล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_en_name": "ID Number",
+      "field_cn_name": "身份证号码",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": "comb_1"
+    },
+    {
+      "field_name": "maker_address_number",
+      "field_en_name": "Address Number",
+      "field_cn_name": "地址-号码",
+      "field_th_name": "ที่อยู่ เลขที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_village",
+      "field_en_name": "Address Village/Building",
+      "field_cn_name": "地址-村/大楼",
+      "field_th_name": "หมู่บ้าน/อาคาร",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_lane",
+      "field_en_name": "Address Lane",
+      "field_cn_name": "地址-巷",
+      "field_th_name": "ซอย",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_road",
+      "field_en_name": "Address Road",
+      "field_cn_name": "地址-路",
+      "field_th_name": "ถนน",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_subdistrict",
+      "field_en_name": "Address Subdistrict",
+      "field_cn_name": "地址-分区",
+      "field_th_name": "ตำบล/แขวง",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_district",
+      "field_en_name": "Address District",
+      "field_cn_name": "地址-区",
+      "field_th_name": "อำเภอ/เขต",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_province",
+      "field_en_name": "Address Province",
+      "field_cn_name": "地址-省",
+      "field_th_name": "จังหวัด",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address_postalcode",
+      "field_en_name": "Address Postal Code",
+      "field_cn_name": "地址-邮编",
+      "field_th_name": "รหัสไปรษณีย์",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_phone",
+      "field_en_name": "Phone Number",
+      "field_cn_name": "电话号码",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "fillpos": "fill_7"
+    },
+    {
+      "field_name": "maker_birthplace_province",
+      "field_en_name": "Birthplace Province",
+      "field_cn_name": "出生地/注册地-省",
+      "field_th_name": "สถานที่เกิดหรือที่จดทะเบียน จังหวัด",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_birthplace_country",
+      "field_en_name": "Birthplace Country",
+      "field_cn_name": "出生地/注册地-国家",
+      "field_th_name": "ประเทศ",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_birthdate_day",
+      "field_en_name": "Birth Date - Day",
+      "field_cn_name": "出生日期-日",
+      "field_th_name": "วันเกิด วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_birthdate_month",
+      "field_en_name": "Birth Date - Month",
+      "field_cn_name": "出生日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_birthdate_year",
+      "field_en_name": "Birth Date - Year",
+      "field_cn_name": "出生日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_occupation_type",
+      "field_en_name": "Occupation Type",
+      "field_cn_name": "职业类型",
+      "field_th_name": "อาชีพ",
+      "fillpos": "fill_9"
+    },
+    {
+      "field_name": "maker_occupation_business_type",
+      "field_en_name": "Business Type",
+      "field_cn_name": "业务类型",
+      "field_th_name": "ประเภทธุรกิจหรือประเภทงาน",
+      "fillpos": "fill_28"
+    },
+    {
+      "field_name": "maker_occupation_employer",
+      "field_en_name": "Employer Name",
+      "field_cn_name": "雇主/公司名",
+      "field_th_name": "ชื่อนายจ้าง/สถานประกอบการ",
+      "fillpos": "fill_10"
+    },
+    {
+      "field_name": "joint_party_exists",
+      "field_en_name": "Has Joint Party",
+      "field_cn_name": "是否有共同交易者",
+      "field_th_name": "มีผู้ร่วมทำธุรกรรม",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_type",
+      "field_en_name": "Joint Party Type",
+      "field_cn_name": "共同方类型",
+      "field_th_name": "ประเภท",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_en_name": "Joint Party First Name",
+      "field_cn_name": "共同方名字",
+      "field_th_name": "ชื่อ",
+      "fillpos": "fill_20"
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_en_name": "Joint Party Last Name",
+      "field_cn_name": "共同方姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": "fill_20"
+    },
+    {
+      "field_name": "joint_party_company_name",
+      "field_en_name": "Joint Party Company Name",
+      "field_cn_name": "共同方法人名称",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_en_name": "Joint Party ID Number",
+      "field_cn_name": "共同方身份证号",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_en_name": "Joint Party Address",
+      "field_cn_name": "共同方地址",
+      "field_th_name": "ที่อยู่",
+      "fillpos": "fill_21"
+    },
+    {
+      "field_name": "joint_party_phone",
+      "field_en_name": "Joint Party Phone",
+      "field_cn_name": "共同方电话",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "fillpos": "fill_22"
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_en_name": "Transaction Date - Day",
+      "field_cn_name": "交易日期-日",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "fillpos": "fill_37"
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_en_name": "Transaction Date - Month",
+      "field_cn_name": "交易日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": "fill_38"
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_en_name": "Transaction Date - Year",
+      "field_cn_name": "交易日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": "fill_39"
+    },
+    {
+      "field_name": "deposit_cash",
+      "field_en_name": "Deposit Cash",
+      "field_cn_name": "存款-现金",
+      "field_th_name": "เงินฝาก เงินสด",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_travelers_check",
+      "field_en_name": "Deposit Travelers Check",
+      "field_cn_name": "存款-旅行支票",
+      "field_th_name": "เช็คเดินทาง",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_draft",
+      "field_en_name": "Deposit Draft",
+      "field_cn_name": "存款-汇票",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_cashiers_check",
+      "field_en_name": "Deposit Cashiers Check",
+      "field_cn_name": "存款-本票",
+      "field_th_name": "เช็คธนาคาร",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_currency_code",
+      "field_en_name": "Deposit Currency Code",
+      "field_cn_name": "存款-货币代码",
+      "field_th_name": "สกุลเงินต่างประเทศ (เงินฝาก)",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_currency_amount",
+      "field_en_name": "Deposit Currency Amount",
+      "field_cn_name": "存款-外币金额",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "fillpos": null
+    },
+    {
+      "field_name": "deposit_thb_amount",
+      "field_en_name": "Deposit THB Amount",
+      "field_cn_name": "存款-泰铢金额",
+      "field_th_name": "จำนวน (บาท) เงินฝาก",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_cash",
+      "field_en_name": "Withdrawal Cash",
+      "field_cn_name": "取款-现金",
+      "field_th_name": "ถอนเงิน เงินสด",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_travelers_check",
+      "field_en_name": "Withdrawal Travelers Check",
+      "field_cn_name": "取款-旅行支票",
+      "field_th_name": "เช็คเดินทาง",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_draft",
+      "field_en_name": "Withdrawal Draft",
+      "field_cn_name": "取款-汇票",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_cashiers_check",
+      "field_en_name": "Withdrawal Cashiers Check",
+      "field_cn_name": "取款-本票",
+      "field_th_name": "เช็คธนาคาร",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_currency_code",
+      "field_en_name": "Withdrawal Currency Code",
+      "field_cn_name": "取款-货币代码",
+      "field_th_name": "สกุลเงินต่างประเทศ (ถอนเงิน)",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_currency_amount",
+      "field_en_name": "Withdrawal Currency Amount",
+      "field_cn_name": "取款-外币金额",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "fillpos": null
+    },
+    {
+      "field_name": "withdrawal_thb_amount",
+      "field_en_name": "Withdrawal THB Amount",
+      "field_cn_name": "取款-泰铢金额",
+      "field_th_name": "จำนวน (บาท) ถอนเงิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "exchange_currency_exists",
+      "field_en_name": "Has Currency Exchange",
+      "field_cn_name": "是否兑换外币",
+      "field_th_name": "แลกเปลี่ยนเงินตราต่างประเทศ",
+      "fillpos": null
+    },
+    {
+      "field_name": "exchange_other_transaction",
+      "field_en_name": "Other Transaction",
+      "field_cn_name": "其他交易",
+      "field_th_name": "อื่น ๆ (ระบุ)",
+      "fillpos": null
+    },
+    {
+      "field_name": "exchange_other_description",
+      "field_en_name": "Other Transaction Description",
+      "field_cn_name": "其他交易说明",
+      "field_th_name": "ระบุ",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_purpose",
+      "field_en_name": "Transaction Purpose",
+      "field_cn_name": "交易目的",
+      "field_th_name": "วัตถุประสงค์ในการทำธุรกรรม (ถ้ามี)",
+      "fillpos": "fill_47"
+    },
+    {
+      "field_name": "transaction_source",
+      "field_en_name": "Source of Funds",
+      "field_cn_name": "资金来源",
+      "field_th_name": "ที่มาของเงิน (ถ้ามี)",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_institution_type",
+      "field_en_name": "Reporter Institution Type",
+      "field_cn_name": "报告机构类型",
+      "field_th_name": "ประเภทสถาบันการเงิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_en_name": "Reporter Institution Name",
+      "field_cn_name": "报告机构名称",
+      "field_th_name": "ชื่อสถาบันการเงิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_en_name": "Reporter Branch Name",
+      "field_cn_name": "报告分支名称",
+      "field_th_name": "สาขา",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_en_name": "Signature Date - Day",
+      "field_cn_name": "签名日期-日",
+      "field_th_name": "ลายมือชื่อผู้รายงาน วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_en_name": "Signature Date - Month",
+      "field_cn_name": "签名日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_en_name": "Signature Date - Year",
+      "field_cn_name": "签名日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    }
+  ],
+  "AMLO-1-02": [
+    {
+      "field_name": "report_number",
+      "field_en_name": "Report Number",
+      "field_cn_name": "报告编号",
+      "field_th_name": "เลขที่รายงาน",
+      "fillpos": "fill_52"
+    },
+    {
+      "field_name": "asset_value",
+      "field_en_name": "Asset Value",
+      "field_cn_name": "资产价值",
+      "field_th_name": "มูลค่าสินทรัพย์",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_day",
+      "field_en_name": "Report Date - Day",
+      "field_cn_name": "报告日期-日",
+      "field_th_name": "วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_month",
+      "field_en_name": "Report Date - Month",
+      "field_cn_name": "报告日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_year",
+      "field_en_name": "Report Date - Year",
+      "field_cn_name": "报告日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_en_name": "Origin Report Number",
+      "field_cn_name": "原报告编号",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_first_report",
+      "field_en_name": "Is First Report",
+      "field_cn_name": "是否首次报告",
+      "field_th_name": "รายงานฉบับแรก",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_en_name": "Is Amendment Report",
+      "field_cn_name": "是否修改报告",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fillpos": null
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_en_name": "Reference Report Number",
+      "field_cn_name": "参考报告编号",
+      "field_th_name": "เลขที่อ้างถึง",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_en_name": "Maker Type - Person",
+      "field_cn_name": "交易者类型-个人",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_en_name": "Maker Type - Juristic",
+      "field_cn_name": "交易者类型-法人",
+      "field_th_name": "นิติบุคคล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_en_name": "Maker First Name",
+      "field_cn_name": "交易者名字",
+      "field_th_name": "ชื่อ",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_en_name": "Maker Last Name",
+      "field_cn_name": "交易者姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_en_name": "ID Number",
+      "field_cn_name": "身份证号码",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address",
+      "field_en_name": "Address",
+      "field_cn_name": "地址",
+      "field_th_name": "ที่อยู่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_phone",
+      "field_en_name": "Phone",
+      "field_cn_name": "电话",
+      "field_th_name": "โทรศัพท์",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_en_name": "Joint Party First Name",
+      "field_cn_name": "共同方名字",
+      "field_th_name": "ชื่อ",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_en_name": "Joint Party Last Name",
+      "field_cn_name": "共同方姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_en_name": "Joint Party ID",
+      "field_cn_name": "共同方身份证",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_en_name": "Joint Party Address",
+      "field_cn_name": "共同方地址",
+      "field_th_name": "ที่อยู่",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_en_name": "Transaction Date - Day",
+      "field_cn_name": "交易日期-日",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_en_name": "Transaction Date - Month",
+      "field_cn_name": "交易日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_en_name": "Transaction Date - Year",
+      "field_cn_name": "交易日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_type_mortgage",
+      "field_en_name": "Transaction Type - Mortgage",
+      "field_cn_name": "交易类型-抵押",
+      "field_th_name": "จำนอง",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_type_sale",
+      "field_en_name": "Transaction Type - Sale",
+      "field_cn_name": "交易类型-出售",
+      "field_th_name": "ขาย",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_type_transfer",
+      "field_en_name": "Transaction Type - Transfer",
+      "field_cn_name": "交易类型-转让",
+      "field_th_name": "โอนกรรมสิทธิ์",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_type_lease",
+      "field_en_name": "Transaction Type - Lease",
+      "field_cn_name": "交易类型-租赁",
+      "field_th_name": "เช่า",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_type_other",
+      "field_en_name": "Transaction Type - Other",
+      "field_cn_name": "交易类型-其他",
+      "field_th_name": "อื่น ๆ",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_type_land",
+      "field_en_name": "Asset Type - Land",
+      "field_cn_name": "资产类型-土地",
+      "field_th_name": "ที่ดิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_type_building",
+      "field_en_name": "Asset Type - Building",
+      "field_cn_name": "资产类型-建筑",
+      "field_th_name": "สิ่งปลูกสร้าง",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_type_condominium",
+      "field_en_name": "Asset Type - Condominium",
+      "field_cn_name": "资产类型-公寓",
+      "field_th_name": "ห้องชุด",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_type_other",
+      "field_en_name": "Asset Type - Other",
+      "field_cn_name": "资产类型-其他",
+      "field_th_name": "อื่น ๆ",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_value_thb",
+      "field_en_name": "Asset Value (THB)",
+      "field_cn_name": "资产价值(泰铢)",
+      "field_th_name": "มูลค่าทรัพย์สิน (บาท)",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_location",
+      "field_en_name": "Asset Location",
+      "field_cn_name": "资产位置",
+      "field_th_name": "ที่ตั้งทรัพย์สิน",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_deed_number",
+      "field_en_name": "Deed Number",
+      "field_cn_name": "地契号码",
+      "field_th_name": "เลขที่โฉนด",
+      "fillpos": null
+    },
+    {
+      "field_name": "asset_area",
+      "field_en_name": "Asset Area",
+      "field_cn_name": "资产面积",
+      "field_th_name": "เนื้อที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_en_name": "Reporter Institution Name",
+      "field_cn_name": "报告机构名称",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_en_name": "Reporter Branch Name",
+      "field_cn_name": "报告分支名称",
+      "field_th_name": "สาขา",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_en_name": "Signature Date - Day",
+      "field_cn_name": "签名日期-日",
+      "field_th_name": "วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_en_name": "Signature Date - Month",
+      "field_cn_name": "签名日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_en_name": "Signature Date - Year",
+      "field_cn_name": "签名日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    }
+  ],
+  "AMLO-1-03": [
+    {
+      "field_name": "report_number",
+      "field_en_name": "Report Number",
+      "field_cn_name": "报告编号",
+      "field_th_name": "เลขที่รายงาน",
+      "fillpos": null
+    },
+    {
+      "field_name": "cumulative_amount_1month",
+      "field_en_name": "Cumulative Amount (1 Month)",
+      "field_cn_name": "累计金额(1个月)",
+      "field_th_name": "จำนวนเงินสะสม (1 เดือน)",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_count_1month",
+      "field_en_name": "Transaction Count (1 Month)",
+      "field_cn_name": "交易次数(1个月)",
+      "field_th_name": "จำนวนธุรกรรม (1 เดือน)",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_day",
+      "field_en_name": "Report Date - Day",
+      "field_cn_name": "报告日期-日",
+      "field_th_name": "วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_month",
+      "field_en_name": "Report Date - Month",
+      "field_cn_name": "报告日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "report_date_year",
+      "field_en_name": "Report Date - Year",
+      "field_cn_name": "报告日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_first_report",
+      "field_en_name": "Is First Report",
+      "field_cn_name": "是否首次报告",
+      "field_th_name": "รายงานฉบับแรก",
+      "fillpos": null
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_en_name": "Is Amendment Report",
+      "field_cn_name": "是否修改报告",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fillpos": null
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_en_name": "Reference Report Number",
+      "field_cn_name": "参考报告编号",
+      "field_th_name": "เลขที่อ้างถึง",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_en_name": "Maker First Name",
+      "field_cn_name": "交易者名字",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_en_name": "Maker Last Name",
+      "field_cn_name": "交易者姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_en_name": "ID Number",
+      "field_cn_name": "身份证号码",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_address",
+      "field_en_name": "Address",
+      "field_cn_name": "地址",
+      "field_th_name": "ที่อยู่",
+      "fillpos": null
+    },
+    {
+      "field_name": "maker_birthdate",
+      "field_en_name": "Birth Date",
+      "field_cn_name": "出生日期",
+      "field_th_name": "วันเกิด",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_en_name": "Joint Party First Name",
+      "field_cn_name": "共同方名字",
+      "field_th_name": "ชื่อผู้ร่วมทำธุรกรรม",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_en_name": "Joint Party Last Name",
+      "field_cn_name": "共同方姓氏",
+      "field_th_name": "นามสกุล",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_en_name": "Joint Party ID",
+      "field_cn_name": "共同方身份证",
+      "field_th_name": "เลขประจำตัว",
+      "fillpos": null
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_en_name": "Joint Party Address",
+      "field_cn_name": "共同方地址",
+      "field_th_name": "ที่อยู่",
+      "fillpos": null
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_en_name": "Transaction Date - Day",
+      "field_cn_name": "交易日期-日",
+      "field_th_name": "วันที่ทำธุรกรรม",
+      "fillpos": "fill_37"
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_en_name": "Transaction Date - Month",
+      "field_cn_name": "交易日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": "fill_38"
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_en_name": "Transaction Date - Year",
+      "field_cn_name": "交易日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": "fill_39"
+    },
+    {
+      "field_name": "transaction_amount_thb",
+      "field_en_name": "Transaction Amount (THB)",
+      "field_cn_name": "交易金额(泰铢)",
+      "field_th_name": "จำนวนเงิน (บาท)",
+      "fillpos": null
+    },
+    {
+      "field_name": "has_filed_ctr_atr",
+      "field_en_name": "Has Filed CTR/ATR",
+      "field_cn_name": "是否已提交CTR/ATR",
+      "field_th_name": "ได้ยื่นแบบ ปปง.๑-๐๑ หรือ ปปง.๑-๐๒",
+      "fillpos": null
+    },
+    {
+      "field_name": "previous_report_number",
+      "field_en_name": "Previous Report Number",
+      "field_cn_name": "之前报告编号",
+      "field_th_name": "เลขที่รายงาน ปปง.๑-๐๑/๑-๐๒",
+      "fillpos": null
+    },
+    {
+      "field_name": "suspicion_reasons",
+      "field_en_name": "Suspicion Reasons",
+      "field_cn_name": "可疑原因",
+      "field_th_name": "เหตุอันควรสงสัย",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_en_name": "Reporter Institution Name",
+      "field_cn_name": "报告机构名称",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_position",
+      "field_en_name": "Reporter Position",
+      "field_cn_name": "报告人职位",
+      "field_th_name": "ตำแหน่ง",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_en_name": "Signature Date - Day",
+      "field_cn_name": "签名日期-日",
+      "field_th_name": "วันที่",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_en_name": "Signature Date - Month",
+      "field_cn_name": "签名日期-月",
+      "field_th_name": "เดือน",
+      "fillpos": null
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_en_name": "Signature Date - Year",
+      "field_cn_name": "签名日期-年",
+      "field_th_name": "พ.ศ.",
+      "fillpos": null
+    }
+  ]
+}

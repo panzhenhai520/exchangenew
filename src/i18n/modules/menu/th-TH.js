@@ -10,7 +10,7 @@ export default {
     "foreign_stock_query": "สต็อกต่างประเทศ",
     "local_stock_query": "สต็อกท้องถิ่น",
     "amlo_audit": "ตรวจสอบ AMLO",
-    "amlo_reservation_audit": "ตรวจสอบการจอง",
+    "amlo_reservation_audit": "ค้นหาการจอง AMLO",
     "amlo_report_list": "จัดการรายงาน",
     "bot_report": "รายงาน BOT",
     "bot_compliance": "การปฏิบัติตาม BOT",

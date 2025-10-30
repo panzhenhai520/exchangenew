@@ -13,7 +13,14 @@
       "Bash(if exist node_modules.cache rmdir /s /q node_modules.cache)",
       "Read(//c/Users/Administrator/Desktop/**)",
       "Bash(find:*)",
-      "Read(//d/**)"
+      "Read(//d/**)",
+      "Bash(iconv:*)",
+      "Bash(dir:*)",
+      "Bash(mysql:*)",
+      "Bash(cd:*)",
+      "Bash(pip install:*)",
+      "Bash(where:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

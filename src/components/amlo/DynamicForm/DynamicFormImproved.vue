@@ -89,6 +89,13 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormField from './FormField.vue'
+import {
+  normalizeFieldDefinition,
+  normalizeFieldGroup,
+  readValidationRules,
+  resolveFieldLabel
+} from './fieldHelpers.js'
+import repformService from '@/services/api/repformService'
 
 export default {
   name: 'DynamicFormImproved',
@@ -169,26 +176,26 @@ export default {
     const loadFormDefinition = async () => {
       loading.value = true
       try {
-        const response = await fetch(`/api/repform/form-definition/${props.reportType}?language=${currentLanguage.value}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
+        const result = await repformService.getFormDefinition(props.reportType, currentLanguage.value)
+          .then(res => res.data)
+          .catch(error => {
+            console.error('[DynamicFormImproved] 获取表单定义失败:', error)
+            throw error
+          })
 
-        const result = await response.json()
-
-        if (result.success) {
+        if (result?.success) {
           // 处理字段分组
           if (result.data.field_groups && result.data.field_groups.length > 0) {
             fieldGroups.value = result.data.field_groups.map((group, index) => ({
-              ...group,
+              ...normalizeFieldGroup(group),
               expanded: index === 0 // 默认展开第一组
             }))
           } else {
+            const fallbackFields = (result.data.fields || []).map(normalizeFieldDefinition)
             // 如果没有分组，创建一个默认分组
             fieldGroups.value = [{
               group_name: t('common.formFields'),
-              fields: result.data.fields || [],
+              fields: fallbackFields,
               expanded: true
             }]
           }
@@ -196,6 +203,7 @@ export default {
           // 初始化表单数据，并自动填充已知字段
           await initializeFormData()
         } else {
+          console.error('[DynamicFormImproved] 表单定义响应异常:', result)
           console.error('加载表单定义失败:', result.message)
         }
       } catch (error) {
@@ -280,11 +288,13 @@ export default {
         group.fields.forEach(field => {
           const fieldName = field.field_name
           const fieldType = field.field_type
+          const rules = readValidationRules(field)
           totalCount++
 
           // 优先使用initialData中的值（如果已明确提供）
           // 修复：不再排除空字符串和0，只检查undefined和null
-          if (props.initialData && props.initialData[fieldName] !== undefined && props.initialData[fieldName] !== null) {
+          if (props.initialData && Object.prototype.hasOwnProperty.call(props.initialData, fieldName) &&
+            props.initialData[fieldName] !== null && props.initialData[fieldName] !== undefined) {
             data[fieldName] = props.initialData[fieldName]
             filledCount++
             console.log(`[DynamicFormImproved] ✅ ${fieldName} = ${JSON.stringify(props.initialData[fieldName])} (来自initialData)`)
@@ -297,7 +307,12 @@ export default {
           }
           // 日期字段自动填充当前日期
           else if ((fieldType === 'DATE' || fieldType === 'DATETIME') && !field.default_value) {
-            data[fieldName] = new Date().toISOString().split('T')[0]
+            const defaultDateInput = rules.default_value || new Date().toISOString()
+            let defaultDate = new Date(defaultDateInput)
+            if (Number.isNaN(defaultDate.getTime())) {
+              defaultDate = new Date()
+            }
+            data[fieldName] = defaultDate.toISOString().split('T')[0]
             filledCount++
             console.log(`[DynamicFormImproved] 📅 ${fieldName} = ${data[fieldName]} (自动当前日期)`)
           }
@@ -306,8 +321,12 @@ export default {
             data[fieldName] = field.default_value
             console.log(`[DynamicFormImproved] 🔧 ${fieldName} = ${field.default_value} (数据库默认值)`)
           }
+          else if (rules.default_value !== undefined) {
+            data[fieldName] = rules.default_value
+            console.log(`[DynamicFormImproved] 🔧 ${fieldName} = ${rules.default_value} (规则默认值)`)
+          }
           // 数字类型默认0
-          else if (fieldType === 'INT' || fieldType === 'DECIMAL') {
+          else if (fieldType === 'INT' || fieldType === 'DECIMAL' || fieldType === 'NUMBER') {
             // 为生日字段提供合理的默认值
             if (fieldName.includes('birthdate_day')) {
               data[fieldName] = 1
@@ -321,6 +340,10 @@ export default {
             console.log(`[DynamicFormImproved] 🔢 ${fieldName} = ${data[fieldName]} (数字默认值)`)
           }
           // 其他类型默认空字符串
+          else if (fieldType === 'ENUM') {
+            data[fieldName] = rules.multiple ? [] : ''
+            console.log(`[DynamicFormImproved] 🔽 ${fieldName} = ${JSON.stringify(data[fieldName])} (枚举默认值)`)
+          }
           else {
             data[fieldName] = ''
             console.log(`[DynamicFormImproved] 📝 ${fieldName} = '' (空字符串默认值)`)
@@ -360,8 +383,18 @@ export default {
         group.fields.forEach(field => {
           if (field.is_required) {
             const value = formData.value[field.field_name]
-            if (!value || (typeof value === 'string' && value.trim() === '')) {
-              errors[field.field_name] = [t('common.fieldRequired')]
+            const isEmptyString = typeof value === 'string' && value.trim() === ''
+            const isEmptyArray = Array.isArray(value) && value.length === 0
+            const isEmpty =
+              value === null ||
+              value === undefined ||
+              value === '' ||
+              isEmptyString ||
+              isEmptyArray
+
+            if (isEmpty) {
+              const label = resolveFieldLabel(field) || field.field_name
+              errors[field.field_name] = [`${label} ${t('common.fieldRequired')}`]
               hasError = true
             }
           }

@@ -1,7 +1,7 @@
 <template>
   <a-date-picker
     :value="dateValue"
-    :placeholder="field.placeholder || field.field_label"
+    :placeholder="placeholder"
     :disabled="field.is_readonly"
     :format="dateFormat"
     style="width: 100%"
@@ -12,6 +12,7 @@
 <script>
 import { computed } from 'vue'
 import dayjs from 'dayjs'
+import { resolveFieldLabel } from '../fieldHelpers.js'
 
 export default {
   name: 'DateField',
@@ -28,6 +29,10 @@ export default {
   emits: ['update:value'],
   setup(props, { emit }) {
     const dateFormat = 'DD/MM/YYYY'
+
+    const placeholder = computed(() => {
+      return props.field.placeholder || resolveFieldLabel(props.field)
+    })
 
     const dateValue = computed(() => {
       if (props.value) {
@@ -47,6 +52,7 @@ export default {
     return {
       dateFormat,
       dateValue,
+      placeholder,
       handleChange
     }
   }

@@ -10,7 +10,7 @@ from flask import Blueprint, request, jsonify, g, send_file
 from functools import wraps
 from services.db_service import SessionLocal
 from services.repform import ReportDataService
-from services.pdf import AMLOPDFGenerator, AMLOFormFiller, adapt_route_data_to_pdf_data
+from services.pdf import AMLOPDFGenerator, AMLOFormFiller, adapt_route_data_to_pdf_data, generate_amlo_pdf
 from services.auth_service import token_required, permission_required
 from sqlalchemy import text
 from datetime import datetime
@@ -26,6 +26,136 @@ logger = logging.getLogger(__name__)
 
 # 创建Blueprint - 统一使用url_prefix方式
 app_amlo = Blueprint('app_amlo', __name__, url_prefix='/api/amlo')
+
+
+def _prepare_amlo_pdf_payload(session, result_row):
+    """
+    根据预约记录准备PDF填充数据
+
+    Returns:
+        (pdf_data, form_data)
+    """
+    form_data = json.loads(result_row.form_data) if result_row.form_data else {}
+
+    def _normalize_bool(value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in ('1', 'true', 'yes', 'y', 'on')
+        if isinstance(value, (int, float)):
+            return value != 0
+        return False
+
+    def _combine_name(prefix: str, fallback: str = ''):
+        title = form_data.get(f'{prefix}_title') or ''
+        first = form_data.get(f'{prefix}_firstname') or ''
+        last = form_data.get(f'{prefix}_lastname') or ''
+        company = form_data.get(f'{prefix}_company_name') or ''
+        full = form_data.get(f'{prefix}_full_name') or ''
+        parts = [p for p in [title, first, last] if p]
+        if company:
+            parts.append(company)
+        candidate = full or ' '.join(parts).strip()
+        return candidate or fallback
+
+    def _combine_address(prefix: str):
+        order = [
+            'number', 'village', 'lane', 'road',
+            'subdistrict', 'district', 'province', 'postalcode'
+        ]
+        values = []
+        for suffix in order:
+            key = f'{prefix}_{suffix}'
+            val = form_data.get(key)
+            if val:
+                values.append(str(val))
+        return ' '.join(values).strip()
+
+    def _parse_date_from_fields(day_key, month_key, year_key):
+        day = form_data.get(day_key)
+        month = form_data.get(month_key)
+        year = form_data.get(year_key)
+        if not all([day, month, year]):
+            return None
+        try:
+            day = int(day)
+            month = int(month)
+            year = int(year)
+            if year < 100:
+                year += 2000
+            return datetime(year, month, day)
+        except Exception:
+            return None
+
+    maker_name = _combine_name('maker', result_row.customer_name or '')
+    joint_party_name = _combine_name('joint_party', form_data.get('joint_party_name', ''))
+    maker_address = _combine_address('maker_address') or result_row.customer_address or ''
+    joint_party_address = form_data.get('joint_party_address') or _combine_address('joint_party_address')
+
+    maker_phone = form_data.get('maker_phone') or form_data.get('maker_mobile') or ''
+    maker_occupation = form_data.get('maker_occupation_type') or form_data.get('maker_occupation') or ''
+    maker_employer = form_data.get('maker_occupation_employer') or ''
+    beneficiary_name = joint_party_name or form_data.get('beneficiary_name', '')
+
+    direction = (result_row.direction or '').lower()
+    transaction_type = 'buy' if direction == 'buy' else 'sell'
+    foreign_amount = float(form_data.get('total_amount') or result_row.amount or 0)
+    amount_thb = float(result_row.amount_thb or form_data.get('amount_thb') or 0)
+
+    logger.info(f"[PDF数据准备] 预约ID={result_row.id}, direction='{direction}', transaction_type='{transaction_type}', foreign_amount={foreign_amount}, amount_thb={amount_thb}")
+
+    form_transaction_date = _parse_date_from_fields('transaction_date_day', 'transaction_date_month', 'transaction_date_year')
+    transaction_date = form_transaction_date or result_row.transaction_date
+
+    form_report_date = _parse_date_from_fields('report_date_day', 'report_date_month', 'report_date_year')
+    report_date_str = (form_report_date or datetime.now()).strftime('%d/%m/%Y')
+
+    branch_id = getattr(result_row, 'branch_id', None)
+    institution_code, branch_code = None, None
+    if branch_id:
+        try:
+            # 使用ReportNumberGenerator获取网点代码
+            from services.report_number_generator import ReportNumberGenerator
+            branch_codes = ReportNumberGenerator.get_branch_codes(session, branch_id)
+            institution_code = branch_codes['institution_code']
+            branch_code = branch_codes['branch_code']
+        except Exception as fetch_error:
+            logger.warning(f"获取网点机构代码失败: {fetch_error}")
+            institution_code = getattr(result_row, 'amlo_institution_code', None) or '001'
+            branch_code = getattr(result_row, 'branch_code', None) or '001'
+    institution_code = institution_code or getattr(result_row, 'amlo_institution_code', None) or '001'
+    branch_code = branch_code or getattr(result_row, 'branch_code', None) or '001'
+
+    pdf_data = {
+        'report_number': result_row.reservation_no,
+        'is_amendment': _normalize_bool(form_data.get('is_amendment_report')),
+        'maker_type': 'juristic' if _normalize_bool(form_data.get('maker_type_juristic')) else 'person',
+        'maker_name': maker_name,
+        'maker_id': form_data.get('maker_id_number') or result_row.customer_id,
+        'maker_address': maker_address,
+        'maker_phone': maker_phone,
+        'maker_occupation': maker_occupation or maker_employer,
+        'joint_party_name': joint_party_name,
+        'joint_party_address': joint_party_address or '',
+        'transaction_date': (transaction_date.strftime('%d/%m/%Y') if transaction_date else ''),
+        'transaction_type': transaction_type,
+        'currency_code': form_data.get('currency_code') or form_data.get('foreign_currency_code') or '',
+        'foreign_amount': foreign_amount,
+        'amount_thb': amount_thb,
+        'remarks': form_data.get('remarks', ''),
+        'transaction_purpose': form_data.get('transaction_purpose') or form_data.get('exchange_other_transaction') or '',
+        'beneficiary_name': beneficiary_name or form_data.get('joint_party_name', ''),
+        'reporter_name': getattr(result_row, 'reporter_name', None) or '',
+        'reporter_position': form_data.get('reporter_position', ''),
+        'report_date': report_date_str,
+        'institution_code': institution_code,
+        'branch_code': branch_code,
+        'form_data': form_data
+    }
+
+    logger.info(f"[PDF数据准备] 最终pdf_data: transaction_type='{pdf_data['transaction_type']}', foreign_amount={pdf_data['foreign_amount']}")
+
+    return pdf_data, form_data
 
 
 # 权限装饰器
@@ -609,7 +739,7 @@ def get_amlo_reports(current_user):
                 reserved_id, transaction_id, customer_id, customer_name,
                 transaction_amount, transaction_date,
                 pdf_filename, pdf_path, is_reported, report_time,
-                branch_id, operator_id, reporter_id, language,
+                branch_id, operator_id, language,
                 created_at, updated_at
             FROM AMLOReport
             WHERE {where_sql}
@@ -919,7 +1049,7 @@ def complete_reservation(current_user, reservation_id):
 @amlo_permission_required('amlo_report_view')
 def generate_report_pdf(current_user, report_id):
     """
-    生成AMLO报告PDF文件
+    生成AMLO报告PDF文件 (使用新的CSV映射PDF生成器)
 
     GET /api/amlo/reports/<report_id>/generate-pdf
 
@@ -927,102 +1057,202 @@ def generate_report_pdf(current_user, report_id):
     - 成功: 返回PDF文件流 (application/pdf)
     - 失败: {"success": false, "message": "错误信息"}
     """
+    print(f"\n{'='*80}")
+    print(f"[AMLO PDF STEP 1] 收到PDF生成请求")
+    print(f"[AMLO PDF] 报告ID: {report_id}")
+    print(f"[AMLO PDF] 用户: {current_user}")
+    print(f"[AMLO PDF] 用户branch_id: {g.current_user.get('branch_id')}")
+    print(f"{'='*80}\n")
+
     session = SessionLocal()
+    print(f"[AMLO PDF STEP 2] 数据库会话已创建")
 
     try:
         # 查询报告记录
+        print(f"[AMLO PDF STEP 3] 开始查询数据库...")
         report_sql = text("""
             SELECT
                 r.id, r.reservation_no, r.report_type, r.customer_id, r.customer_name,
-                r.customer_address, r.currency_id, r.direction, r.amount, r.amount_thb,
-                r.transaction_date, r.form_data, r.created_at,
-                b.branch_name, b.branch_code,
-                u.username as reporter_name
+                r.currency_id, r.direction, r.amount, r.local_amount,
+                r.form_data, r.created_at, r.branch_id,
+                b.branch_name, b.branch_code, b.amlo_institution_code
             FROM Reserved_Transaction r
-            LEFT JOIN branch b ON r.branch_id = b.id
-            LEFT JOIN users u ON r.created_by = u.id
+            LEFT JOIN branches b ON r.branch_id = b.id
             WHERE r.id = :report_id AND r.branch_id = :branch_id
         """)
 
-        result = session.execute(report_sql, {
+        query_params = {
             'report_id': report_id,
             'branch_id': g.current_user.get('branch_id')
-        }).fetchone()
+        }
+        print(f"[AMLO PDF] 查询参数: {query_params}")
+
+        result = session.execute(report_sql, query_params).fetchone()
+
+        print(f"[AMLO PDF STEP 4] 数据库查询完成")
+        print(f"[AMLO PDF] 查询结果: {'找到记录' if result else '未找到记录'}")
 
         if not result:
+            print(f"[AMLO PDF] ERROR: 报告不存在 - ID: {report_id}, branch_id: {g.current_user.get('branch_id')}")
             return jsonify({
                 'success': False,
                 'message': '报告不存在'
             }), 404
 
-        # 解析form_data
-        form_data = json.loads(result.form_data) if result.form_data else {}
+        print(f"[AMLO PDF] 报告类型: {result.report_type}")
+        print(f"[AMLO PDF] 预约编号: {result.reservation_no}")
 
-        # 构建PDF数据
-        pdf_data = {
-            'report_number': result.reservation_no,
-            'is_amendment': form_data.get('is_amendment', False),
-            'maker_type': form_data.get('maker_type', 'person'),
-            'maker_name': result.customer_name,
-            'maker_id': result.customer_id,
-            'maker_address': result.customer_address or '',
-            'joint_party_name': form_data.get('joint_party_name', ''),
-            'transaction_date': result.transaction_date.strftime('%d/%m/%Y') if result.transaction_date else '',
-            'transaction_type': 'exchange',
-            'currency_code': form_data.get('currency_code', 'USD'),
-            'amount_thb': float(result.amount_thb or 0),
-            'remarks': form_data.get('remarks', ''),
-            'reporter_name': result.reporter_name or '',
-            'reporter_position': form_data.get('reporter_position', ''),
-            'report_date': datetime.now().strftime('%d/%m/%Y')
-        }
-
-        # AMLO-1-02特定字段
-        if result.report_type == 'AMLO-1-02':
-            pdf_data.update({
-                'asset_transaction_type': form_data.get('asset_transaction_type', 'transfer'),
-                'asset_type': form_data.get('asset_type', 'land'),
-                'asset_value_thb': float(result.amount_thb or 0)
-            })
-
-        # AMLO-1-03特定字段
-        if result.report_type == 'AMLO-1-03':
-            pdf_data.update({
-                'has_filed_ctr_atr': form_data.get('has_filed_ctr_atr', False),
-                'previous_report_number': form_data.get('previous_report_number', ''),
-                'suspicion_reasons': form_data.get('suspicion_reasons', '')
-            })
-
-        # 生成PDF - 使用新的表单填充器
-        filler = AMLOFormFiller()
-
-        # 创建临时文件
+        # 创建临时文件和项目目录副本
+        print(f"[AMLO PDF STEP 5] 准备文件路径...")
         temp_dir = tempfile.gettempdir()
-        pdf_filename = f"AMLO_{result.report_type.replace('-', '_')}_{result.reservation_no}.pdf"
+        pdf_filename = f"{result.report_type}_{result.reservation_no or result.id}.pdf"
         pdf_path = os.path.join(temp_dir, pdf_filename)
+        print(f"[AMLO PDF] 临时文件路径: {pdf_path}")
 
-        # 转换数据格式并生成PDF文件
-        adapted_data = adapt_route_data_to_pdf_data(pdf_data)
-        filler.fill_form(result.report_type, adapted_data, pdf_path)
+        # 同时保存到项目目录的amlo_pdfs文件夹（方便查看）
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        amlo_pdf_dir = os.path.join(project_root, 'amlo_pdfs')
+        print(f"[AMLO PDF] 项目根目录: {project_root}")
+        print(f"[AMLO PDF] PDF保存目录: {amlo_pdf_dir}")
+        print(f"[AMLO PDF] 目录是否存在: {os.path.exists(amlo_pdf_dir)}")
+
+        print(f"[AMLO PDF STEP 6] 创建amlo_pdfs目录...")
+        os.makedirs(amlo_pdf_dir, exist_ok=True)
+        print(f"[AMLO PDF] 目录创建完成: {os.path.exists(amlo_pdf_dir)}")
+
+        project_pdf_path = os.path.join(amlo_pdf_dir, pdf_filename)
+        print(f"[AMLO PDF] 项目PDF路径: {project_pdf_path}")
+
+        # 使用新的PDF生成服务 (基于CSV映射)
+        print(f"[AMLO PDF STEP 7] 开始生成PDF...")
+        logger.info(f"生成AMLO PDF - 记录ID: {report_id}, 类型: {result.report_type}")
+        logger.info(f"PDF将保存到: {pdf_path}")
+        logger.info(f"PDF副本保存到: {project_pdf_path}")
+
+        # 方式1: 直接从数据库记录生成 (推荐)
+        from services.pdf import AMLOPDFService
+        print(f"[AMLO PDF] 导入AMLOPDFService成功")
+        service = AMLOPDFService()
+        print(f"[AMLO PDF] AMLOPDFService实例化成功")
+
+        # 构建预约数据
+        print(f"[AMLO PDF STEP 8] 构建预约数据...")
+
+        # 解析form_data
+        import json
+        form_data_dict = json.loads(result.form_data) if result.form_data else {}
+        print(f"[AMLO PDF] form_data已解析，包含 {len(form_data_dict)} 个字段")
+
+        # 从form_data中提取交易日期
+        transaction_date = None
+        if form_data_dict:
+            day = form_data_dict.get('transaction_date_day')
+            month = form_data_dict.get('transaction_date_month')
+            year = form_data_dict.get('transaction_date_year')
+
+            if day and month and year:
+                try:
+                    # 转换佛历年份为公历（如果需要）
+                    if int(year) > 2500:
+                        year = int(year) - 543
+                    from datetime import datetime
+                    transaction_date = datetime(int(year), int(month), int(day))
+                    print(f"[AMLO PDF] 交易日期: {transaction_date.strftime('%Y-%m-%d')}")
+                except Exception as date_error:
+                    print(f"[AMLO PDF] WARNING: 日期解析失败: {date_error}")
+                    transaction_date = None
+
+        # 从form_data中提取币种代码
+        currency_code = form_data_dict.get('deposit_currency_code') or form_data_dict.get('withdrawal_currency_code') or 'USD'
+        print(f"[AMLO PDF] 币种代码: {currency_code}")
+
+        reservation_data = {
+            'id': result.id,
+            'reservation_no': result.reservation_no,
+            'report_type': result.report_type,
+            'customer_id': result.customer_id,
+            'customer_name': result.customer_name,
+            'currency_code': currency_code,
+            'direction': result.direction,
+            'amount': float(result.amount) if result.amount else 0,
+            'local_amount': float(result.local_amount) if result.local_amount else 0,
+            'transaction_date': transaction_date,
+            'form_data': result.form_data,
+            'branch_id': result.branch_id
+        }
+        print(f"[AMLO PDF] 预约数据: ID={reservation_data['id']}, 类型={reservation_data['report_type']}")
+        print(f"[AMLO PDF] ⚠️ DIRECTION字段值: '{result.direction}' (类型: {type(result.direction).__name__})")
+        print(f"[AMLO PDF] 金额: 外币={reservation_data['amount']}, 本币={reservation_data['local_amount']}")
+
+        # 生成PDF
+        print(f"[AMLO PDF STEP 9] 调用PDF生成服务...")
+        print(f"[AMLO PDF] 目标路径: {pdf_path}")
+        result_path = service.generate_pdf_from_reservation(reservation_data, pdf_path)
+        print(f"[AMLO PDF STEP 10] PDF生成完成")
+        print(f"[AMLO PDF] 返回路径: {result_path}")
+        print(f"[AMLO PDF] 文件存在: {os.path.exists(result_path)}")
+        if os.path.exists(result_path):
+            print(f"[AMLO PDF] 文件大小: {os.path.getsize(result_path)} bytes")
+
+        logger.info(f"PDF生成成功: {result_path}")
+
+        # 复制一份到项目目录（方便查看）
+        print(f"[AMLO PDF STEP 11] 复制PDF到项目目录...")
+        try:
+            import shutil
+            shutil.copy2(result_path, project_pdf_path)
+            print(f"[AMLO PDF] 复制成功")
+            print(f"[AMLO PDF] 副本存在: {os.path.exists(project_pdf_path)}")
+            if os.path.exists(project_pdf_path):
+                print(f"[AMLO PDF] 副本大小: {os.path.getsize(project_pdf_path)} bytes")
+
+            logger.info(f"PDF副本已保存: {project_pdf_path}")
+            print(f"\n{'='*80}")
+            print(f"[OK] AMLO PDF生成成功！")
+            print(f"{'='*80}")
+            print(f"临时文件: {result_path}")
+            print(f"项目副本: {project_pdf_path}")
+            print(f"文件名: {pdf_filename}")
+            print(f"{'='*80}\n")
+        except Exception as copy_error:
+            print(f"[AMLO PDF] WARNING: 复制失败: {copy_error}")
+            logger.warning(f"复制PDF到项目目录失败: {copy_error}")
 
         # 返回PDF文件
+        print(f"[AMLO PDF STEP 12] 准备返回PDF文件...")
+        print(f"[AMLO PDF] 使用send_file发送: {result_path}")
         return send_file(
-            pdf_path,
+            result_path,
             mimetype='application/pdf',
             as_attachment=True,
             download_name=pdf_filename
         )
 
     except Exception as e:
-        logger.error(f"Error in generate_report_pdf: {str(e)}")
+        error_msg = f"生成PDF失败: {str(e)}"
+        error_type = type(e).__name__
+        logger.error(f"Error in generate_report_pdf: {error_msg}")
+
+        print(f"\n{'='*80}")
+        print(f"[ERROR] AMLO PDF生成失败！")
+        print(f"{'='*80}")
+        print(f"错误类型: {error_type}")
+        print(f"错误信息: {error_msg}")
+        print(f"报告ID: {report_id}")
+        print(f"详细堆栈:")
         traceback.print_exc()
+        print(f"{'='*80}\n")
+
         return jsonify({
             'success': False,
-            'message': f'生成PDF失败: {str(e)}'
+            'message': error_msg,
+            'error_type': error_type
         }), 500
 
     finally:
+        print(f"[AMLO PDF] 关闭数据库会话")
         session.close()
+        print(f"[AMLO PDF] 请求处理完成\n")
 
 
 @app_amlo.route('/reports/batch-generate-pdf', methods=['POST'])
@@ -1087,21 +1317,7 @@ def batch_generate_pdf(current_user):
 
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for result in results:
-                # 解析form_data并构建PDF数据（与单个生成相同）
-                form_data = json.loads(result.form_data) if result.form_data else {}
-
-                pdf_data = {
-                    'report_number': result.reservation_no,
-                    'is_amendment': form_data.get('is_amendment', False),
-                    'maker_type': form_data.get('maker_type', 'person'),
-                    'maker_name': result.customer_name,
-                    'maker_id': result.customer_id,
-                    'maker_address': result.customer_address or '',
-                    'transaction_date': result.transaction_date.strftime('%d/%m/%Y') if result.transaction_date else '',
-                    'amount_thb': float(result.amount_thb or 0),
-                    'reporter_name': result.reporter_name or '',
-                    'report_date': datetime.now().strftime('%d/%m/%Y')
-                }
+                pdf_data, form_data = _prepare_amlo_pdf_payload(session, result)
 
                 if result.report_type == 'AMLO-1-02':
                     pdf_data.update({

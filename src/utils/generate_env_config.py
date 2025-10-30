@@ -8,28 +8,35 @@ from pathlib import Path
 
 def generate_env_config():
     """生成前端环境配置文件"""
+    from datetime import datetime
+
     # 读取环境变量
     current_ip = os.getenv('CURRENT_IP', 'localhost')
     backend_port = os.getenv('BACKEND_PORT', '5001')
     frontend_port = os.getenv('FRONTEND_PORT', '8080')
     default_branch = os.getenv('DEFAULT_BRANCH', 'A005')
-    
+
     # 构建URL
     backend_url = f'http://{current_ip}:{backend_port}'
     frontend_url = f'http://{current_ip}:{frontend_port}'
-    
-    # 生成JavaScript配置文件内容
-    config_content = f"""// 机顶盒汇率展示页面配置文件
-// 此文件由后端自动生成，请勿手动修改
-// 生成时间: {os.popen('date /t').read().strip() if os.name == 'nt' else os.popen('date').read().strip()}
+    api_base_url = f'http://{current_ip}:{backend_port}'
 
+    # 生成JavaScript配置文件内容
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    config_content = f"""// Auto-generated runtime config - {timestamp}
 window.ENV_CONFIG = {{
-    BACKEND_URL: '{backend_url}',
-    FRONTEND_URL: '{frontend_url}',
-    DEFAULT_BRANCH: '{default_branch}'
+  API_BASE_URL: '{api_base_url}',
+  CURRENT_IP: '{current_ip}',
+  BACKEND_PORT: {backend_port},
+  FRONTEND_PORT: {frontend_port},
+  BACKEND_URL: '{backend_url}',
+  FRONTEND_URL: '{frontend_url}',
+  DEFAULT_BRANCH: '{default_branch}'
 }};
 
-console.log('[环境配置] 加载配置文件:', window.ENV_CONFIG);
+console.log('[ENV_CONFIG] Runtime configuration loaded successfully');
+console.log('[ENV_CONFIG] API_BASE_URL:', window.ENV_CONFIG.API_BASE_URL);
+console.log('[ENV_CONFIG] CURRENT_IP:', window.ENV_CONFIG.CURRENT_IP);
 """
     
     # 确定配置文件路径

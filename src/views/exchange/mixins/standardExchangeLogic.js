@@ -1438,7 +1438,6 @@ export default {
           type: 'info',
           duration: 3000
         });
-      });
       }
 
       this.lastReservationStatusCode = reservation ? statusKey : (error ? null : 'none');

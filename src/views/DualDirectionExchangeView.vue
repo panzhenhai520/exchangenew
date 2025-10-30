@@ -1031,13 +1031,43 @@ export default {
             // 如果触发了AMLO报告，弹出预约表单
             if (triggerResponse.data.success && triggerResponse.data.triggers?.amlo?.triggered) {
               console.log('[验证] 触发了AMLO报告，弹出预约表单')
-              
+
+              // 🔧 判断交易类型：根据组合中的direction判断
+              console.log('[验证] 所有denomination组合:', JSON.stringify(this.denominationCombinations, null, 2))
+
+              // 过滤掉空的或undefined的direction
+              const validDirections = this.denominationCombinations
+                .map(c => c.direction)
+                .filter(d => d && d !== '')
+
+              console.log('[验证] 有效的direction值:', validDirections)
+
+              const uniqueDirections = [...new Set(validDirections)]
+              console.log('[验证] 去重后的direction:', uniqueDirections)
+
+              let transaction_type
+              if (uniqueDirections.length === 0) {
+                // 没有有效的direction信息
+                console.warn('[验证] ⚠️ 警告：没有找到有效的direction字段！')
+                transaction_type = 'exchange'  // 默认为普通兑换
+              } else if (uniqueDirections.length === 1) {
+                // 只有一个方向
+                transaction_type = uniqueDirections[0] // 直接使用direction值（'buy'或'sell'）
+                console.log('[验证] ✓ 单一方向交易:', transaction_type)
+              } else {
+                // 多个方向 = 真正的双向交易
+                transaction_type = 'dual_direction'
+                console.log('[验证] ✓ 检测到双向交易')
+              }
+
+              console.log('[验证] 最终交易类型:', transaction_type)
+
               // 准备预约交易数据
               const rawTransactionData = {
                 customer_id: this.customerInfo.id_number,
                 customer_name: this.customerInfo.name,
                 customer_country_code: this.customerInfo.country_code || 'TH',
-                transaction_type: 'dual_direction',
+                transaction_type: transaction_type,  // 使用动态判断的交易类型
                 payment_method: this.customerInfo.payment_method,
                 remarks: this.customerInfo.remarks
               }
@@ -1104,39 +1134,10 @@ export default {
             this.$toast?.success?.(this.validationResult.message)
           }
         } else {
-          // 库存不足时的处理
-          console.log('[验证] 库存验证失败，检查是否需要弹出预约表单')
-          
-          // 如果库存不足，也弹出预约表单
-          if (response.data.message && (response.data.message.includes('库存不足') || response.data.message.includes('本币库存不足'))) {
-            console.log('[验证] 库存不足，弹出预约表单')
-            
-            // 计算交易总金额
-            let totalAmountThb = 0
-            for (const combination of this.denominationCombinations) {
-              totalAmountThb += Math.abs(combination.local_amount || 0)
-            }
-            
-            // 准备预约交易数据
-            const rawTransactionData = {
-              customer_id: this.customerInfo.id_number || '',
-              customer_name: this.customerInfo.name || '',
-              customer_country_code: this.customerInfo.country_code || 'TH',
-              transaction_type: 'dual_direction',
-              payment_method: this.customerInfo.payment_method || 'cash',
-              remarks: this.customerInfo.remarks || '',
-              inventory_insufficient: true // 标记为库存不足导致的预约
-            }
-            this.reservationTransactionData = this.convertTransactionDataForModal(rawTransactionData, totalAmountThb)
-            
-            // 显示预约模态框
-            this.showReservationModal = true
-            
-            this.loading = false
-            return
-          }
-          
-          // 其他验证失败的情况
+          // 🔧 库存验证失败 - 直接显示错误，不弹出预约表单
+          // AMLO预约表单只应在触发AMLO规则时弹出，与库存无关
+          console.log('[验证] 库存验证失败')
+
           this.validationResult = {
             success: false,
             message: response.data.message || this.$t('exchange.validation_failed')
@@ -1148,44 +1149,9 @@ export default {
       } catch (error) {
         console.error('交易验证失败:', error)
         const errorMessage = error.response?.data?.message || error.message || this.$t('exchange.validation_failed')
-        
-        // 检查是否是库存不足错误（400状态码）
-        if (error.response?.status === 400 && errorMessage && (
-          errorMessage.includes('库存不足') || 
-          errorMessage.includes('本币库存不足')
-        )) {
-          console.log('[验证] 捕获到库存不足错误，弹出预约表单')
-          
-          // 计算交易总金额
-          let totalAmountThb = 0
-          for (const combination of this.denominationCombinations) {
-            totalAmountThb += Math.abs(combination.local_amount || 0)
-          }
-          
-          // 准备预约交易数据
-          const transactionData = {
-            customer_id: this.customerInfo.id_number || '',
-            customer_name: this.customerInfo.name || '',
-            customer_country_code: this.customerInfo.country_code || 'TH',
-            transaction_type: 'dual_direction',
-            total_amount_thb: totalAmountThb,
-            combinations: this.denominationCombinations,
-            payment_method: this.customerInfo.payment_method || 'cash',
-            remarks: this.customerInfo.remarks || '',
-            inventory_insufficient: true // 标记为库存不足导致的预约
-          }
-          
-          // 转换为预约表单需要的格式
-          this.reservationTransactionData = this.convertTransactionDataForModal(transactionData, totalAmountThb)
-          
-          // 显示预约模态框
-          this.showReservationModal = true
-          
-          this.loading = false
-          return
-        }
-        
-        // 其他错误的处理
+
+        // 🔧 所有验证错误（包括库存不足）都直接显示错误信息
+        // AMLO预约表单只应在触发AMLO规则时弹出，与库存无关
         this.validationResult = {
           success: false,
           message: errorMessage
@@ -1321,12 +1287,42 @@ export default {
             if (blockingTriggers.length > 0) {
               console.log('[AMLO触发检查] 检测到阻断性触发，需要预约审核:', blockingTriggers)
 
+              // 🔧 判断交易类型：根据组合中的direction判断
+              console.log('[确认交易] 所有denomination组合:', JSON.stringify(this.denominationCombinations, null, 2))
+
+              // 过滤掉空的或undefined的direction
+              const validDirections = this.denominationCombinations
+                .map(c => c.direction)
+                .filter(d => d && d !== '')
+
+              console.log('[确认交易] 有效的direction值:', validDirections)
+
+              const uniqueDirections = [...new Set(validDirections)]
+              console.log('[确认交易] 去重后的direction:', uniqueDirections)
+
+              let transaction_type
+              if (uniqueDirections.length === 0) {
+                // 没有有效的direction信息
+                console.warn('[确认交易] ⚠️ 警告：没有找到有效的direction字段！')
+                transaction_type = 'exchange'  // 默认为普通兑换
+              } else if (uniqueDirections.length === 1) {
+                // 只有一个方向
+                transaction_type = uniqueDirections[0] // 直接使用direction值（'buy'或'sell'）
+                console.log('[确认交易] ✓ 单一方向交易:', transaction_type)
+              } else {
+                // 多个方向 = 真正的双向交易
+                transaction_type = 'dual_direction'
+                console.log('[确认交易] ✓ 检测到双向交易')
+              }
+
+              console.log('[确认交易] 最终交易类型:', transaction_type)
+
               // 准备预约交易数据
               const rawTransactionData = {
                 customer_id: this.customerInfo.id_number,
                 customer_name: this.customerInfo.name,
                 customer_country_code: this.customerInfo.country_code || 'TH',
-                transaction_type: 'dual_direction',
+                transaction_type: transaction_type,  // 使用动态判断的交易类型
                 payment_method: this.customerInfo.payment_method,
                 remarks: this.customerInfo.remarks,
                 exchange_type: this.exchangeType || 'normal', // 新增：交易类型
@@ -1812,8 +1808,8 @@ export default {
         customerCountryCode: transactionData.customer_country_code || this.customerInfo.country_code || 'TH',
         address: transactionData.address || this.customerInfo.address || '',  // 新增：地址信息
 
-        // 交易模式和方向
-        exchangeMode: 'dual_direction',
+        // 交易模式和方向 - 🔧 使用传入的transaction_type，不要硬编码！
+        exchangeMode: transactionData.transaction_type || 'dual_direction',
 
         // 币种信息
         fromCurrency: mainCurrency?.code || 'USD',

@@ -10,7 +10,7 @@ export default {
     "foreign_stock_query": "Foreign Stock",
     "local_stock_query": "Local Stock",
     "amlo_audit": "AMLO Audit",
-    "amlo_reservation_audit": "Reservation Audit",
+    "amlo_reservation_audit": "AMLO Reservation Search",
     "amlo_report_list": "Report Management",
     "bot_report": "BOT Report",
     "bot_compliance": "BOT Compliance",

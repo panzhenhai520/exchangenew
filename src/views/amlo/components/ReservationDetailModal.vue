@@ -22,7 +22,12 @@
         <a-descriptions-item :label="$t('amlo.reservation.createdAt')">
           {{ reservation.created_at }}
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('amlo.reservation.customerName')" :span="2">
+        <a-descriptions-item :label="$t('amlo.reservation.direction')">
+          <a-tag :color="reservation.direction === 'buy' ? 'green' : 'orange'">
+            {{ getDirectionText(reservation.direction) }}
+          </a-tag>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('amlo.reservation.customerName')">
           {{ reservation.customer_name }}
         </a-descriptions-item>
       </a-descriptions>
@@ -133,12 +138,23 @@ export default {
       return colorMap[action] || 'gray'
     }
 
+    const getDirectionText = (direction) => {
+      // 使用与ReservationList相同的逻辑
+      if (direction === 'buy') {
+        return '网点买入外币'  // Institution buys foreign currency
+      } else if (direction === 'sell') {
+        return '网点卖出外币'  // Institution sells foreign currency
+      }
+      return direction || '未知'
+    }
+
     return {
       modalVisible,
       formDataDisplay,
       auditHistory,
       getStatusColor,
-      getTimelineColor
+      getTimelineColor,
+      getDirectionText
     }
   }
 }

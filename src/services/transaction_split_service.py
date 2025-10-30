@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Dict, Any, Optional
 import uuid
+import json
 from services.db_service import DatabaseService
 from services.receipt_service import ReceiptService
 from models.exchange_models import ExchangeTransaction, CurrencyBalance, Currency
@@ -21,13 +22,14 @@ class TransactionSplitService:
         return f"BG{datetime.now().strftime('%Y%m%d%H%M%S')}{str(uuid.uuid4())[:8].upper()}"
 
     @staticmethod
-    def analyze_denomination_combinations(denomination_data: Dict[str, Any], base_currency_id: int) -> List[Dict[str, Any]]:
+    def analyze_denomination_combinations(denomination_data: Dict[str, Any], base_currency_id: int, exchange_mode: str = None) -> List[Dict[str, Any]]:
         """
         分析面值组合数据，按币种+方向分组
 
         Args:
             denomination_data: 面值组合数据
             base_currency_id: 本币ID
+            exchange_mode: 交易方向模式 ('buy_foreign' 或 'sell_foreign')
 
         Returns:
             List of transaction groups
@@ -35,17 +37,37 @@ class TransactionSplitService:
         logger.info(f"[TransactionSplitService] analyze_denomination_combinations 收到数据:")
         logger.info(f"[TransactionSplitService] denomination_data type: {type(denomination_data)}")
         logger.info(f"[TransactionSplitService] denomination_data content: {denomination_data}")
+        logger.info(f"[TransactionSplitService] exchange_mode: {exchange_mode}")
 
         if not denomination_data or not denomination_data.get('combinations'):
             logger.warning(f"[TransactionSplitService] denomination_data 为空或没有 combinations 字段")
             return []
+
+        # 🔧 修复：根据exchange_mode转换为direction
+        # 前端使用客户视角：
+        #   exchange_mode='buy_foreign' = 客户买入外币 → direction='sell' (网点卖出外币)
+        #   exchange_mode='sell_foreign' = 客户卖出外币 → direction='buy' (网点买入外币)
+        if exchange_mode:
+            if exchange_mode == 'buy_foreign':
+                global_direction = 'sell'  # 客户买入外币 = 网点卖出外币
+            elif exchange_mode == 'sell_foreign':
+                global_direction = 'buy'  # 客户卖出外币 = 网点买入外币
+            else:
+                global_direction = 'sell'  # 默认值
+        else:
+            global_direction = 'sell'  # 兼容旧代码的默认值
+
+        logger.info(f"[TransactionSplitService] 转换后的direction: {global_direction}")
 
         # 按币种+方向分组
         groups = {}
 
         for item in denomination_data['combinations']:
             currency_id = item.get('currency_id', denomination_data.get('currency_id'))
-            direction = item.get('direction', 'sell')  # 默认为卖出外币（网点买入）
+
+            # 🔧 修复：优先使用全局方向（从exchange_mode转换而来），忽略item自带的direction
+            # 因为item的direction可能是客户视角，而global_direction是正确的网点视角
+            direction = global_direction or item.get('direction', 'sell')
 
             # 创建分组键
             group_key = f"{currency_id}_{direction}"
@@ -61,6 +83,10 @@ class TransactionSplitService:
 
             groups[group_key]['items'].append(item)
             groups[group_key]['total_amount'] += Decimal(str(item.get('subtotal', 0)))
+
+        logger.info(f"[TransactionSplitService] 分组结果: {len(groups)} 个分组")
+        for key, group in groups.items():
+            logger.info(f"[TransactionSplitService] 分组 {key}: 币种ID={group['currency_id']}, 方向={group['direction']}, 总金额={group['total_amount']}")
 
         return list(groups.values())
 
@@ -213,7 +239,8 @@ class TransactionSplitService:
         base_currency_id: int,
         operator_id: int,
         customer_info: Dict[str, Any],
-        purpose_id: Optional[str] = None
+        purpose_id: Optional[str] = None,
+        exchange_mode: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         执行拆分交易
@@ -225,6 +252,7 @@ class TransactionSplitService:
             operator_id: 操作员ID
             customer_info: 客户信息
             purpose_id: 交易用途ID
+            exchange_mode: 交易方向模式 ('buy_foreign' 或 'sell_foreign')
 
         Returns:
             执行结果
@@ -233,7 +261,7 @@ class TransactionSplitService:
         try:
             # 1. 分析面值组合，按币种+方向分组
             transaction_groups = TransactionSplitService.analyze_denomination_combinations(
-                denomination_data, base_currency_id
+                denomination_data, base_currency_id, exchange_mode
             )
 
             if not transaction_groups:
@@ -330,13 +358,112 @@ class TransactionSplitService:
 
             logger.info(f"双向交易执行成功，业务组ID: {business_group_id}，创建了 {len(created_transactions)} 条交易记录")
 
+            # 🔧 6. 检查AMLO触发条件（对每个交易记录）
+            compliance_results = {
+                'amlo_triggered': False,
+                'amlo_records': []
+            }
+
+            try:
+                from services.rule_engine import RuleEngine
+                from services.repform.report_data_service import ReportDataService
+
+                for tx_info in created_transactions:
+                    # 重新查询交易对象和货币对象
+                    transaction_obj = session.query(ExchangeTransaction).filter_by(id=tx_info['id']).first()
+                    currency_obj = session.query(Currency).filter_by(id=tx_info['currency_id']).first()
+
+                    if transaction_obj and currency_obj:
+                        # 准备交易数据用于规则匹配
+                        transaction_data = {
+                            'total_amount': abs(float(transaction_obj.local_amount)),
+                            'amount': abs(float(transaction_obj.amount)),
+                            'currency_code': currency_obj.currency_code,
+                            'transaction_type': transaction_obj.type,
+                            'direction': getattr(transaction_obj, 'transaction_direction', transaction_obj.type),
+                            'payment_method': getattr(transaction_obj, 'payment_method', 'cash'),
+                            'customer_country_code': getattr(transaction_obj, 'customer_country_code', 'TH'),
+                            'transaction_date': transaction_obj.transaction_date,
+                            'customer_id': transaction_obj.customer_id or '',
+                            'customer_name': transaction_obj.customer_name or ''
+                        }
+
+                        logger.info(f"[AMLO检查] 交易 {tx_info['transaction_no']}: 本币金额={transaction_data['total_amount']} THB, 外币金额={transaction_data['amount']} {transaction_data['currency_code']}, 方向={transaction_data['direction']}")
+
+                        # 检查各个AMLO报告类型的触发条件
+                        report_types = ['AMLO-1-01', 'AMLO-1-02', 'AMLO-1-03']
+                        triggered_reports = []
+
+                        for report_type in report_types:
+                            trigger_result = RuleEngine.check_triggers(
+                                db_session=session,
+                                report_type=report_type,
+                                data=transaction_data,
+                                branch_id=branch_id
+                            )
+
+                            logger.info(f"[AMLO检查] {report_type} 检查结果: triggered={trigger_result.get('triggered')}, rule={trigger_result.get('highest_priority_rule', {}).get('rule_name', 'N/A')}")
+
+                            if trigger_result.get('triggered'):
+                                triggered_reports.append(report_type)
+                                logger.info(f"✓ 交易 {tx_info['transaction_no']} 触发 {report_type}")
+
+                        # 为每个触发的报告类型创建预约记录
+                        for report_type in triggered_reports:
+                            # 映射报告类型到触发类型
+                            trigger_type_map = {
+                                'AMLO-1-01': 'CTR',
+                                'AMLO-1-02': 'ATR',
+                                'AMLO-1-03': 'STR'
+                            }
+                            trigger_type = trigger_type_map.get(report_type, 'CTR')
+
+                            # 准备预约数据
+                            reservation_data = {
+                                'customer_id': transaction_obj.customer_id or '',
+                                'customer_name': transaction_obj.customer_name or '',
+                                'customer_country_code': getattr(transaction_obj, 'customer_country_code', 'TH'),
+                                'currency_id': currency_obj.id,
+                                'currency_code': currency_obj.currency_code,
+                                'direction': getattr(transaction_obj, 'transaction_direction', 'sell'),
+                                'amount': abs(float(transaction_obj.amount)),
+                                'local_amount': abs(float(transaction_obj.local_amount)),
+                                'rate': float(transaction_obj.rate),
+                                'trigger_type': trigger_type,
+                                'report_type': report_type,
+                                'form_data': json.dumps({}),  # 空表单数据，等待填写
+                                'branch_id': branch_id,
+                                'operator_id': operator_id,
+                                'transaction_id': transaction_obj.id
+                            }
+
+                            # 创建预约记录
+                            reservation_id = ReportDataService.save_reservation(session, reservation_data)
+                            compliance_results['amlo_triggered'] = True
+                            compliance_results['amlo_records'].append({
+                                'transaction_id': tx_info['id'],
+                                'transaction_no': tx_info['transaction_no'],
+                                'report_type': report_type,
+                                'reservation_id': reservation_id
+                            })
+                            logger.info(f"为交易 {tx_info['transaction_no']} 创建了 {report_type} 预约记录 (ID: {reservation_id})")
+
+                session.commit()  # 提交AMLO预约记录
+
+            except Exception as amlo_error:
+                logger.error(f"AMLO触发检查失败: {str(amlo_error)}")
+                import traceback
+                traceback.print_exc()
+                # 不中断主流程，AMLO检查失败不影响交易
+
             return {
                 'success': True,
                 'message': '交易执行成功',
                 'data': {
                     'business_group_id': business_group_id,
                     'transaction_count': len(created_transactions),
-                    'transactions': created_transactions
+                    'transactions': created_transactions,
+                    'compliance': compliance_results  # 返回合规检查结果
                 }
             }
 

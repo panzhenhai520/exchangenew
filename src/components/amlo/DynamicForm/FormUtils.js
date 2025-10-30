@@ -1,3 +1,5 @@
+import { readValidationRules } from './fieldHelpers.js'
+
 /**
  * 表单工具函数
  * 提供表单数据构建、重置等辅助功能
@@ -14,41 +16,50 @@ export function buildFormData(formFields, initialData = {}) {
 
   formFields.forEach(field => {
     const fieldName = field.field_name
+    const rules = readValidationRules(field)
+    const fieldType = (field.field_type || '').toUpperCase()
 
     // 优先使用初始数据中的值
-    if (initialData[fieldName] !== undefined) {
+    if (
+      initialData &&
+      Object.prototype.hasOwnProperty.call(initialData, fieldName) &&
+      initialData[fieldName] !== undefined
+    ) {
       formData[fieldName] = initialData[fieldName]
       return
     }
 
     // 根据字段类型设置默认值
-    switch (field.field_type) {
-      case 'number':
+    switch (fieldType) {
+      case 'NUMBER':
+      case 'DECIMAL':
+      case 'FLOAT':
+      case 'DOUBLE':
+      case 'INT':
         formData[fieldName] = null
         break
-      case 'checkbox':
-        formData[fieldName] = false
+      case 'CHECKBOX':
+      case 'BOOLEAN':
+        formData[fieldName] = rules.default_value ?? false
         break
-      case 'select':
-        // 检查是否多选
-        if (field.validation_rules) {
-          try {
-            const rules = JSON.parse(field.validation_rules)
-            formData[fieldName] = rules.multiple ? [] : null
-          } catch (e) {
-            formData[fieldName] = null
-          }
+      case 'ENUM':
+        if (rules.multiple) {
+          formData[fieldName] = Array.isArray(rules.default_value)
+            ? rules.default_value
+            : []
         } else {
-          formData[fieldName] = null
+          formData[fieldName] = rules.default_value ?? null
         }
         break
-      case 'date':
-        formData[fieldName] = ''
+      case 'DATE':
+      case 'DATETIME':
+        formData[fieldName] = rules.default_value || ''
         break
-      case 'text':
-      case 'textarea':
+      case 'TEXT':
+      case 'VARCHAR':
+      case 'TEXTAREA':
       default:
-        formData[fieldName] = ''
+        formData[fieldName] = rules.default_value ?? ''
         break
     }
   })
@@ -104,15 +115,21 @@ export function formatFormDataForSubmit(formData, formFields) {
     }
 
     // 根据字段类型格式化
-    switch (field.field_type) {
-      case 'number':
-        formattedData[fieldName] = value !== null ? Number(value) : null
+    const fieldType = (field.field_type || '').toUpperCase()
+    switch (fieldType) {
+      case 'NUMBER':
+      case 'DECIMAL':
+      case 'FLOAT':
+      case 'DOUBLE':
+      case 'INT':
+        formattedData[fieldName] =
+          value !== null && value !== '' ? Number(value) : null
         break
-      case 'checkbox':
+      case 'CHECKBOX':
+      case 'BOOLEAN':
         formattedData[fieldName] = Boolean(value)
         break
-      case 'select':
-        // 多选返回数组，单选返回字符串
+      case 'ENUM':
         formattedData[fieldName] = value
         break
       default:
