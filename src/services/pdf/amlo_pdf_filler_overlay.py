@@ -80,11 +80,11 @@ class AMLOPDFFillerOverlay:
 
             field_mapping = self.csv_loader.get_field_mapping(report_type)
 
-            # 创建覆盖层PDF
-            overlay_buffer = self._create_overlay_pdf(data, field_mapping, template_path)
+            # 创建覆盖层PDF（仅包含文本，不包含复选框）
+            overlay_buffer, checkbox_data = self._create_overlay_pdf(data, field_mapping, template_path)
 
-            # 合并模板和覆盖层
-            self._merge_pdfs(template_path, overlay_buffer, output_path)
+            # 合并模板和覆盖层（同时填充复选框）
+            self._merge_pdfs(template_path, overlay_buffer, checkbox_data, output_path)
 
             print(f"[AMLOPDFFillerOverlay] PDF generated: {output_path}")
             return output_path
@@ -95,8 +95,12 @@ class AMLOPDFFillerOverlay:
             traceback.print_exc()
             raise
 
-    def _create_overlay_pdf(self, data: Dict[str, Any], field_mapping: Dict, template_path: str) -> BytesIO:
-        """创建覆盖层PDF"""
+    def _create_overlay_pdf(self, data: Dict[str, Any], field_mapping: Dict, template_path: str) -> tuple:
+        """创建覆盖层PDF
+
+        Returns:
+            tuple: (overlay_buffer, checkbox_data) - 覆盖层PDF和复选框数据
+        """
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
 
@@ -106,6 +110,7 @@ class AMLOPDFFillerOverlay:
         page = doc[0]
 
         filled_count = 0
+        checkbox_data = {}  # 保存复选框数据，用于后续填充
         widgets = list(page.widgets()) if page.widgets() else []
 
         for widget in widgets:
@@ -128,9 +133,9 @@ class AMLOPDFFillerOverlay:
                     filled_count += 1
 
                 elif field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
-                    # 复选框：绘制勾选标记
+                    # 复选框：保存数据，稍后填充到表单字段
                     if value in (True, 'true', '1', 1, 'yes', 'Yes', '/Yes'):
-                        self._draw_checkbox_on_canvas(c, rect)
+                        checkbox_data[field_name] = True
                         filled_count += 1
 
             except Exception as e:
@@ -140,8 +145,8 @@ class AMLOPDFFillerOverlay:
         c.save()
         buffer.seek(0)
 
-        print(f"[AMLOPDFFillerOverlay] Drew {filled_count} fields on overlay")
-        return buffer
+        print(f"[AMLOPDFFillerOverlay] Drew {filled_count} fields on overlay (text only)")
+        return buffer, checkbox_data
 
     def _draw_text_on_canvas(self, c: canvas.Canvas, rect, text: str, widget):
         """在canvas上绘制文本"""
@@ -211,11 +216,33 @@ class AMLOPDFFillerOverlay:
         """在canvas上绘制复选框勾选标记"""
         page_height = A4[1]
 
-        x = rect.x0 + 1
-        y = page_height - rect.y1 + 1
+        # 转换坐标：ReportLab从底部开始，PyMuPDF从顶部开始
+        x0 = rect.x0
+        y0 = page_height - rect.y1  # 底部Y坐标
+        width = rect.width
+        height = rect.height
 
-        c.setFont('Helvetica', 10)
-        c.drawString(x, y, '✓')
+        # 使用ZapfDingbats字体绘制勾选标记
+        # ZapfDingbats字符:
+        # '4' = ✔ (粗勾号)
+        # '3' = ✗ (X符号)
+        # 'ü' = ✓ (细勾号)
+
+        font_size = height * 0.75  # 使用框高度的75%作为字体大小
+        c.setFont('ZapfDingbats', font_size)
+
+        # 计算居中位置
+        mark_char = '4'  # 使用粗勾号
+        mark_width = c.stringWidth(mark_char, 'ZapfDingbats', font_size)
+
+        # 水平居中，垂直略微向上偏移
+        x = x0 + (width - mark_width) / 2
+        y = y0 + height * 0.15  # 向上偏移15%
+
+        # 设置黑色
+        c.setFillColorRGB(0, 0, 0)
+
+        c.drawString(x, y, mark_char)
 
     def _calculate_adaptive_font_size(self, c: canvas.Canvas, text: str, font_name: str,
                                       max_width: float, initial_size: float) -> float:
@@ -448,15 +475,40 @@ class AMLOPDFFillerOverlay:
         # 默认使用泰文字体（也支持英文）
         return self.thai_font
 
-    def _merge_pdfs(self, template_path: str, overlay_buffer: BytesIO, output_path: str):
-        """合并模板PDF和覆盖层PDF"""
-        # 读取模板PDF
-        template = PdfReader(template_path)
+    def _merge_pdfs(self, template_path: str, overlay_buffer: BytesIO, checkbox_data: dict, output_path: str):
+        """合并模板PDF和覆盖层PDF
 
-        # 读取覆盖层PDF
+        策略：先用PyMuPDF填充表单字段（复选框），然后添加覆盖层（文本内容）
+        """
+        import fitz
+
+        # 1. 使用PyMuPDF打开模板，填充复选框
+        doc = fitz.open(template_path)
+        page = doc[0]
+
+        # 填充复选框字段
+        widgets = list(page.widgets()) if page.widgets() else []
+        for widget in widgets:
+            field_name = widget.field_name
+            if field_name in checkbox_data and checkbox_data[field_name]:
+                try:
+                    # 设置复选框为选中状态
+                    widget.field_value = True
+                    widget.update()
+                except Exception as e:
+                    print(f"[AMLOPDFFillerOverlay] Error setting checkbox {field_name}: {e}")
+
+        # 2. 保存为临时文件（包含复选框值）
+        temp_filled = BytesIO()
+        doc.save(temp_filled)
+        doc.close()
+        temp_filled.seek(0)
+
+        # 3. 用pdfrw读取已填充的PDF和覆盖层
+        template = PdfReader(temp_filled)
         overlay = PdfReader(overlay_buffer)
 
-        # 合并第一页
+        # 4. 合并第一页
         merger = PageMerge(template.pages[0])
         merger.add(overlay.pages[0]).render()
 
@@ -466,9 +518,12 @@ class AMLOPDFFillerOverlay:
                 merger2 = PageMerge(template.pages[1])
                 merger2.add(overlay.pages[1]).render()
 
-        # 保存
+        # 5. 保存最终PDF
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         PdfWriter(output_path, trailer=template).write()
+
+        if checkbox_data:
+            print(f"[AMLOPDFFillerOverlay] Filled {len(checkbox_data)} checkboxes")
 
 
 if __name__ == '__main__':

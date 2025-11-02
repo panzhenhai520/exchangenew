@@ -12,6 +12,7 @@ AMLO业务数据到PDF字段映射服务
 import os
 import re
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Dict, Any, Optional, Tuple
 
 try:
@@ -84,8 +85,10 @@ class AMLODataMapper:
         maker_id = form_data.get('maker_id_number') or reservation_data.get('customer_id', '')
         pdf_fields['comb_1'] = maker_id
 
+        maker_type = self._resolve_party_type(form_data)
+
         # 姓名 (fill_4)
-        maker_name = self._combine_name(form_data, 'maker', reservation_data.get('customer_name', ''))
+        maker_name = self._get_party_name(form_data, 'maker', maker_type, reservation_data.get('customer_name', ''))
         pdf_fields['fill_4'] = maker_name
 
         # 办理方式 (Check Box4=本人办理, Check Box5=代理办理)
@@ -180,7 +183,8 @@ class AMLODataMapper:
             print(f"[AMLODataMapper] Joint party ID (comb_2): {joint_id}")
 
             # 姓名 (fill_20)
-            joint_name = self._combine_name(form_data, 'joint_party', form_data.get('joint_party_name', ''))
+            joint_party_kind = self._resolve_joint_party_type(form_data)
+            joint_name = self._get_party_name(form_data, 'joint_party', joint_party_kind, form_data.get('joint_party_name', ''))
             pdf_fields['fill_20'] = joint_name
             print(f"[AMLODataMapper] Joint party name (fill_20): {joint_name}")
 
@@ -258,6 +262,9 @@ class AMLODataMapper:
         # 交易方向: 判断是买入还是卖出
         direction = reservation_data.get('direction', '').lower()
 
+        payment_method = (form_data.get('payment_method') or reservation_data.get('payment_method') or '').lower()
+        is_cash_method = payment_method in ('', 'cash')
+
         # ⚠️ CRITICAL: direction字段已经是【网点视角】，无需转换
         # direction='buy'  = 网点买入外币 = 外币流入 = 左栏 (fill_48, fill_50)
         # direction='sell' = 网点卖出外币 = 外币流出 = 右栏 (fill_49, fill_51)
@@ -268,95 +275,220 @@ class AMLODataMapper:
         print(f"[AMLODataMapper] Direction (institution): {direction}")
         print(f"[AMLODataMapper] Mapping: buy={is_buy} (LEFT), sell={is_sell} (RIGHT)")
 
-        # 左栏 - 外币流入（网点买入外币）
+        # Left/Right column amount mapping
         if is_buy:
             local_amount = float(reservation_data.get('local_amount') or reservation_data.get('amount_thb') or 0)
 
-            # 左栏金额 (fill_48)
-            pdf_fields['fill_48'] = f"{local_amount:.2f}"
-            # 左栏合计 (fill_50)
+            # ⚠️ 根据AMLO规则：账号行(fill_48)不填金额，只在具体项目行填金额
+            pdf_fields['fill_48'] = ''  # 账号行不填金额
+            pdf_fields['fill_48_5'] = f"{local_amount:.2f}"  # 买入外币金额填在此行
             pdf_fields['fill_50'] = f"{local_amount:.2f}"
+            # ⚠️ 买入时不应填写右栏字段
+            pdf_fields['fill_45'] = ''  # 右栏"อื่นๆ(ระบุ)"应为空
+
+            try:
+                left_decimal = Decimal(str(local_amount))
+            except (InvalidOperation, ValueError):
+                left_decimal = Decimal('0')
+            pdf_fields['left_amount'] = self._thai_baht_text(left_decimal)
 
             print(f"[AMLODataMapper] LEFT column (buy): fill_48/fill_50 = {local_amount:.2f}")
 
-            # 存款 (Check Box18)
+            # 清空右栏所有字段
+            pdf_fields['fill_49'] = ''  # 右栏账号行金额
+            pdf_fields['fill_49_1'] = ''  # 取款
+            pdf_fields['fill_49_2'] = ''  # 卖票据-支票
+            pdf_fields['fill_49_3'] = ''  # 卖票据-汇票
+            pdf_fields['fill_49_4'] = ''  # 卖票据-其他
+            pdf_fields['fill_49_5'] = ''  # 卖外币
+            pdf_fields['fill_49_6'] = ''  # 其他（注明）
+            pdf_fields['fill_49_7'] = ''  # 其他补充
+            pdf_fields['fill_51'] = '0.00'  # 右栏合计
+            pdf_fields['right_amount'] = ''
+            for cb in ('25', '26', '27', '28', '29', '30'):
+                pdf_fields[f'Check Box{cb}'] = False
+            pdf_fields['Check Box31'] = False
+            pdf_fields['comb_4'] = ''
+            pdf_fields['comb_6'] = ''
+            pdf_fields['fill_41'] = ''
+            pdf_fields['fill_43'] = ''
+            pdf_fields['fill43_2'] = ''
+            pdf_fields['fill_43_2'] = ''
+
             pdf_fields['Check Box18'] = False
 
-            # 存入账号 (comb_3)
-            pdf_fields['comb_3'] = form_data.get('account_number', '')
+            account_number = form_data.get('account_number', '')
+            related_account = form_data.get('related_account', '')
+            if is_cash_method:
+                account_number = ''
+                related_account = ''
+            pdf_fields['comb_3'] = account_number
+            pdf_fields['comb_5'] = related_account
 
-            # 关联账号 (comb_5)
-            pdf_fields['comb_5'] = form_data.get('related_account', '')
+            instrument_type = (form_data.get('instrument_type') or '').lower()
+            if is_cash_method:
+                pdf_fields['Check Box19'] = False
+                pdf_fields['Check Box20'] = False
+                pdf_fields['Check Box21'] = False
+                pdf_fields['Check Box22'] = False
+                pdf_fields['fill_40'] = ''
+            else:
+                pdf_fields['Check Box19'] = instrument_type in ('check', 'draft', 'other_instrument')
+                pdf_fields['Check Box20'] = instrument_type == 'check'
+                pdf_fields['Check Box21'] = instrument_type == 'draft'
+                pdf_fields['Check Box22'] = instrument_type == 'other_instrument'
+                pdf_fields['fill_40'] = form_data.get('instrument_type_other', '') if instrument_type == 'other_instrument' else ''
 
-            # 买入票据 (Check Box19-22)
-            instrument_type = form_data.get('instrument_type', 'none')
-            pdf_fields['Check Box19'] = (instrument_type in ['check', 'draft', 'other_instrument'])
-            pdf_fields['Check Box20'] = (instrument_type == 'check')
-            pdf_fields['Check Box21'] = (instrument_type == 'draft')
-            pdf_fields['Check Box22'] = (instrument_type == 'other_instrument')
-
-            if instrument_type == 'other_instrument':
-                pdf_fields['fill_40'] = form_data.get('instrument_type_other', '')
-
-            # 买入外币 (Check Box23) - 左栏
             pdf_fields['Check Box23'] = True
 
-            # 外币币种 (fill_42 - 左栏币种说明)
-            currency_code = reservation_data.get('currency_code') or form_data.get('currency_code', '')
-            pdf_fields['fill_42'] = currency_code
-            if currency_code:
-                pdf_fields['fill42_2'] = f"({currency_code})"
+            currency_code = (reservation_data.get('currency_code') or form_data.get('currency_code', '') or '').upper()
+            foreign_amount = form_data.get('foreign_amount') or reservation_data.get('amount')
+            foreign_text = self._format_foreign_amount(foreign_amount)
 
-            # 其他交易 (Check Box24)
-            has_other_tx = self._normalize_bool(form_data.get('has_other_transaction'))
-            pdf_fields['Check Box24'] = has_other_tx
-            if has_other_tx:
-                pdf_fields['fill42_2'] = form_data.get('other_transaction_desc', '')
+            # ⚠️ 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
+            payment_notation = '(ธนบัตร)' if is_cash_method else '(โอน)'
 
-        # 右栏 - 外币流出（网点卖出外币）
+            if currency_code and foreign_text:
+                pdf_fields['fill_42'] = f"{currency_code} {foreign_text} {payment_notation}"
+            elif currency_code:
+                pdf_fields['fill_42'] = f"{currency_code} {payment_notation}"
+            elif foreign_text:
+                pdf_fields['fill_42'] = f"{foreign_text} {payment_notation}"
+            else:
+                pdf_fields['fill_42'] = ''
+
+            pdf_fields['fill_43_2'] = ''
+
+            if is_cash_method:
+                pdf_fields['Check Box31'] = False
+                pdf_fields['fill43_2'] = ''
+            else:
+                has_other_tx = self._normalize_bool(form_data.get('has_other_transaction'))
+                pdf_fields['Check Box31'] = has_other_tx
+                pdf_fields['fill43_2'] = form_data.get('other_transaction_desc', '') if has_other_tx else ''
+
         elif is_sell:
             local_amount = float(reservation_data.get('local_amount') or reservation_data.get('amount_thb') or 0)
 
-            # 右栏金额 (fill_49)
-            pdf_fields['fill_49'] = f"{local_amount:.2f}"
-            # 右栏合计 (fill_51)
+            # ⚠️ 根据AMLO规则：账号行(fill_49)不填金额，只在具体项目行填金额
+            pdf_fields['fill_49'] = ''  # 账号行不填金额
+            pdf_fields['fill_49_5'] = f"{local_amount:.2f}"  # 卖出外币金额填在此行
             pdf_fields['fill_51'] = f"{local_amount:.2f}"
+            pdf_fields['fill_45'] = ''
+
+            try:
+                right_decimal = Decimal(str(local_amount))
+            except (InvalidOperation, ValueError):
+                right_decimal = Decimal('0')
+            pdf_fields['right_amount'] = self._thai_baht_text(right_decimal)
 
             print(f"[AMLODataMapper] RIGHT column (sell): fill_49/fill_51 = {local_amount:.2f}")
 
-            # 取款 (Check Box25) - 右栏
-            pdf_fields['Check Box25'] = False
+            # 清空左栏所有字段
+            pdf_fields['fill_48'] = ''  # 左栏账号行金额
+            pdf_fields['fill_48_1'] = ''  # 存款
+            pdf_fields['fill_48_2'] = ''  # 买票据-支票
+            pdf_fields['fill_48_3'] = ''  # 买票据-汇票
+            pdf_fields['fill_48_4'] = ''  # 买票据-其他
+            pdf_fields['fill_48_5'] = ''  # 买外币
+            pdf_fields['fill_48_6'] = ''  # 其他（注明）
+            pdf_fields['fill_48_7'] = ''  # 其他补充
+            pdf_fields['fill_50'] = '0.00'  # 左栏合计
+            pdf_fields['left_amount'] = ''
+            for cb in ('18', '19', '20', '21', '22', '23'):
+                pdf_fields[f'Check Box{cb}'] = False
+            pdf_fields['comb_3'] = ''
+            pdf_fields['comb_5'] = ''
+            pdf_fields['fill_42'] = ''
+            pdf_fields['fill_40'] = ''
+            pdf_fields['fill_43_2'] = ''
+            pdf_fields['fill43_2'] = ''
 
-            # 取款账号 (comb_4)
-            pdf_fields['comb_4'] = form_data.get('account_number', '')
+            payout_account = (
+                form_data.get('payout_account_number')
+                or form_data.get('withdrawal_account_number')
+                or form_data.get('account_number', '')
+            )
+            payout_related = (
+                form_data.get('payout_related_account')
+                or form_data.get('withdrawal_related_account')
+                or form_data.get('related_account', '')
+            )
 
-            # 关联账号 (comb_6)
-            pdf_fields['comb_6'] = form_data.get('related_account', '')
+            if is_cash_method:
+                pdf_fields['Check Box25'] = False
+                pdf_fields['Check Box26'] = False
+                pdf_fields['Check Box27'] = False
+                pdf_fields['Check Box28'] = False
+                pdf_fields['Check Box29'] = False
+                pdf_fields['comb_4'] = ''
+                pdf_fields['comb_6'] = ''
+                pdf_fields['fill_41'] = ''
+            else:
+                instrument_type = (
+                    form_data.get('payout_instrument_type')
+                    or form_data.get('withdrawal_instrument_type')
+                    or form_data.get('instrument_type')
+                    or ''
+                ).lower()
+                pdf_fields['Check Box25'] = True
+                pdf_fields['Check Box26'] = instrument_type in ('transfer', 'account_transfer', 'fund_transfer', 'account')
+                pdf_fields['Check Box27'] = instrument_type == 'check'
+                pdf_fields['Check Box28'] = instrument_type == 'draft'
+                pdf_fields['Check Box29'] = instrument_type in ('other', 'other_instrument')
+                pdf_fields['comb_4'] = payout_account
+                pdf_fields['comb_6'] = payout_related
+                if pdf_fields['Check Box29']:
+                    pdf_fields['fill_41'] = (
+                        form_data.get('payout_instrument_type_other')
+                        or form_data.get('withdrawal_instrument_type_other')
+                        or form_data.get('instrument_type_other', '')
+                    )
+                else:
+                    pdf_fields['fill_41'] = ''
 
-            # 卖出票据 (Check Box26-29)
-            instrument_type = form_data.get('instrument_type', 'none')
-            pdf_fields['Check Box26'] = (instrument_type in ['check', 'draft', 'other_instrument'])
-            pdf_fields['Check Box27'] = (instrument_type == 'check')
-            pdf_fields['Check Box28'] = (instrument_type == 'draft')
-            pdf_fields['Check Box29'] = (instrument_type == 'other_instrument')
-
-            if instrument_type == 'other_instrument':
-                pdf_fields['fill_41'] = form_data.get('instrument_type_other', '')
-
-            # 卖出外币 (Check Box30)
             pdf_fields['Check Box30'] = True
 
-            # 外币币种
-            currency_code = reservation_data.get('currency_code') or form_data.get('currency_code', '')
-            pdf_fields['fill_43'] = currency_code
-            if currency_code:
-                pdf_fields['fill_43_2'] = f"({currency_code})"
+            currency_code = (reservation_data.get('currency_code') or form_data.get('currency_code', '') or '').upper()
+            foreign_amount = form_data.get('foreign_amount') or reservation_data.get('amount')
+            foreign_text = self._format_foreign_amount(foreign_amount)
 
-            # 其他交易 (Check Box31)
+            # ⚠️ 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
+            payment_notation = '(ธนบัตร)' if is_cash_method else '(โอน)'
+
+            if currency_code and foreign_text:
+                pdf_fields['fill_43'] = f"{currency_code} {foreign_text} {payment_notation}"
+            elif currency_code:
+                pdf_fields['fill_43'] = f"{currency_code} {payment_notation}"
+            elif foreign_text:
+                pdf_fields['fill_43'] = f"{foreign_text} {payment_notation}"
+            else:
+                pdf_fields['fill_43'] = ''
+
             has_other_tx = self._normalize_bool(form_data.get('has_other_transaction'))
             pdf_fields['Check Box31'] = has_other_tx
-            if has_other_tx:
-                pdf_fields['fill43_2'] = form_data.get('other_transaction_desc', '')
+            pdf_fields['fill43_2'] = form_data.get('other_transaction_desc', '') if has_other_tx else ''
+
+        else:
+            pdf_fields['fill_48'] = '0.00'
+            pdf_fields['fill_49'] = '0.00'
+            pdf_fields['fill_50'] = '0.00'
+            pdf_fields['fill_51'] = '0.00'
+            pdf_fields['left_amount'] = ''
+            pdf_fields['right_amount'] = ''
+            pdf_fields['fill_42'] = ''
+            pdf_fields['fill_43'] = ''
+            pdf_fields['fill_45'] = ''
+            for cb in ('18', '19', '20', '21', '22', '23', '25', '26', '27', '28', '29', '30', '31'):
+                pdf_fields[f'Check Box{cb}'] = False
+            pdf_fields['comb_3'] = ''
+            pdf_fields['comb_5'] = ''
+            pdf_fields['comb_4'] = ''
+            pdf_fields['comb_6'] = ''
+            pdf_fields['fill_40'] = ''
+            pdf_fields['fill_41'] = ''
+            pdf_fields['fill_43_2'] = ''
+            pdf_fields['fill43_2'] = ''
 
         # 受益人 (fill_46)
         beneficiary = form_data.get('beneficiary_name', '')
@@ -389,8 +521,82 @@ class AMLODataMapper:
         # TODO: 实现1-03表单映射
         # 可疑交易报告字段映射逻辑类似101
         return {}
-
     # ===== 辅助方法 =====
+
+    def _format_foreign_amount(self, amount: Any) -> str:
+        "Format foreign currency amount with grouping and trimmed decimals."
+        if amount is None:
+            return ''
+        try:
+            decimal_value = Decimal(str(amount).replace(',', '').strip())
+        except (InvalidOperation, AttributeError, ValueError):
+            return ''
+
+        decimal_value = decimal_value.quantize(Decimal('0.01'))
+        if decimal_value == decimal_value.to_integral():
+            return f"{int(decimal_value):,}"
+        formatted = f"{decimal_value:,.2f}"
+        if formatted.endswith('.00'):
+            formatted = formatted[:-3]
+        return formatted
+
+    def _thai_baht_text(self, amount: Decimal) -> str:
+        """Format amount into Thai baht text."""
+        if amount is None:
+            return ''
+        try:
+            amount_decimal = Decimal(str(amount))
+        except (InvalidOperation, ValueError):
+            return ''
+
+        amount_decimal = amount_decimal.quantize(Decimal('0.01'))
+        integer_part = int(amount_decimal)
+        satang_part = int((amount_decimal - Decimal(integer_part)) * 100)
+
+        digits = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
+        units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน']
+
+        def convert(num: int) -> str:
+            if num == 0:
+                return ''
+            if num >= 1_000_000:
+                return convert(num // 1_000_000) + 'ล้าน' + convert(num % 1_000_000)
+
+            result = ''
+            for idx in range(6, -1, -1):
+                unit_value = 10 ** idx
+                digit = num // unit_value
+                if digit == 0:
+                    continue
+
+                if idx == 0:
+                    if digit == 1 and result:
+                        result += 'เอ็ด'
+                    else:
+                        result += digits[digit]
+                elif idx == 1:
+                    if digit == 1:
+                        result += 'สิบ'
+                    elif digit == 2:
+                        result += 'ยี่สิบ'
+                    else:
+                        result += digits[digit] + 'สิบ'
+                else:
+                    if digit == 1:
+                        result += 'หนึ่ง' + units[idx]
+                    elif digit == 2:
+                        result += 'สอง' + units[idx]
+                    else:
+                        result += digits[digit] + units[idx]
+                num %= unit_value
+            return result
+
+        integer_text = convert(integer_part) or digits[0]
+        if satang_part == 0:
+            return f"{integer_text}บาทถ้วน"
+
+        satang_text = convert(satang_part) or digits[0]
+        return f"{integer_text}บาท{satang_text}สตางค์"
 
     def _normalize_bool(self, value: Any) -> bool:
         """规范化布尔值"""
@@ -401,6 +607,78 @@ class AMLODataMapper:
         if isinstance(value, (int, float)):
             return value != 0
         return False
+
+    def _resolve_party_type(self, form_data: Dict[str, Any]) -> str:
+        maker_type = (form_data.get('maker_type') or '').lower().strip()
+        if maker_type in ('person', 'juristic'):
+            return maker_type
+        if self._normalize_bool(form_data.get('maker_type_juristic')):
+            return 'juristic'
+        if self._normalize_bool(form_data.get('maker_type_person')):
+            return 'person'
+        return 'person'
+
+    def _resolve_joint_party_type(self, form_data: Dict[str, Any]) -> str:
+        entity_type = (
+            form_data.get('joint_party_entity_type')
+            or form_data.get('joint_party_customer_type')
+            or ''
+        ).lower().strip()
+        if entity_type in ('person', 'juristic'):
+            return entity_type
+        if self._normalize_bool(form_data.get('joint_party_is_juristic')):
+            return 'juristic'
+        if form_data.get('joint_party_company_name'):
+            return 'juristic'
+        return 'person'
+
+    def _get_party_name(self, form_data: Dict[str, Any], prefix: str, party_type: str, fallback: str = '') -> str:
+        personal_keys = [f'{prefix}_name', f'{prefix}_full_name', f'{prefix}_display_name']
+        company_keys = [f'{prefix}_company_name', f'{prefix}_company']
+
+        if party_type == 'juristic':
+            for key in company_keys:
+                value = form_data.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+            for key in personal_keys:
+                value = form_data.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+        else:
+            for key in personal_keys:
+                value = form_data.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+
+        title = (form_data.get(f'{prefix}_title') or '').strip()
+        first = (
+            form_data.get(f'{prefix}_firstname')
+            or form_data.get(f'{prefix}_first_name')
+            or ''
+        ).strip()
+
+        if party_type == 'person':
+            # 个人类型仅保留称谓+名字，避免附加姓氏/法人名称
+            if first or title:
+                return ' '.join([part for part in [title, first] if part]).strip()
+        else:
+            last = (
+                form_data.get(f'{prefix}_lastname')
+                or form_data.get(f'{prefix}_last_name')
+                or ''
+            ).strip()
+            parts = [p for p in [title, first, last] if p]
+            if parts:
+                return ' '.join(parts).strip()
+
+        if party_type == 'juristic':
+            for key in company_keys:
+                value = form_data.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+
+        return fallback.strip() if isinstance(fallback, str) else fallback
 
     def _combine_name(self, form_data: Dict, prefix: str, fallback: str = '') -> str:
         """组合姓名"""
