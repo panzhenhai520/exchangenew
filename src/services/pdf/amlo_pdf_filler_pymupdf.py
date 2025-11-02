@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 AMLO PDF表单填充服务 - 基于PyMuPDF (fitz)
-使用PyMuPDF进行PDF表单填充和flatten，解决浏览器不显示问题
-
-优势:
-- 自动生成字段外观流（Appearance Streams）
-- 原生支持flatten（将表单转为静态内容）
-- 浏览器PDF查看器完美兼容
+负责将数据写入 PDF 表单并在需要时进行 flatten，
+同时手动绘制报告编号和文字，确保泰文/中文/英文都能正常显示。
 """
 
 import os
-from typing import Dict, Any
+import re
+from typing import Any, Dict, List, Optional, Tuple
 import fitz  # PyMuPDF
 
 try:
@@ -22,285 +19,579 @@ except ImportError:
 
 
 class AMLOPDFFillerPyMuPDF:
-    """AMLO PDF表单填充器 - 基于PyMuPDF"""
+    """AMLO PDF 表单填充器"""
 
-    def __init__(self):
-        """初始化填充器"""
+    _CJK_FONT_CANDIDATES: Tuple[Tuple[str, str], ...] = (
+        # 优先使用TTF格式，PyMuPDF对TTC支持有限
+        ('SimHei', r'C:\Windows\Fonts\simhei.ttf'),  # 黑体
+        ('SimKai', r'C:\Windows\Fonts\simkai.ttf'),  # 楷体
+        ('ArialUnicodeMS', r'C:\Windows\Fonts\arialuni.ttf'),
+        # TTC作为备选
+        ('MicrosoftYaHei', r'C:\Windows\Fonts\msyh.ttc'),
+        ('SimSun', r'C:\Windows\Fonts\simsun.ttc'),
+    )
+
+    def __init__(self) -> None:
         self.csv_loader = get_csv_field_loader()
+        self._report_font_name = 'Sarabun'
+        self._report_font_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Sarabun-Regular.ttf')
+        self._font_warning_logged = False
+        self._cjk_font: Tuple[Optional[str], Optional[str]] = self._resolve_system_font(self._CJK_FONT_CANDIDATES)
+        if not self._cjk_font[0]:
+            print("[AMLOPDFFillerPyMuPDF] Warning: no Chinese-compatible font located; Chinese characters may not render.")
         print("[AMLOPDFFillerPyMuPDF] Initialized with CSV field mappings")
 
-    def fill_form(self, report_type: str, data: Dict[str, Any], output_path: str, flatten: bool = True) -> str:
-        """
-        填充AMLO表单
+        # 字体注册缓存
+        self._font_registry = {}  # {doc_id: {font_path: xref}}
 
-        Args:
-            report_type: 报告类型 ('AMLO-1-01', 'AMLO-1-02', 'AMLO-1-03')
-            data: 表单数据字典 (field_name -> value)
-            output_path: 输出PDF文件路径
-            flatten: 是否flatten表单（转为静态内容，推荐True）
+    def fill_form(self, report_type: str, data: Dict[str, Any], output_path: str, flatten: bool = False) -> str:
+        """填充表单并可选地进行 flatten。
 
-        Returns:
-            生成的PDF文件路径
+        默认 flatten=False 保持表单可编辑。
+        设置 flatten=True 将表单转换为静态内容（不可编辑）。
         """
         try:
-            # 获取模板路径
             template_path = self.csv_loader.get_template_path(report_type)
             print(f"[AMLOPDFFillerPyMuPDF] Using template: {template_path}")
 
-            # 打开PDF文档
             doc = fitz.open(template_path)
             print(f"[AMLOPDFFillerPyMuPDF] Opened PDF: {doc.page_count} pages")
 
-            # 获取字段映射
             field_mapping = self.csv_loader.get_field_mapping(report_type)
-
-            # 填充表单字段
-            filled_count = self._fill_pdf_fields(doc, data, field_mapping)
-
+            filled_count, report_number_jobs, text_overlay_jobs = self._fill_pdf_fields(doc, data, field_mapping, flatten)
             print(f"[AMLOPDFFillerPyMuPDF] Filled {filled_count} fields")
 
-            # Flatten表单（将表单字段转为静态内容）
-            if flatten:
-                print(f"[AMLOPDFFillerPyMuPDF] Flattening PDF...")
-                for page in doc:
-                    # PyMuPDF的flatten会将所有widget转为静态内容
-                    widgets = page.widgets() or []
-                    for widget in widgets:
-                        widget.update()  # 确保widget外观已更新
-
-                # 保存并重新加载以完成flatten
-                temp_path = output_path + '.temp.pdf'
+            if not flatten:
+                # 保持可编辑模式：只填充字段值，不使用overlay，不移除字段
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                doc.save(temp_path)
+                doc.save(output_path, garbage=4, deflate=True)
                 doc.close()
+                print(f"[AMLOPDFFillerPyMuPDF] Editable PDF generated: {output_path}")
+                return output_path
 
-                # 重新打开并flatten
-                doc = fitz.open(temp_path)
-                # 移除所有表单字段（转为纯图形）
-                for page in doc:
-                    page.remove_rotation()  # 确保页面旋转正确
+            print("[AMLOPDFFillerPyMuPDF] Flattening PDF...")
 
-                doc.save(output_path, garbage=4, deflate=True, clean=True)
-                doc.close()
+            # 步骤1：先移除所有表单字段（但保留填写的值）
+            for page in doc:
+                widgets = list(page.widgets()) if page.widgets() else []
+                for widget in widgets:
+                    try:
+                        # 确保字段值已更新
+                        widget.update()
+                    except Exception:
+                        pass
 
-                # 删除临时文件
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
+            # 步骤2：现在绘制overlays（在移除字段后，确保在最上层）
+            self._render_overlays(doc, report_number_jobs, text_overlay_jobs)
 
-                print(f"[AMLOPDFFillerPyMuPDF] PDF flattened successfully")
-            else:
-                # 不flatten，直接保存
-                os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                doc.save(output_path)
-                doc.close()
+            # 步骤3：再次遍历移除字段widget对象
+            for page in doc:
+                widgets = list(page.widgets()) if page.widgets() else []
+                for widget in widgets:
+                    try:
+                        widget.remove()
+                    except Exception:
+                        pass
 
-            print(f"[AMLOPDFFillerPyMuPDF] PDF generated: {output_path}")
+            # 步骤4：保存（不使用clean以保留字体）
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            doc.save(output_path, garbage=4, deflate=True, clean=False)
+            doc.close()
 
+            print(f"[AMLOPDFFillerPyMuPDF] PDF flattened successfully -> {output_path}")
             return output_path
 
-        except Exception as e:
-            print(f"[AMLOPDFFillerPyMuPDF] Error filling form: {e}")
+        except Exception as exc:
+            print(f"[AMLOPDFFillerPyMuPDF] Error filling form: {exc}")
             import traceback
             traceback.print_exc()
             raise
 
-    def _fill_pdf_fields(self, doc: fitz.Document, data: Dict[str, Any], field_mapping: Dict) -> int:
-        """
-        填充PDF字段
+    # ------------------------------------------------------------------ #
+    # 内部方法
+    # ------------------------------------------------------------------ #
 
-        Args:
-            doc: PyMuPDF文档对象
-            data: 表单数据
-            field_mapping: 字段映射配置
+    def _resolve_system_font(self, candidates: Tuple[Tuple[str, str], ...]) -> Tuple[Optional[str], Optional[str]]:
+        for font_name, font_path in candidates:
+            if os.path.exists(font_path):
+                return font_name, font_path
+        return None, None
 
-        Returns:
-            填充的字段数量
+    def _ensure_font_registered(self, doc: fitz.Document, font_name: Optional[str], font_path: Optional[str]) -> Optional[int]:
         """
+        确保字体被注册到PDF文档中，并返回字体的xref引用。
+        这样可以确保字体被嵌入，避免乱码问题。
+        """
+        if not font_path or not os.path.exists(font_path):
+            return None
+
+        doc_id = id(doc)
+        if doc_id not in self._font_registry:
+            self._font_registry[doc_id] = {}
+
+        # 检查是否已经注册过
+        if font_path in self._font_registry[doc_id]:
+            return self._font_registry[doc_id][font_path]
+
+        # 注册新字体
+        try:
+            # 对于PyMuPDF，我们使用fontfile参数直接在insert_textbox时指定
+            # 但我们仍然缓存字体路径以避免重复检查
+            self._font_registry[doc_id][font_path] = True
+            return None
+        except Exception as e:
+            print(f"[AMLOPDFFillerPyMuPDF] Failed to register font {font_path}: {e}")
+            return None
+
+    def _select_font_for_text(self, text: str) -> Tuple[Optional[str], Optional[str]]:
+        if not text:
+            return self._report_font_name, self._report_font_path
+
+        has_cjk = any(self._is_cjk_char(ch) for ch in text)
+        has_thai = any(self._is_thai_char(ch) for ch in text)
+
+        if has_cjk and self._cjk_font[0]:
+            return self._cjk_font
+
+        if has_thai:
+            return self._report_font_name, self._report_font_path
+
+        return self._report_font_name, self._report_font_path
+
+    def _fill_pdf_fields(
+        self,
+        doc: fitz.Document,
+        data: Dict[str, Any],
+        field_mapping: Dict,
+        flatten: bool
+    ) -> tuple[int, List[Dict[str, Any]], List[Dict[str, Any]]]:
         filled_count = 0
+        report_number_jobs: List[Dict[str, Any]] = []
+        text_overlay_jobs: List[Dict[str, Any]] = []
 
         try:
-            # 遍历所有页面
-            for page_num in range(doc.page_count):
-                page = doc[page_num]
-
-                # 获取页面上的所有widget（表单字段）
+            for page_index in range(doc.page_count):
+                page = doc[page_index]
                 widgets = page.widgets() or []
 
                 for widget in widgets:
                     field_name = widget.field_name
-                    if not field_name:
-                        continue
-
-                    # 检查是否在数据中
-                    if field_name not in data:
+                    if not field_name or field_name not in data:
                         continue
 
                     value = data[field_name]
-
-                    # 检查字段映射获取类型
                     field_info = field_mapping.get(field_name, {})
-                    field_type = field_info.get('type', 'text')
-
                     try:
-                        # 根据widget类型填充
-                        if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
-                            # 文本字段
-                            str_value = str(value) if value is not None else ''
+                        # 特殊处理：报告编号字段（fill_52）
+                        if field_name == 'fill_52':
+                            if flatten:
+                                # Flatten模式：记录位置，稍后通过overlay绘制
+                                report_number_jobs.append({
+                                    'page_index': page_index,
+                                    'rect': widget.rect,
+                                    'value': str(value)
+                                })
+                                widget.field_value = ''
+                                widget.update()
+                                filled_count += 1
+                                continue
+                            else:
+                                # 可编辑模式：直接填充字段值
+                                widget.field_value = str(value) if value is not None else ''
+                                widget.update()
+                                filled_count += 1
+                                continue
 
-                            # 只对报告编号字段(fill_52)添加字符间距，不影响comb字段
-                            # 报告编号有独立的字符框但不是comb类型
-                            if field_name == 'fill_52':
-                                # 在每个字符之间添加空格，分散到各个框中
-                                str_value = ' '.join(str_value)
-                                print(f"[AMLOPDFFillerPyMuPDF] Report number field detected: {field_name}, spacing characters")
+                        if widget.field_type == fitz.PDF_WIDGET_TYPE_TEXT:
+                            str_value = str(value) if value is not None else ''
+                            str_value = str_value.replace('\r\n', '\n')
+
+                            font_name, font_path = self._select_font_for_text(str_value)
+                            self._ensure_font_registered(doc, font_name, font_path)
+
+                            if font_name:
+                                widget.text_font = font_name
+
+                            if widget.text_fontsize is None or widget.text_fontsize <= 0:
+                                widget.text_fontsize = 10
 
                             widget.field_value = str_value
                             widget.update()
-                            filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled TEXT field: {field_name} = {value}")
 
-                        elif widget.field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
-                            # 复选框 - 使用字符串 "Yes" 或 "Off"
-                            if value in (True, 'true', '1', 1, 'yes', 'Yes', '/Yes'):
-                                widget.field_value = "Yes"  # 使用字符串而不是布尔值
-                            else:
-                                widget.field_value = "Off"
+                            if flatten and str_value:
+                                # Flatten模式：记录overlay绘制任务
+                                # 安全获取text_align，默认为左对齐
+                                try:
+                                    align = widget.text_align if hasattr(widget, 'text_align') and widget.text_align in (0, 1, 2) else 0
+                                except:
+                                    align = 0
+
+                                text_overlay_jobs.append({
+                                    'page_index': page_index,
+                                    'rect': widget.rect,
+                                    'value': str_value,
+                                    'fontname': font_name,
+                                    'fontfile': font_path,
+                                    'fontsize': widget.text_fontsize,
+                                    'align': align,
+                                })
+                            filled_count += 1
+                            continue
+
+                        if widget.field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                            widget.field_value = "Yes" if value in (True, 'true', '1', 1, 'yes', 'Yes', '/Yes') else "Off"
                             widget.update()
                             filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled CHECKBOX field: {field_name} = {widget.field_value}")
+                            continue
 
-                        elif widget.field_type == fitz.PDF_WIDGET_TYPE_COMBOBOX:
-                            # 下拉框
+                        if widget.field_type in (
+                            fitz.PDF_WIDGET_TYPE_COMBOBOX,
+                            fitz.PDF_WIDGET_TYPE_LISTBOX,
+                            fitz.PDF_WIDGET_TYPE_RADIOBUTTON
+                        ):
                             widget.field_value = str(value) if value is not None else ''
                             widget.update()
                             filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled COMBOBOX field: {field_name} = {value}")
+                            continue
 
-                        elif widget.field_type == fitz.PDF_WIDGET_TYPE_LISTBOX:
-                            # 列表框
-                            widget.field_value = str(value) if value is not None else ''
-                            widget.update()
-                            filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled LISTBOX field: {field_name} = {value}")
+                        widget.field_value = str(value) if value is not None else ''
+                        widget.update()
+                        filled_count += 1
 
-                        elif widget.field_type == fitz.PDF_WIDGET_TYPE_RADIOBUTTON:
-                            # 单选按钮
-                            widget.field_value = str(value) if value is not None else ''
-                            widget.update()
-                            filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled RADIOBUTTON field: {field_name} = {value}")
+                    except Exception as exc:
+                        print(f"[AMLOPDFFillerPyMuPDF] Error filling field {field_name}: {exc}")
 
-                        else:
-                            # 其他类型，当作文本处理
-                            widget.field_value = str(value) if value is not None else ''
-                            widget.update()
-                            filled_count += 1
-                            print(f"[AMLOPDFFillerPyMuPDF] Filled UNKNOWN field: {field_name} = {value}")
-
-                    except Exception as e:
-                        print(f"[AMLOPDFFillerPyMuPDF] Error filling field {field_name}: {e}")
-
-        except Exception as e:
-            print(f"[AMLOPDFFillerPyMuPDF] Error in _fill_pdf_fields: {e}")
+        except Exception as exc:
+            print(f"[AMLOPDFFillerPyMuPDF] Error in _fill_pdf_fields: {exc}")
             import traceback
             traceback.print_exc()
 
-        return filled_count
+        return filled_count, report_number_jobs, text_overlay_jobs
 
-    def extract_field_names(self, report_type: str) -> list:
-        """
-        提取PDF模板中的所有字段名
+    def _render_overlays(
+        self,
+        doc: fitz.Document,
+        report_number_jobs: List[Dict[str, Any]],
+        text_overlay_jobs: List[Dict[str, Any]]
+    ) -> None:
+        # 为每个页面创建一个Shape对象来绘制所有内容
+        page_shapes = {}
 
-        Args:
-            report_type: 报告类型
+        if report_number_jobs:
+            self._draw_report_numbers_to_shapes(doc, report_number_jobs, page_shapes)
+        if text_overlay_jobs:
+            self._draw_text_overlays_to_shapes(doc, text_overlay_jobs, page_shapes)
 
-        Returns:
-            字段名列表
-        """
-        try:
-            template_path = self.csv_loader.get_template_path(report_type)
-            doc = fitz.open(template_path)
+        # 提交所有Shape
+        for page_index, shape in page_shapes.items():
+            shape.commit()
 
-            field_names = []
-            for page in doc:
-                widgets = page.widgets() or []
-                for widget in widgets:
-                    if widget.field_name:
-                        field_names.append(widget.field_name)
+    def _draw_report_numbers_to_shapes(
+        self,
+        doc: fitz.Document,
+        jobs: List[Dict[str, Any]],
+        page_shapes: Dict[int, Any]
+    ) -> None:
+        """使用Shape方法绘制报告编号（写入内容流而非overlay）"""
+        if not jobs:
+            return
 
-            doc.close()
-            return field_names
+        self._ensure_font_registered(doc, self._report_font_name, self._report_font_path)
 
-        except Exception as e:
-            print(f"[AMLOPDFFillerPyMuPDF] Error extracting field names: {e}")
-            return []
+        for job in jobs:
+            page_index = job.get('page_index')
+            rect = job.get('rect')
+            value = (job.get('value') or '').strip()
 
-    def preview_data_mapping(self, report_type: str, data: Dict[str, Any]) -> Dict:
-        """
-        预览数据映射情况
+            if rect is None or page_index is None:
+                continue
 
-        Args:
-            report_type: 报告类型
-            data: 表单数据
+            # 获取或创建该页面的Shape
+            if page_index not in page_shapes:
+                page_shapes[page_index] = doc[page_index].new_shape()
 
-        Returns:
-            映射统计信息
-        """
-        field_mapping = self.csv_loader.get_field_mapping(report_type)
+            shape = page_shapes[page_index]
 
-        mapped_fields = []
-        unmapped_fields = []
-        missing_data = []
+            # 简单方案：直接在整个字段内居中显示完整的报告编号
+            # 不再尝试复杂的格子布局，直接一次性绘制
+            shape.insert_textbox(
+                rect,
+                value,
+                fontsize=10,
+                fontname=self._report_font_name,
+                fontfile=self._report_font_path,
+                color=(0, 0, 0),  # 黑色
+                align=1  # 居中
+            )
 
-        # 检查数据中的字段是否在映射中
-        for field_name, value in data.items():
-            if field_name in field_mapping:
-                mapped_fields.append(field_name)
+    def _draw_report_numbers_old(self, doc: fitz.Document, jobs: List[Dict[str, Any]]) -> None:
+        if not jobs:
+            return
+
+        self._ensure_font_registered(doc, self._report_font_name, self._report_font_path)
+
+        for job in jobs:
+            page_index = job.get('page_index')
+            rect = job.get('rect')
+            value = (job.get('value') or '').strip()
+
+            if rect is None or page_index is None:
+                continue
+
+            page = doc[page_index]
+
+            # 使用实际字段尺寸计算布局
+            field_width = rect.width
+            field_height = rect.height
+
+            # 根据实际测量值调整布局参数
+            # fill_52字段实际宽度约268.69pt，高度约23.89pt
+            # 布局：3格-gap-3格-gap-2格-gap-序列号
+            # 格子数量：3+3+2=8个，间距7个，组间距3个
+            # 简化策略：平均分配空间给8个数字框，序列号占剩余空间
+
+            num_boxes = 8  # 总共8个数字框
+            gap_ratio = 0.15  # 间距占框宽度的比例
+
+            # 计算每个数字框的宽度（包含间距）
+            box_unit_width = field_width / (num_boxes + num_boxes * gap_ratio + 6)  # 6为序列号预留更多空间
+            box_size = box_unit_width  # 框宽度
+            gap = box_unit_width * gap_ratio  # 间距
+            group_gap = gap * 1.2  # 组间距稍大
+
+            # 高度使用字段高度的大部分
+            box_height = field_height * 0.90
+
+            # 垂直居中
+            y_offset = (field_height - box_height) / 2
+            y0 = rect.y0 + y_offset
+            y1 = y0 + box_height
+
+            # 字体大小根据框高度调整，稍微小一点以确保能放下
+            fontsize = box_height * 0.65
+
+            group1, group2, group3, serial = self._split_report_number(value)
+            groups = [group1, group2, group3]
+            expected_lengths = [3, 3, 2]
+
+            cursor = rect.x0 + gap * 0.3  # 左侧留小间距
+            for group, expected_len in zip(groups, expected_lengths):
+                for idx_char in range(expected_len):
+                    ch = group[idx_char] if idx_char < len(group) else ''
+                    box_rect = fitz.Rect(cursor, y0, cursor + box_size,  y1)
+                    page.insert_textbox(
+                        box_rect,
+                        ch,
+                        fontsize=fontsize,
+                        fontname=self._report_font_name,
+                        fontfile=self._report_font_path,
+                        set_simple=0,  # 使用完整的CID字体支持
+                        align=1,
+                        overlay=True
+                    )
+                    cursor += box_size
+                    if idx_char < expected_len - 1:
+                        cursor += gap
+                cursor += group_gap
+
+            serial_rect = fitz.Rect(cursor, y0, rect.x1 - gap * 0.5, y1)
+            page.insert_textbox(
+                serial_rect,
+                serial,
+                fontsize=fontsize,
+                fontname=self._report_font_name,
+                fontfile=self._report_font_path,
+                set_simple=0,  # 使用完整的CID字体支持
+                align=1,
+                overlay=True
+            )
+
+    def _draw_text_overlays_to_shapes(
+        self,
+        doc: fitz.Document,
+        jobs: List[Dict[str, Any]],
+        page_shapes: Dict[int, Any]
+    ) -> None:
+        """使用Shape方法绘制文本（写入内容流而非overlay）"""
+        if not jobs:
+            return
+
+        for job in jobs:
+            page_index = job.get('page_index')
+            rect = job.get('rect')
+            value = job.get('value', '')
+
+            if page_index is None or rect is None or not value:
+                continue
+
+            # 获取或创建该页面的Shape
+            if page_index not in page_shapes:
+                try:
+                    page_shapes[page_index] = doc[page_index].new_shape()
+                except IndexError:
+                    continue
+
+            shape = page_shapes[page_index]
+
+            fontname = job.get('fontname') or self._report_font_name
+            fontfile = job.get('fontfile') or self._report_font_path
+            fontsize = job.get('fontsize') or 10
+            align = job.get('align', 0)
+
+            self._ensure_font_registered(doc, fontname, fontfile)
+
+            try:
+                shape.insert_textbox(
+                    rect,
+                    value,
+                    fontsize=fontsize,
+                    fontname=fontname,
+                    fontfile=fontfile,
+                    set_simple=0,
+                    color=(0, 0, 0),  # 黑色
+                    align=align
+                )
+            except Exception as exc:
+                print(f"[AMLOPDFFillerPyMuPDF] Failed to draw text with shape: {exc}")
+
+    def _draw_text_overlays_old(self, doc: fitz.Document, jobs: List[Dict[str, Any]]) -> None:
+        if not jobs:
+            return
+
+        for job in jobs:
+            page_index = job.get('page_index')
+            rect = job.get('rect')
+            value = job.get('value', '')
+
+            if page_index is None or rect is None or not value:
+                continue
+
+            try:
+                page = doc[page_index]
+            except IndexError:
+                continue
+
+            fontname = job.get('fontname') or self._report_font_name
+            fontfile = job.get('fontfile') or self._report_font_path
+            fontsize = job.get('fontsize') or 10
+            align = job.get('align')
+
+            if align == 1:
+                align = fitz.TEXT_ALIGN_CENTER
+            elif align == 2:
+                align = fitz.TEXT_ALIGN_RIGHT
             else:
-                unmapped_fields.append(field_name)
+                align = fitz.TEXT_ALIGN_LEFT
 
-        # 检查映射中的字段是否有数据
-        for field_name in field_mapping.keys():
-            if field_name not in data:
-                missing_data.append(field_name)
+            self._ensure_font_registered(doc, fontname, fontfile)
 
-        return {
-            'report_type': report_type,
-            'total_data_fields': len(data),
-            'total_mapped_fields': len(field_mapping),
-            'mapped_count': len(mapped_fields),
-            'unmapped_count': len(unmapped_fields),
-            'missing_data_count': len(missing_data),
-            'mapped_fields': mapped_fields[:10],
-            'unmapped_fields': unmapped_fields[:10],
-            'missing_data': missing_data[:10]
-        }
+            try:
+                # 强制使用fontfile参数以确保字体被嵌入
+                # set_simple=0确保使用完整的Unicode支持
+                result = page.insert_textbox(
+                    rect,
+                    value,
+                    fontsize=fontsize,
+                    fontname=fontname,
+                    fontfile=fontfile,
+                    set_simple=0,  # 使用完整的CID字体支持Unicode
+                    align=align,
+                    overlay=True,
+                    render_mode=0  # 0=填充模式（默认）
+                )
+                if result < 0:
+                    print(f"[AMLOPDFFillerPyMuPDF] Warning: Text may not fit in box (error code {result}): {value[:50]}...")
+            except Exception as exc:
+                print(f"[AMLOPDFFillerPyMuPDF] Failed to draw text overlay: {exc}")
+                # 尝试备用方法：使用insert_text
+                try:
+                    # 计算文本插入点（左上角）
+                    insert_point = fitz.Point(rect.x0 + 2, rect.y0 + fontsize + 2)
+                    page.insert_text(
+                        insert_point,
+                        value,
+                        fontsize=fontsize,
+                        fontname=fontname,
+                        fontfile=fontfile,
+                        set_simple=0,
+                        overlay=True
+                    )
+                    print(f"[AMLOPDFFillerPyMuPDF] Used fallback insert_text method")
+                except Exception as exc2:
+                    print(f"[AMLOPDFFillerPyMuPDF] Fallback also failed: {exc2}")
+
+    @staticmethod
+    def _split_report_number(value: str) -> tuple[str, str, str, str]:
+        raw = (value or '').strip()
+        if not raw:
+            return '', '', '', ''
+
+        filtered = ''.join(ch for ch in raw if ch.isalnum() or ch == '-')
+        parts = filtered.split('-') if '-' in filtered else []
+
+        if len(parts) >= 4:
+            part1, part2, part3 = parts[0], parts[1], parts[2]
+            serial_raw = ''.join(parts[3:])
+        else:
+            digits_only = ''.join(ch for ch in filtered if ch.isdigit())
+            part1 = digits_only[:3]
+            part2 = digits_only[3:6]
+            part3 = digits_only[6:8]
+            serial_raw = ''.join(ch for ch in filtered if ch.isalnum())[8:] or filtered
+
+        def normalize(segment: str, length: int) -> str:
+            normalized = ''.join(ch for ch in (segment or '').upper() if ch.isalnum())
+            if not normalized:
+                return ''
+            digits = ''.join(ch for ch in normalized if ch.isdigit())
+            candidate = digits if digits else normalized
+            trimmed = candidate[-length:]
+            if digits and trimmed.isdigit():
+                return trimmed.zfill(length)
+            if len(trimmed) < length:
+                pad_char = '0' if trimmed.isdigit() else ' '
+                return trimmed.rjust(length, pad_char)
+            return trimmed
+
+        group1 = normalize(part1, 3)
+        group2 = normalize(part2, 3)
+        group3 = normalize(part3, 2)
+        serial = ''.join(ch for ch in (serial_raw or '').upper() if ch.isalnum())
+
+        return group1, group2, group3, serial or serial_raw
+
+    @staticmethod
+    def _is_cjk_char(char: str) -> bool:
+        code = ord(char)
+        return (
+            0x4E00 <= code <= 0x9FFF or
+            0x3400 <= code <= 0x4DBF or
+            0x20000 <= code <= 0x2A6DF or
+            0x2A700 <= code <= 0x2B73F or
+            0x2B740 <= code <= 0x2B81F or
+            0x2B820 <= code <= 0x2CEAF or
+            0xF900 <= code <= 0xFAFF or
+            0x2F800 <= code <= 0x2FA1F
+        )
+
+    @staticmethod
+    def _is_thai_char(char: str) -> bool:
+        code = ord(char)
+        return 0x0E00 <= code <= 0x0E7F
 
 
-# 测试代码
 if __name__ == '__main__':
     filler = AMLOPDFFillerPyMuPDF()
-
-    # 测试数据
-    test_data = {
-        'fill_52': 'FI-001-68-001',
+    sample_data = {
+        'fill_52': 'FI-001-68-100001USD',
+        'fill_4': '测试用户 ทดสอบ',
+        'fill_5': '广东省深圳市福田区梅林街道梅兴苑2-1203',
+        'fill_48': '2500000',
+        'fill_50': '2500000',
         'Check Box2': True,
         'Check Box3': False,
-        'comb_1': '1234567890123',
-        'fill_4': 'นายสมชาย ใจดี',
-        'fill_37': '18',
-        'fill_38': '10',
-        'fill_39': '2568',
-        'fill_48': '2500000',
     }
-
-    # 生成测试PDF
     output_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'test_output')
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, 'test_amlo_101_pymupdf.pdf')
-
-    print("\n" + "="*60)
-    print("Generating Test PDF with PyMuPDF")
-    print("="*60)
-    result_path = filler.fill_form('AMLO-1-01', test_data, output_path, flatten=True)
-    print(f"Test PDF created: {result_path}")
+    output_path = os.path.join(output_dir, 'test_amlo_pymupdf.pdf')
+    filler.fill_form('AMLO-1-01', sample_data, output_path, flatten=True)

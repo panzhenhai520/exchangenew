@@ -18,13 +18,13 @@ from sqlalchemy.orm import Session
 
 try:
     from .amlo_csv_field_loader import get_csv_field_loader
-    from .amlo_pdf_filler_pymupdf import AMLOPDFFillerPyMuPDF  # 使用PyMuPDF版本
+    from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay  # 使用覆盖层方式
     from .amlo_data_mapper import AMLODataMapper
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(__file__))
     from amlo_csv_field_loader import get_csv_field_loader
-    from amlo_pdf_filler_pymupdf import AMLOPDFFillerPyMuPDF
+    from amlo_pdf_filler_overlay import AMLOPDFFillerOverlay
     from amlo_data_mapper import AMLODataMapper
 
 
@@ -34,9 +34,9 @@ class AMLOPDFService:
     def __init__(self):
         """初始化服务"""
         self.csv_loader = get_csv_field_loader()
-        self.pdf_filler = AMLOPDFFillerPyMuPDF()  # 使用PyMuPDF版本
+        self.pdf_filler = AMLOPDFFillerOverlay()  # 使用覆盖层方式
         self.data_mapper = AMLODataMapper()
-        print("[AMLOPDFService] Initialized successfully (using PyMuPDF)")
+        print("[AMLOPDFService] Initialized successfully (using Overlay method)")
 
     def generate_pdf_from_reservation(
         self,
@@ -101,12 +101,11 @@ class AMLOPDFService:
 
             print(f"[AMLOPDFService] Mapped {len(pdf_fields)} fields")
 
-            # 2. 填充PDF表单（启用flatten以确保浏览器兼容性）
+            # 2. 填充PDF表单（使用覆盖层方式）
             result_path = self.pdf_filler.fill_form(
                 report_type,
                 pdf_fields,
-                output_path,
-                flatten=True  # 使用flatten确保内容在所有PDF查看器中可见
+                output_path
             )
 
             print(f"[AMLOPDFService] PDF generated successfully: {result_path}")
