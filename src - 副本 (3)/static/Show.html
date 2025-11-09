@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汇率展示 - 机顶盒</title>
+    <!-- 环境配置文件 - 优先加载 -->
+    <script src="/static/env-config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-weight: bold; overflow: hidden; }
+        
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 1000; color: white; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-top: 5px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 24px; margin-bottom: 20px; text-align: center; }
+        .loading-status { font-size: 16px; text-align: center; opacity: 0.8; max-width: 600px; line-height: 1.5; }
+        .error-message { background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.5); border-radius: 10px; padding: 20px; margin-top: 20px; max-width: 500px; }
+        
+        .rates-display { display: none; width: 100vw; height: 100vh; padding: 15px; font-family: Arial, sans-serif; font-weight: bold; overflow: hidden; position: relative; flex-direction: column; }
+        
+        .light-theme { background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%); color: #000; }
+        .light-theme .rates-table { border: 4px solid #2d5016; background: rgba(255, 255, 255, 0.95); }
+        .light-theme .table-header { background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%); color: white; border-bottom: 3px solid #2d5016; }
+        .light-theme .rate-row { border-bottom: 2px solid #4a7c23; }
+        .light-theme .rate-row.even-row { background: rgba(66, 153, 225, 0.05); }
+        .light-theme .rate-row.empty-row { background: rgba(66, 153, 225, 0.02); }
+        .light-theme .buy-cell { background: rgba(72, 187, 120, 0.15); }
+        .light-theme .sell-cell { background: rgba(245, 101, 101, 0.15); }
+        
+        .dark-theme { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: #fff; }
+        .dark-theme .rates-table { border: 4px solid #68d391; background: rgba(26, 32, 44, 0.95); }
+        .dark-theme .table-header { background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%); color: white; border-bottom: 3px solid #68d391; }
+        .dark-theme .rate-row { border-bottom: 2px solid #68d391; }
+        .dark-theme .rate-row.even-row { background: rgba(99, 179, 237, 0.05); }
+        .dark-theme .rate-row.empty-row { background: rgba(99, 179, 237, 0.02); }
+        .dark-theme .buy-cell { background: rgba(72, 187, 120, 0.2); }
+        .dark-theme .sell-cell { background: rgba(245, 101, 101, 0.2); }
+        .dark-theme .table-header > div:nth-child(2) { background: rgba(255, 255, 0, 0.15); }
+        .dark-theme .rate-row > div:nth-child(2) { background: rgba(255, 255, 0, 0.15); }
+        .dark-theme .denomination-cell { background: rgba(255, 255, 0, 0.15); }
+        
+        .branch-info-corner { position: absolute; top: 8px; right: 15px; font-size: 0.7rem; opacity: 0.6; text-align: right; }
+        .branch-code { font-weight: bold; }
+        .base-currency { font-size: 0.6rem; }
+        
+        .header-section { text-align: center; margin-bottom: 15px; }
+        .main-title { font-size: 1.4rem; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 1px; white-space: nowrap; }
+        .info-row { display: flex; justify-content: center; gap: 20px; font-size: 0.8rem; font-weight: bold; flex-wrap: wrap; }
+        .info-item { display: flex; align-items: center; gap: 4px; }
+
+        .info-label { font-size: 0.7rem; opacity: 0.8; }
+        .info-value { background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 3px; font-family: Courier New, monospace; font-size: 0.75rem; }
+        .dark-theme .info-value { background: rgba(255,255,255,0.1); }
+        
+        .rates-table { flex: 1; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+        .table-header { display: grid; grid-template-columns: 2.0fr 1.5fr 1.4fr 1.4fr; padding: 12px 0; font-size: 1.3rem; font-weight: 900; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .table-header > div:nth-child(2) { background: rgba(255, 255, 0, 0.1); }
+        .currency-header { display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+        .denomination-header { display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(255, 193, 7, 0.15); }
+        .rate-header { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .rate-type { font-size: 1.3rem; font-weight: 900; }
+        .rate-subtitle { font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-top: 1px; }
+        .buy-header { background: rgba(72, 187, 120, 0.25); }
+        .sell-header { background: rgba(245, 101, 101, 0.25); }
+        
+        .table-body { flex: 1; overflow: hidden; }
+        .rate-row { display: grid; grid-template-columns: 2.0fr 1.5fr 1.4fr 1.4fr; min-height: 45px; align-items: center; }
+        .rate-row > div:nth-child(2) { background: rgba(255, 255, 0, 0.1); }
+        .currency-cell { display: flex; align-items: center; padding: 8px 15px; gap: 12px; }
+        .flag-container { width: 60px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.15); background: white; }
+        .flag-icon { width: 100%; height: 100%; object-fit: cover; }
+        .currency-info { display: flex; flex-direction: column; align-items: flex-start; }
+        .currency-code { font-size: 1.6rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1; }
+        .currency-name { font-size: 0.75rem; font-weight: 600; opacity: 0.7; margin-top: 2px; line-height: 1; }
+        
+        .denomination-cell { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 8px 10px; 
+            text-align: center;
+            background: rgba(255, 255, 0, 0.1);
+        }
+        .denomination-range { 
+            font-size: 1.0rem; 
+            font-weight: 900; 
+            letter-spacing: 0.2px; 
+            line-height: 1; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .denomination-type { 
+            font-size: 0.7rem; 
+            font-weight: 600; 
+            opacity: 0.7; 
+            margin-top: 2px; 
+            line-height: 1; 
+        }
+        
+        .rate-cell { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            font-size: 1.8rem; 
+            font-weight: 900; 
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+        .rate-value { 
+            font-weight: 900; 
+            letter-spacing: 0.5px;
+        }
+        .no-rate { 
+            font-size: 1.6rem; 
+            opacity: 0.4; 
+            font-weight: 900; 
+        }
+        
+        .bottom-info-section { margin-top: 15px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); }
+        .dark-theme .bottom-info-section { border-top: 1px solid rgba(255,255,255,0.15); }
+        .light-theme .bottom-info-section { border-top: 1px solid rgba(0,0,0,0.1); }
+        .bottom-info-row { display: flex; justify-content: center; align-items: center; gap: 30px; font-size: 0.7rem; flex-wrap: wrap; }
+        .info-item.language-controls .info-value { background: rgba(0,123,255,0.15); color: #0056b3; font-size: 0.65rem; }
+        .dark-theme .info-item.language-controls .info-value { background: rgba(99,179,237,0.2); color: #63b3ed; }
+        .info-item.operation-hints .info-value { background: rgba(255,193,7,0.15); color: #856404; font-size: 0.65rem; }
+        .dark-theme .info-item.operation-hints .info-value { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .info-item.refresh-status .info-value { background: rgba(40,167,69,0.15); color: #155724; font-size: 0.65rem; }
+        .dark-theme .info-item.refresh-status .info-value { background: rgba(40,167,69,0.2); color: #28a745; }
+        
+        @media (max-width: 1200px) {
+            .main-title { font-size: 1.2rem; }
+        }
+            .info-row { font-size: 0.75rem; gap: 15px; }
+            .currency-code { font-size: 1.4rem; }
+            .rate-cell { font-size: 1.6rem; }
+            .bottom-info-row { font-size: 0.65rem; gap: 20px; }
+            .info-item.language-controls .info-value,
+            .info-item.operation-hints .info-value,
+            .info-item.refresh-status .info-value { font-size: 0.6rem; }
+            
+            /* 确保面值列在小屏幕下也保持对齐 */
+            .table-header { grid-template-columns: 2.0fr 1.5fr 1.4fr 1.4fr; }
+            .rate-row { grid-template-columns: 2.0fr 1.5fr 1.4fr 1.4fr; }
+        }
+        
+        @media (max-width: 992px) {
+            .table-header { grid-template-columns: 1.8fr 1.4fr 1.3fr 1.3fr; }
+            .rate-row { grid-template-columns: 1.8fr 1.4fr 1.3fr 1.3fr; }
+            .denomination-range { font-size: 0.9rem; }
+        }
+        
+        @media (max-width: 768px) {
+            .table-header { grid-template-columns: 1.6fr 1.3fr 1.2fr 1.2fr; }
+            .rate-row { grid-template-columns: 1.6fr 1.3fr 1.2fr 1.2fr; }
+            .denomination-range { font-size: 0.8rem; }
+            .currency-code { font-size: 1.2rem; }
+            .rate-cell { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <div class="loading-text">正在获取最新汇率信息...</div>
+        <div class="loading-status" id="loadingStatus">连接汇率管理系统...</div>
+    </div>
+    
+    <div class="rates-display" id="ratesDisplay">
+        <div class="branch-info-corner">
+            <div class="branch-code" id="branchCode"></div>
+            <div class="base-currency" id="baseCurrency"></div>
+        </div>
+        
+
+        
+        <div class="header-section">
+            <h1 class="main-title">CURRENCY EXCHANGE RATES</h1>
+            <div class="info-row">
+                <span class="info-item">
+                    <span class="info-label">DATE:</span>
+                    <span class="info-value" id="displayDate"></span>
+                </span>
+                <span class="info-item">
+                    <span class="info-label">TIME:</span>
+                    <span class="info-value" id="displayTime"></span>
+                </span>
+                <span class="info-item">
+                    <span class="info-label">PAGE:</span>
+                    <span class="info-value" id="displayPage">1/1</span>
+                </span>
+            </div>
+        </div>
+        
+        <div class="rates-table">
+            <div class="table-header" id="tableHeader">
+                <div class="header-cell currency-header">CURRENCY</div>
+                <div class="header-cell rate-header buy-header">
+                    <div class="rate-type">Buying</div>
+                    <div class="rate-subtitle">Bank Notes</div>
+                </div>
+                <div class="header-cell rate-header sell-header">
+                    <div class="rate-type">Selling</div>
+                    <div class="rate-subtitle">Bank Notes</div>
+                </div>
+            </div>
+            <div class="table-body" id="ratesTableBody"></div>
+        </div>
+        
+        <div class="bottom-info-section">
+            <div class="bottom-info-row">
+                <span class="info-item language-controls">
+                    <span class="info-value">1: 中文 | 2: English | 3: ไทย</span>
+                </span>
+                <span class="info-item operation-hints">
+                    <span class="info-value">R: 刷新 | F11: 全屏</span>
+                </span>
+                <span class="info-item refresh-status">
+                    <span class="info-value">自动刷新: <span id="refreshCountdown">3600</span>秒后更新</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 动态获取服务器地址 - 支持环境自动检测
+function getServerUrl() {
+    // 优先检查环境配置
+    if (typeof window.ENV_CONFIG !== 'undefined' && window.ENV_CONFIG.BACKEND_URL) {
+        console.log('[服务器地址] 使用环境配置:', window.ENV_CONFIG.BACKEND_URL);
+        return window.ENV_CONFIG.BACKEND_URL;
+    }
+
+    // 检查当前页面的主机地址，使用端口5001
+    const currentHost = window.location.hostname;
+    const currentPort = window.location.port;
+    const protocol = window.location.protocol;
+
+    console.log('[服务器地址] 当前页面信息:', {
+        protocol: protocol,
+        hostname: currentHost,
+        port: currentPort,
+        href: window.location.href
+    });
+
+    // 修复：当直接访问文件时hostname为空的问题
+    if (!currentHost || currentHost === '' || currentHost === 'file' || protocol === 'file:') {
+        console.log('[服务器地址] 直接访问文件，尝试自动检测IP');
+        // 尝试从常见的开发机器IP中检测 - 使用当前环境IP
+        const possibleIPs = [
+            '192.168.0.4',   // 当前环境IP
+            '192.168.0.11',  // 备用IP
+            '192.168.1.100', // 常见开发IP
+            'localhost'       // 本地回环
+        ];
+
+        // 使用当前环境IP
+        const detectedIP = possibleIPs[0];
+        console.log('[服务器地址] 使用检测到的IP:', detectedIP);
+        return `http://${detectedIP}:5001`;
+    }
+
+    // 如果有端口号，使用当前端口，否则使用5001
+    const port = currentPort || '5001';
+    const serverUrl = currentHost === 'localhost' || currentHost === '192.168.0.4'
+        ? `http://192.168.0.4:5001`
+        : `http://${currentHost}:${port}`;
+    console.log('[服务器地址] 使用: ' + serverUrl);
+    return serverUrl;
+}
+
+// 动态获取网点代码
+function getBranchCode() {
+    // 直接从URL参数获取网点代码，如果没有则使用A005
+    const urlParams = new URLSearchParams(window.location.search);
+    const branchFromUrl = urlParams.get('branch');
+    if (branchFromUrl) {
+        console.log('[网点代码] 从URL参数获取:', branchFromUrl);
+        return branchFromUrl;
+    }
+    
+    // 默认使用A005网点
+    console.log('[网点代码] 使用默认值: A005');
+    return "A005";
+}
+
+const CONFIG = { 
+    serverUrl: getServerUrl(), 
+    branchCode: getBranchCode(), 
+    refreshInterval: 3600000, 
+    retryInterval: 300000, 
+    maxRetries: 3, 
+    itemsPerPage: 12
+};
+
+let retryCount = 0, countdownTimer = null, pageTimer = null, timeTimer = null, currentData = null, currentPage = 1, totalPages = 1, currentLanguage = 'zh';
+
+const elements = { 
+    loadingScreen: document.getElementById("loadingScreen"), 
+    ratesDisplay: document.getElementById("ratesDisplay"), 
+    loadingStatus: document.getElementById("loadingStatus"), 
+    branchCode: document.getElementById("branchCode"), 
+    baseCurrency: document.getElementById("baseCurrency"),
+    displayDate: document.getElementById("displayDate"), 
+    displayTime: document.getElementById("displayTime"), 
+    displayPage: document.getElementById("displayPage"), 
+    ratesTableBody: document.getElementById("ratesTableBody"), 
+    tableHeader: document.getElementById("tableHeader"), 
+    refreshCountdown: document.getElementById("refreshCountdown")
+};
+
+// 初始化网点信息显示
+function initializeBranchInfo() {
+    elements.branchCode.textContent = CONFIG.branchCode;
+}
+
+function updateStatus(message, isError = false) { 
+    elements.loadingStatus.innerHTML = isError ? `<div class="error-message">${message}</div>` : message; 
+}
+
+// 测试网络连接
+async function testNetworkConnection() {
+    try {
+        const testUrl = `${CONFIG.serverUrl}/api/dashboard/settop-box/auto-url/${CONFIG.branchCode}`;
+        console.log('[网络测试] 测试URL:', testUrl);
+        
+        const response = await fetch(testUrl, {
+            method: 'GET',
+            timeout: 5000,
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            return `连接成功 (${response.status})`;
+        } else {
+            return `连接失败 (${response.status})`;
+        }
+    } catch (error) {
+        console.error('[网络测试] 连接错误:', error);
+        return `连接错误: ${error.message}`;
+    }
+}
+
+function switchLanguage(lang) {
+    console.log('[多语言] 切换语言到:', lang);
+    currentLanguage = lang;
+    const languageNames = {
+        'zh': '中文',
+        'en': 'English', 
+        'th': 'ไทย'
+    };
+    console.log('[多语言] 界面语言显示已更新为:', languageNames[lang] || '中文');
+    
+    // 重新显示当前页面以应用新语言
+    if (currentData && currentData.rates) {
+        console.log('[多语言] 重新渲染汇率列表...');
+        displayCurrentPage();
+    } else if (currentData && currentData.denomination_rates) {
+        console.log('[多语言] 重新渲染面值汇率列表...');
+        // 获取当前主题
+        const currentTheme = currentData.theme || 'light';
+        displayDenominationRates(currentData, currentTheme);
+    } else if (window.currentDisplayMode === 'denomination' && window.currentDenominationData) {
+        console.log('[多语言] 重新渲染面值汇率列表（从全局变量）...');
+        // 获取当前主题
+        const currentTheme = window.currentTheme || 'light';
+        displayDenominationRates(window.currentDenominationData, currentTheme);
+    }
+}
+
+// 获取面值汇率多语言翻译
+function getDenominationTranslations(lang) {
+    const translations = {
+        'zh': {
+            currency: '币种',
+            denomination: '面值',
+            buyRate: '买入价',
+            sellRate: '卖出价',
+            buyRateSubtitle: 'Buy Rate',
+            sellRateSubtitle: 'Sell Rate',
+            bill: '纸币',
+            coin: '硬币',
+            unknownCurrency: '未知币种'
+        },
+        'en': {
+            currency: 'Currency',
+            denomination: 'Denomination',
+            buyRate: 'Buy Rate',
+            sellRate: 'Sell Rate',
+            buyRateSubtitle: 'Buy Rate',
+            sellRateSubtitle: 'Sell Rate',
+            bill: 'Banknote',
+            coin: 'Coin',
+            unknownCurrency: 'Unknown Currency'
+        },
+        'th': {
+            currency: 'สกุลเงิน',
+            denomination: 'มูลค่า',
+            buyRate: 'ราคาซื้อ',
+            sellRate: 'ราคาขาย',
+            buyRateSubtitle: 'Buy Rate',
+            sellRateSubtitle: 'Sell Rate',
+            bill: 'ธนบัตร',
+            coin: 'เหรียญ',
+            unknownCurrency: 'สกุลเงินไม่ทราบ'
+        }
+    };
+    
+    return translations[lang] || translations['zh'];
+}
+
+
+function updateDateTime() {
+    const now = new Date();
+    elements.displayDate.textContent = now.toLocaleDateString("en-CA");
+    elements.displayTime.textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+}
+
+async function fetchRatesData() {
+    try {
+        console.log('[连接信息] 服务器地址:', CONFIG.serverUrl);
+        console.log('[连接信息] 网点代码:', CONFIG.branchCode);
+        updateStatus("正在获取汇率展示链接...");
+        
+        const response = await fetch(`${CONFIG.serverUrl}/api/dashboard/settop-box/auto-url/${CONFIG.branchCode}`);
+        
+        console.log('[API响应] 状态码:', response.status);
+        console.log('[API响应] 状态文本:', response.statusText);
+        console.log('[API响应] Content-Type:', response.headers.get('Content-Type'));
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[API错误] 响应内容:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        // 检查响应是否为JSON格式
+        const contentType = response.headers.get('Content-Type') || '';
+        if (!contentType.includes('application/json')) {
+            const responseText = await response.text();
+            console.error('[API错误] 响应不是JSON格式:', responseText);
+            throw new Error(`服务器返回了非JSON响应: ${contentType}`);
+        }
+        
+        const result = await response.json();
+        console.log('[API响应] 完整响应:', result);
+        
+        if (result.success && result.data) {
+            updateStatus("获取链接成功，正在加载汇率数据...");
+            const url = new URL(result.data.redirect_url, CONFIG.serverUrl);
+            // 从URL路径中提取token：/display-rates/{token}
+            const pathParts = url.pathname.split('/');
+            const token = pathParts[pathParts.length - 1]; // 获取路径最后一部分作为token
+            const theme = url.searchParams.get("theme") || "light";
+            const language = url.searchParams.get("lang") || "zh"; // 提取语言参数
+            console.log('[Token提取] 完整URL:', result.data.redirect_url);
+            console.log('[Token提取] 提取的token:', token);
+            console.log('[Token提取] 主题:', theme);
+            console.log('[Token提取] 语言:', language);
+            if (!token) throw new Error("无法获取访问令牌");
+            
+            // 先获取汇率数据，然后再设置语言
+            console.log('[汇率数据] 开始获取汇率数据，使用完整URL:', result.data.redirect_url);
+            // 添加时间戳强制刷新缓存
+            const timestamp = new Date().getTime();
+            const fullUrl = `${CONFIG.serverUrl}${result.data.redirect_url}&force_refresh=true&t=${timestamp}`;
+            console.log('[汇率数据] 完整请求URL:', fullUrl);
+            
+            const ratesResponse = await fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            console.log('[汇率数据] 状态码:', ratesResponse.status);
+            console.log('[汇率数据] Content-Type:', ratesResponse.headers.get('Content-Type'));
+            
+            if (!ratesResponse.ok) {
+                const errorText = await ratesResponse.text();
+                console.error('[汇率数据错误] 响应内容:', errorText);
+                throw new Error(`获取汇率数据失败: HTTP ${ratesResponse.status}: ${errorText}`);
+            }
+            
+            // 检查响应是否为JSON格式
+            const ratesContentType = ratesResponse.headers.get('Content-Type') || '';
+            if (!ratesContentType.includes('application/json')) {
+                const responseText = await ratesResponse.text();
+                console.error('[汇率数据错误] 响应不是JSON格式:', responseText);
+                throw new Error(`汇率数据响应不是JSON格式: ${ratesContentType}`);
+            }
+            
+            const ratesData = await ratesResponse.json();
+            console.log('[汇率数据] 完整响应:', ratesData);
+            
+            if (ratesData.success) { 
+                currentData = ratesData.data; 
+                updateStatus("数据加载完成，正在渲染界面...");
+                
+                // 延迟渲染以确保样式加载完成
+                setTimeout(() => {
+                displayRates(ratesData.data, theme); 
+                    updateStatus("界面渲染完成");
+                }, 50);
+                
+                return true; 
+            }
+            throw new Error(ratesData.message || "获取汇率数据失败");
+        }
+        throw new Error(result.message || "获取展示链接失败");
+    } catch (error) {
+        console.error("获取汇率数据失败:", error);
+        console.error("错误详情:", {
+            message: error.message,
+            stack: error.stack,
+            serverUrl: CONFIG.serverUrl,
+            branchCode: CONFIG.branchCode,
+            userAgent: navigator.userAgent,
+            location: window.location.href
+        });
+        
+        // 特殊处理"Failed to fetch"错误
+        let errorMessage = error.message;
+        if (error.message === "Failed to fetch") {
+            errorMessage = "网络连接失败，可能是CORS问题或服务器不可达";
+        }
+        
+        // 尝试测试网络连接
+        testNetworkConnection().then(result => {
+            let statusMessage = `获取失败: ${errorMessage}<br/>调试信息: 服务器=${CONFIG.serverUrl}, 网点=${CONFIG.branchCode}<br/>网络测试: ${result}`;
+            
+            // 如果是file://协议访问，给出特殊提示
+            if (window.location.protocol === 'file:') {
+                statusMessage += `<br/><br/>⚠️ 检测到通过文件系统访问，建议通过HTTP服务器访问:<br/>http://192.168.0.4:5001/static/Show.html?branch=${CONFIG.branchCode}`;
+            }
+            
+            updateStatus(statusMessage, true);
+        }).catch(() => {
+            updateStatus(`获取失败: ${errorMessage}<br/>调试信息: 服务器=${CONFIG.serverUrl}, 网点=${CONFIG.branchCode}<br/>网络测试: 失败`, true);
+        });
+        
+        return false;
+    }
+}
+
+function displayRates(data, theme = "light") {
+    elements.ratesDisplay.className = `rates-display ${theme}-theme`;
+    elements.ratesDisplay.style.display = "flex";
+    elements.loadingScreen.style.display = "none";
+    
+    // 立即应用主题样式
+    document.body.className = `${theme}-theme`;
+    
+    // 🌟 动态配置支持：从API读取显示配置参数
+    if (data.display_config) {
+        console.log('[配置更新] API返回的显示配置:', data.display_config);
+        
+        // 更新每页行数
+        if (data.display_config.items_per_page && data.display_config.items_per_page > 0) {
+            CONFIG.itemsPerPage = data.display_config.items_per_page;
+            console.log('[配置更新] 每页行数更新为:', CONFIG.itemsPerPage);
+        }
+        
+        // 更新刷新间隔（秒转换为毫秒）
+        if (data.display_config.refresh_interval && data.display_config.refresh_interval > 0) {
+            CONFIG.refreshInterval = data.display_config.refresh_interval * 1000;
+            console.log('[配置更新] 刷新间隔更新为:', CONFIG.refreshInterval / 1000, '秒');
+            
+            // 立即更新刷新倒计时显示
+            elements.refreshCountdown.textContent = data.display_config.refresh_interval;
+        }
+    } else {
+        console.log('[配置更新] 使用默认配置: 每页', CONFIG.itemsPerPage, '行, 刷新间隔', CONFIG.refreshInterval / 1000, '秒');
+    }
+    
+    // 更新网点信息：优先使用API返回的网点信息，否则使用配置的网点代码
+    if (data.branch && data.branch.code) {
+        elements.branchCode.textContent = data.branch.code;
+        console.log('[网点信息] 使用API返回的网点代码:', data.branch.code);
+        // 如果有本币信息，也更新显示
+        if (data.branch.base_currency) {
+            elements.baseCurrency.textContent = data.branch.base_currency;
+        }
+    } else {
+        elements.branchCode.textContent = CONFIG.branchCode;
+        console.log('[网点信息] API未返回网点代码，使用配置的网点代码:', CONFIG.branchCode);
+    }
+    
+    // 设置正确的语言：优先使用API返回的语言设置
+    const finalLanguage = data.language || getLanguageFromUrl();
+    console.log('[数据处理] API返回的语言设置:', data.language);
+    console.log('[数据处理] URL参数中的语言:', getLanguageFromUrl());
+    console.log('[数据处理] 最终使用的语言设置:', finalLanguage);
+    console.log('[数据处理] 切换前的当前语言:', currentLanguage);
+    switchLanguage(finalLanguage);
+    
+    updateDateTime();
+    
+    // 🌟 检查是否为面值汇率模式
+    if (data.has_denominations && data.denomination_rates && data.denomination_rates.length > 0) {
+        console.log('[面值汇率] 检测到面值汇率数据，切换到面值显示模式');
+        console.log('[面值汇率] 面值汇率数据:', data.denomination_rates);
+        displayDenominationRates(data, theme);
+    } else {
+        console.log('[标准汇率] 使用标准汇率显示模式');
+        
+        // 🔧 修复：设置全局变量以便翻页定时器使用
+        window.currentDisplayMode = 'standard';
+        window.currentStandardData = data;
+        window.currentTheme = theme;
+        
+    const rates = data.rates || [];
+    
+    // 重新计算总页数（配置更新后）
+    totalPages = Math.ceil(rates.length / CONFIG.itemsPerPage);
+    currentPage = 1;
+    
+    console.log('[页面计算] 总币种数:', rates.length);
+    console.log('[页面计算] 每页行数:', CONFIG.itemsPerPage);
+    console.log('[页面计算] 计算总页数:', totalPages);
+    
+    displayCurrentPage();
+    }
+    
+    startTimers();
+}
+
+function displayCurrentPage() {
+    if (!currentData || !currentData.rates) return;
+    const rates = currentData.rates;
+    const start = (currentPage - 1) * CONFIG.itemsPerPage;
+    const end = start + CONFIG.itemsPerPage;
+    const currentPageRates = rates.slice(start, end);
+    elements.displayPage.textContent = `${currentPage}/${totalPages}`;
+    
+    // 设置标准汇率的表格头部（不包含面值列）
+    elements.tableHeader.innerHTML = `
+        <div class="header-cell currency-header">币种</div>
+        <div class="header-cell rate-header buy-header">
+            <div class="rate-type">买入价</div>
+            <div class="rate-subtitle">Buy Rate</div>
+        </div>
+        <div class="header-cell rate-header sell-header">
+            <div class="rate-type">卖出价</div>
+            <div class="rate-subtitle">Sell Rate</div>
+        </div>
+    `;
+    
+    elements.ratesTableBody.innerHTML = "";
+    
+    // 渲染实际汇率数据
+    currentPageRates.forEach((rate, index) => {
+        const row = document.createElement("div");
+        row.className = `rate-row ${index % 2 === 1 ? "even-row" : ""}`;
+        
+        // 检测是否通过HTTP服务器访问
+        const isHttpServer = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+        const baseUrl = isHttpServer ? '' : 'http://localhost:5001';
+        
+        // 🌟 修复自定义币种图标显示逻辑
+        let flagSrc;
+        if (rate.custom_flag_filename) {
+            // 优先使用自定义图标
+            flagSrc = `${baseUrl}/flags/${rate.custom_flag_filename}`;
+            console.log(`[币种图标] ${rate.currency_code} 使用自定义图标: ${rate.custom_flag_filename}`);
+        } else if (rate.flag_code) {
+            // 使用标准国旗图标
+            flagSrc = `${baseUrl}/flags/${rate.flag_code.toLowerCase()}.svg`;
+            console.log(`[币种图标] ${rate.currency_code} 使用标准图标: ${rate.flag_code.toLowerCase()}.svg`);
+        } else {
+            // 使用默认图标
+            flagSrc = `${baseUrl}/flags/unknown.svg`;
+            console.log(`[币种图标] ${rate.currency_code} 使用默认图标: unknown.svg`);
+        }
+        
+        const fallbackSrc = `${baseUrl}/images/chart-placeholder.svg`;
+        
+        // 🌟 动态多语言支持：优先使用API返回的多语言名称
+        let currencyName = rate.currency_name; // 默认名称（向后兼容）
+        console.log(`[币种渲染] ${rate.currency_code}:`);
+        console.log(`  默认名称: ${rate.currency_name}`);
+        console.log(`  多语言数据:`, rate.currency_names);
+        console.log(`  当前语言: ${currentLanguage}`);
+        
+        if (rate.currency_names && rate.currency_names[currentLanguage]) {
+            currencyName = rate.currency_names[currentLanguage];
+            console.log(`  ✅ 找到${currentLanguage}语言映射: ${currencyName}`);
+        } else {
+            console.log(`  ❌ 无${currentLanguage}语言映射，使用默认: ${currencyName}`);
+        }
+        
+        row.innerHTML = `
+            <div class="currency-cell">
+                <div class="flag-container">
+                    <img src="${flagSrc}" alt="${rate.currency_code}" class="flag-icon" onerror="this.src='${fallbackSrc}'">
+                </div>
+                <div class="currency-info">
+                    <div class="currency-code">${rate.currency_code}</div>
+                    <div class="currency-name">${currencyName}</div>
+                </div>
+            </div>
+            <div class="rate-cell buy-cell">
+                ${rate.buy_rate > 0 ? `<span class="rate-value">${formatRate(rate.buy_rate)}</span>` : '<span class="no-rate">-</span>'}
+            </div>
+            <div class="rate-cell sell-cell">
+                ${rate.sell_rate > 0 ? `<span class="rate-value">${formatRate(rate.sell_rate)}</span>` : '<span class="no-rate">-</span>'}
+            </div>
+        `;
+        elements.ratesTableBody.appendChild(row);
+    });
+    
+    // 补充空行到指定行数
+    const currentRowCount = currentPageRates.length;
+    const targetRowCount = CONFIG.itemsPerPage;
+    console.log('[空行补充] 当前行数:', currentRowCount, '目标行数:', targetRowCount);
+    
+    for (let i = currentRowCount; i < targetRowCount; i++) {
+        const emptyRow = document.createElement("div");
+        emptyRow.className = `rate-row empty-row ${i % 2 === 1 ? "even-row" : ""}`;
+        emptyRow.innerHTML = `
+            <div class="currency-cell">
+                <div class="currency-info">
+                    <div class="currency-code">&nbsp;</div>
+                    <div class="currency-name">&nbsp;</div>
+                </div>
+            </div>
+            <div class="rate-cell buy-cell">
+                <span class="no-rate">&nbsp;</span>
+            </div>
+            <div class="rate-cell sell-cell">
+                <span class="no-rate">&nbsp;</span>
+            </div>
+        `;
+        elements.ratesTableBody.appendChild(emptyRow);
+    }
+}
+
+function formatRate(rate) { 
+    return Number(rate).toFixed(2); 
+}
+
+function startTimers() {
+    // 🔧 修复：先清理所有旧定时器，防止多个定时器同时运行
+    clearTimers();
+    
+    timeTimer = setInterval(updateDateTime, 1000);
+    if (totalPages > 1) {
+        // 🔧 修复：使用CONFIG.refreshInterval而不是硬编码的10秒
+        pageTimer = setInterval(() => {
+            currentPage = currentPage >= totalPages ? 1 : currentPage + 1;
+            // 🔧 修复：根据当前模式调用正确的显示函数
+            if (window.currentDisplayMode === 'denomination') {
+                displayDenominationRates(window.currentDenominationData, window.currentTheme);
+            } else {
+                displayCurrentPage();
+            }
+        }, CONFIG.refreshInterval);
+    }
+    startRefreshCountdown();
+}
+
+function startRefreshCountdown() {
+    // 🔧 修复：先清理旧的倒计时定时器
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+    
+    let seconds = CONFIG.refreshInterval / 1000;
+    console.log('[倒计时] 开始倒计时，初始值:', seconds, '秒');
+    elements.refreshCountdown.textContent = seconds;
+    
+    countdownTimer = setInterval(() => {
+        seconds--;
+        elements.refreshCountdown.textContent = seconds;
+        if (seconds <= 0) { 
+            clearInterval(countdownTimer); 
+            refreshData(); 
+        }
+    }, 1000);
+}
+
+function clearTimers() {
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+    if (pageTimer) {
+        clearInterval(pageTimer);
+        pageTimer = null;
+    }
+    if (timeTimer) {
+        clearInterval(timeTimer);
+        timeTimer = null;
+    }
+}
+
+async function refreshData() {
+    retryCount = 0;
+    clearTimers();
+    const success = await fetchRatesData();
+    if (!success) setTimeout(refreshData, CONFIG.retryInterval);
+}
+
+async function attemptFetch() {
+    const success = await fetchRatesData();
+    if (!success) {
+        retryCount++;
+        if (retryCount <= CONFIG.maxRetries) {
+            updateStatus(`获取失败，${CONFIG.retryInterval/60000}分钟后重试 (${retryCount}/${CONFIG.maxRetries})`, true);
+            setTimeout(attemptFetch, CONFIG.retryInterval);
+        } else {
+            updateStatus("多次尝试失败，请检查网络连接和系统状态<br>系统将在1小时后自动重试", true);
+            setTimeout(() => { 
+                retryCount = 0; 
+                attemptFetch(); 
+            }, CONFIG.refreshInterval);
+        }
+    }
+}
+
+document.addEventListener("keydown", (event) => {
+    switch(event.key.toLowerCase()) {
+        case "r": refreshData(); break;
+        case "f11": document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); break;
+        case "arrowleft": if (totalPages > 1) { currentPage = currentPage <= 1 ? totalPages : currentPage - 1; displayCurrentPage(); } break;
+        case "arrowright": if (totalPages > 1) { currentPage = currentPage >= totalPages ? 1 : currentPage + 1; displayCurrentPage(); } break;
+        case "1": switchLanguage('zh'); break;
+        case "2": switchLanguage('en'); break;
+        case "3": switchLanguage('th'); break;
+    }
+});
+
+// 初始化显示
+initializeBranchInfo();
+
+// 从URL参数获取语言设置
+function getLanguageFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get('lang');
+    return langFromUrl || 'zh'; // 默认中文
+}
+
+// 确保CSS样式已加载
+function ensureStylesLoaded() {
+    // 强制重新计算样式
+    document.body.offsetHeight;
+    
+    // 确保面值列的背景色样式生效
+    const style = document.createElement('style');
+    style.textContent = `
+        .table-header > div:nth-child(2) { 
+            background: rgba(255, 255, 0, 0.1) !important; 
+        }
+        .rate-row > div:nth-child(2) { 
+            background: rgba(255, 255, 0, 0.1) !important; 
+        }
+        .denomination-cell { 
+            background: rgba(255, 255, 0, 0.1) !important; 
+        }
+        .dark-theme .table-header > div:nth-child(2) { 
+            background: rgba(255, 255, 0, 0.15) !important; 
+        }
+        .dark-theme .rate-row > div:nth-child(2) { 
+            background: rgba(255, 255, 0, 0.15) !important; 
+        }
+        .dark-theme .denomination-cell { 
+            background: rgba(255, 255, 0, 0.15) !important; 
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// 强制应用面值列背景色样式
+function applyDenominationBackgroundStyles() {
+    console.log('[样式应用] 开始强制应用面值列背景色样式');
+    
+    // 应用表头背景色
+    const headerCells = document.querySelectorAll('.table-header > div:nth-child(2)');
+    headerCells.forEach(cell => {
+        cell.style.background = 'rgba(255, 255, 0, 0.1)';
+        cell.style.position = 'relative';
+    });
+    
+    // 应用数据行背景色
+    const dataCells = document.querySelectorAll('.rate-row > div:nth-child(2)');
+    dataCells.forEach(cell => {
+        cell.style.background = 'rgba(255, 255, 0, 0.1)';
+        cell.style.position = 'relative';
+    });
+    
+    // 应用面值单元格背景色
+    const denominationCells = document.querySelectorAll('.denomination-cell');
+    denominationCells.forEach(cell => {
+        cell.style.background = 'rgba(255, 255, 0, 0.1)';
+    });
+    
+    console.log('[样式应用] 面值列背景色样式应用完成');
+}
+
+// 🌟 面值汇率显示函数
+function displayDenominationRates(data, theme = "light") {
+    console.log('[面值汇率] 开始显示面值汇率数据:', data);
+    
+    // 验证必要的数据
+    if (!data.denomination_rates || data.denomination_rates.length === 0) {
+        console.error('[面值汇率] 缺少面值汇率数据');
+        updateStatus('面值汇率数据不完整：缺少面值汇率信息', true);
+        return;
+    }
+    
+    console.log('[面值汇率] 数据验证通过，开始处理面值汇率数据');
+    
+    // 确保CSS样式已加载
+    ensureStylesLoaded();
+    
+    // 更新表格头部以支持面值显示（多语言）
+    const translations = getDenominationTranslations(currentLanguage);
+    elements.tableHeader.innerHTML = `
+        <div class="header-cell currency-header">${translations.currency}</div>
+        <div class="header-cell denomination-header">${translations.denomination}</div>
+        <div class="header-cell rate-header buy-header">
+            <div class="rate-type">${translations.buyRate}</div>
+            <div class="rate-subtitle">${translations.buyRateSubtitle}</div>
+        </div>
+        <div class="header-cell rate-header sell-header">
+            <div class="rate-type">${translations.sellRate}</div>
+            <div class="rate-subtitle">${translations.sellRateSubtitle}</div>
+        </div>
+    `;
+    
+    // 清空表格内容
+    elements.ratesTableBody.innerHTML = "";
+    
+    // 检测是否通过HTTP服务器访问
+    const isHttpServer = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+    const baseUrl = isHttpServer ? '' : 'http://localhost:5001';
+    
+    // 获取面值汇率数据
+    const denominationRates = data.denomination_rates || [];
+    
+    // 按币种分组
+    const currencyGroups = {};
+    denominationRates.forEach(rate => {
+        const currencyId = rate.currency_id;
+        console.log('[面值汇率] 处理面值汇率:', rate, 'currency_id:', currencyId);
+        if (!currencyId) {
+            console.warn('[面值汇率] 面值汇率缺少currency_id:', rate);
+            return;
+        }
+        if (!currencyGroups[currencyId]) {
+            currencyGroups[currencyId] = [];
+        }
+        currencyGroups[currencyId].push(rate);
+    });
+    
+    console.log('[面值汇率] 按币种分组:', currencyGroups);
+    
+    // 处理每个币种的面值汇率，实现币种分组显示
+    let allMergedRates = [];
+    let globalIndex = 0;
+    
+    for (const currencyId in currencyGroups) {
+        const currencyRates = currencyGroups[currencyId];
+        
+        // 按面值大小排序（从大到小）
+        const sortedRates = currencyRates.sort((a, b) => {
+            const aValue = parseFloat(a.denomination_value) || 0;
+            const bValue = parseFloat(b.denomination_value) || 0;
+            return bValue - aValue;
+        });
+        
+        // 合并相同汇率的相邻面值
+        const mergedRates = mergeDenominationRates(sortedRates);
+        
+        // 为每个合并后的面值组添加索引信息
+        mergedRates.forEach((rateGroup, groupIndex) => {
+            rateGroup.global_index = globalIndex++;
+            rateGroup.is_first_of_currency = groupIndex === 0; // 标记是否为该币种的第一行
+        });
+        
+        allMergedRates = allMergedRates.concat(mergedRates);
+    }
+    
+    console.log('[面值汇率] 所有合并后的面值汇率:', allMergedRates);
+    
+    // 计算分页信息
+    totalPages = Math.ceil(allMergedRates.length / CONFIG.itemsPerPage);
+    console.log('[面值汇率分页] 总行数:', allMergedRates.length, '每页:', CONFIG.itemsPerPage, '总页数:', totalPages);
+    
+    // 获取当前页的数据
+    const start = (currentPage - 1) * CONFIG.itemsPerPage;
+    const end = start + CONFIG.itemsPerPage;
+    const currentPageRates = allMergedRates.slice(start, end);
+    
+    console.log('[面值汇率分页] 当前页:', currentPage, '显示行数:', currentPageRates.length);
+    
+    // 更新页面显示
+    elements.displayPage.textContent = `${currentPage}/${totalPages}`;
+    
+    // 渲染当前页的面值汇率
+    currentPageRates.forEach((rateGroup, index) => {
+        const row = document.createElement("div");
+        row.className = `rate-row ${index % 2 === 1 ? "even-row" : ""}`;
+        
+        // 验证面值汇率组数据
+        if (!rateGroup.denominations || rateGroup.denominations.length === 0) {
+            console.warn('[面值汇率] 跳过无效的面值组数据:', rateGroup);
+            return;
+        }
+        
+        // 强制应用样式
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '2.0fr 1.5fr 1.4fr 1.4fr';
+        
+        // 格式化面值范围显示
+        const denominationRange = formatDenominationRange(rateGroup.denominations);
+        const translations = getDenominationTranslations(currentLanguage);
+        const denominationType = rateGroup.denomination_type === 'bill' ? translations.bill : translations.coin;
+        
+        // 币种图标
+        let flagSrc;
+        if (rateGroup.custom_flag_filename) {
+            flagSrc = `${baseUrl}/flags/${rateGroup.custom_flag_filename}`;
+        } else if (rateGroup.flag_code) {
+            flagSrc = `${baseUrl}/flags/${rateGroup.flag_code.toLowerCase()}.svg`;
+        } else {
+            flagSrc = `${baseUrl}/flags/unknown.svg`;
+        }
+        
+        const fallbackSrc = `${baseUrl}/images/chart-placeholder.svg`;
+        
+        // 🔧 修复：使用与标准汇率相同的多语言机制
+        let currencyName = rateGroup.currency_name; // 默认名称（向后兼容）
+        console.log(`[面值汇率币种渲染] ${rateGroup.currency_code}:`);
+        console.log(`  默认名称: ${rateGroup.currency_name}`);
+        console.log(`  多语言数据:`, rateGroup.currency_names);
+        console.log(`  当前语言: ${currentLanguage}`);
+        
+        if (rateGroup.currency_names && rateGroup.currency_names[currentLanguage]) {
+            currencyName = rateGroup.currency_names[currentLanguage];
+            console.log(`  ✅ 找到${currentLanguage}语言映射: ${currencyName}`);
+        } else {
+            console.log(`  ❌ 无${currentLanguage}语言映射，使用默认: ${currencyName}`);
+        }
+        
+        // 根据是否为该币种的第一行来决定币种列的显示内容
+        const currencyCellContent = rateGroup.is_first_of_currency ? `
+            <div class="flag-container">
+                <img src="${flagSrc}" alt="${rateGroup.currency_code}" class="flag-icon" onerror="this.src='${fallbackSrc}'">
+            </div>
+            <div class="currency-info">
+                <div class="currency-code">${rateGroup.currency_code}</div>
+                <div class="currency-name">${currencyName}</div>
+            </div>
+        ` : `
+            <div class="currency-info">
+                <div class="currency-code">&nbsp;</div>
+                <div class="currency-name">&nbsp;</div>
+            </div>
+        `;
+        
+        row.innerHTML = `
+            <div class="currency-cell">
+                ${currencyCellContent}
+            </div>
+            <div class="denomination-cell">
+                <div class="denomination-range">${denominationRange}</div>
+                <div class="denomination-type">${denominationType}</div>
+            </div>
+            <div class="rate-cell buy-cell">
+                ${rateGroup.buy_rate && rateGroup.buy_rate > 0 ? `<span class="rate-value">${formatRate(rateGroup.buy_rate)}</span>` : '<span class="no-rate">-</span>'}
+            </div>
+            <div class="rate-cell sell-cell">
+                ${rateGroup.sell_rate && rateGroup.sell_rate > 0 ? `<span class="rate-value">${formatRate(rateGroup.sell_rate)}</span>` : '<span class="no-rate">-</span>'}
+            </div>
+        `;
+        elements.ratesTableBody.appendChild(row);
+    });
+    
+    // 补充空行到指定行数
+    const currentRowCount = currentPageRates.length;
+    const targetRowCount = CONFIG.itemsPerPage;
+    
+    for (let i = currentRowCount; i < targetRowCount; i++) {
+        const emptyRow = document.createElement("div");
+        emptyRow.className = `rate-row empty-row ${i % 2 === 1 ? "even-row" : ""}`;
+        
+        // 强制应用样式
+        emptyRow.style.display = 'grid';
+        emptyRow.style.gridTemplateColumns = '2.0fr 1.5fr 1.4fr 1.4fr';
+        
+        emptyRow.innerHTML = `
+            <div class="currency-cell">
+                <div class="currency-info">
+                    <div class="currency-code">&nbsp;</div>
+                    <div class="currency-name">&nbsp;</div>
+                </div>
+            </div>
+            <div class="denomination-cell" style="background: rgba(255, 255, 0, 0.1);">
+                <div class="denomination-range">&nbsp;</div>
+                <div class="denomination-type">&nbsp;</div>
+            </div>
+            <div class="rate-cell buy-cell">
+                <span class="no-rate">&nbsp;</span>
+            </div>
+            <div class="rate-cell sell-cell">
+                <span class="no-rate">&nbsp;</span>
+            </div>
+        `;
+        elements.ratesTableBody.appendChild(emptyRow);
+    }
+    
+    // 页面信息已在分页计算中更新，不需要重置
+    
+    // 强制应用背景色样式
+    setTimeout(() => {
+        applyDenominationBackgroundStyles();
+    }, 100);
+    
+    console.log('[面值汇率] 面值汇率显示完成，原始面值:', denominationRates.length, '个，合并后:', allMergedRates.length, '组');
+    
+    // 🔧 修复：设置全局变量以便翻页定时器使用
+    window.currentDisplayMode = 'denomination';
+    window.currentDenominationData = data;
+    window.currentTheme = theme;
+    
+    // 🔧 修复：启动定时器（包括翻页定时器）
+    startTimers();
+}
+
+// 合并相同汇率的相邻面值
+function mergeDenominationRates(sortedRates) {
+    if (sortedRates.length === 0) return [];
+    
+    const merged = [];
+    let currentGroup = {
+        denominations: [sortedRates[0]],
+        buy_rate: sortedRates[0].buy_rate,
+        sell_rate: sortedRates[0].sell_rate,
+        denomination_type: sortedRates[0].denomination_type,
+        // 保留币种信息
+        currency_id: sortedRates[0].currency_id,
+        currency_code: sortedRates[0].currency_code,
+        currency_name: sortedRates[0].currency_name,
+        flag_code: sortedRates[0].flag_code,
+        custom_flag_filename: sortedRates[0].custom_flag_filename
+    };
+    
+    for (let i = 1; i < sortedRates.length; i++) {
+        const current = sortedRates[i];
+        
+        // 检查是否可以合并：相同类型、相同汇率
+        if (current.denomination_type === currentGroup.denomination_type &&
+            Math.abs(current.buy_rate - currentGroup.buy_rate) < 0.0001 &&
+            Math.abs(current.sell_rate - currentGroup.sell_rate) < 0.0001) {
+            // 可以合并，添加到当前组
+            currentGroup.denominations.push(current);
+        } else {
+            // 不能合并，保存当前组并开始新组
+            merged.push(currentGroup);
+            currentGroup = {
+                denominations: [current],
+                buy_rate: current.buy_rate,
+                sell_rate: current.sell_rate,
+                denomination_type: current.denomination_type,
+                // 保留币种信息
+                currency_id: current.currency_id,
+                currency_code: current.currency_code,
+                currency_name: current.currency_name,
+                flag_code: current.flag_code,
+                custom_flag_filename: current.custom_flag_filename
+            };
+        }
+    }
+    
+    // 添加最后一个组
+    merged.push(currentGroup);
+    
+    return merged;
+}
+
+// 格式化面值范围显示
+function formatDenominationRange(denominations) {
+    if (denominations.length === 1) {
+        return formatDenominationValue(denominations[0].denomination_value);
+    } else {
+        const maxValue = Math.max(...denominations.map(d => d.denomination_value));
+        const minValue = Math.min(...denominations.map(d => d.denomination_value));
+        return `${formatDenominationValue(maxValue)}-${formatDenominationValue(minValue)}`;
+    }
+}
+
+// 格式化面值显示
+function formatDenominationValue(value) {
+    // 确保value是数字类型
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+        return '0';
+    }
+    if (numValue >= 1) {
+        return numValue.toFixed(0);
+    } else {
+        return numValue.toFixed(2);
+    }
+}
+
+// 不要在页面加载时就设置语言，让API数据决定语言
+
+// 🔧 添加文件协议自动跳转检测
+window.addEventListener("load", function() {
+    // 检测是否通过file://协议访问
+    if (window.location.protocol === 'file:') {
+        console.log('[自动跳转] 检测到file://协议访问，准备自动跳转');
+        
+        // 构建HTTP服务器URL
+        const httpUrl = `http://192.168.0.4:5001/static/Show.html?branch=${CONFIG.branchCode}`;
+        
+        // 显示跳转提示
+        updateStatus(`检测到通过文件系统访问，3秒后自动跳转到HTTP服务器...<br/><br/>如果未自动跳转，请点击：<a href="${httpUrl}" style="color: #fff; text-decoration: underline;">${httpUrl}</a>`, true);
+        
+        // 3秒后自动跳转
+        setTimeout(() => {
+            console.log('[自动跳转] 执行跳转到:', httpUrl);
+            window.location.href = httpUrl;
+        }, 3000);
+        
+        return; // 不执行后续的attemptFetch
+    }
+    
+    // 正常HTTP访问，执行原有逻辑
+    attemptFetch();
+});
+setInterval(refreshData, CONFIG.refreshInterval);
+</script>
+</body>
+</html> 

@@ -85,7 +85,7 @@ npm run test:unit       # Unit tests only
 ```bash
 # Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-test.txt  # Test dependencies (pytest, etc.)
+pip install -r requirements-test.txt  # Optional: Test dependencies (pytest, pytest-cov, pytest-mock, etc.)
 
 # Run backend server
 python src/main.py
@@ -109,7 +109,10 @@ pytest --cov=src --cov-report=html  # With coverage report
 - Database migrations: `src/migrations/migrate.py`
 - Test structure: `tests/backend/` with pytest configuration in `pytest.ini`
 - Python version: 3.11+ required (minimum version enforced in `pytest.ini`)
-- Test dependencies: Install separately with `pip install -r requirements-test.txt` (includes pytest, pytest-cov, etc.)
+- Test dependencies: Optional, install with `pip install -r requirements-test.txt`
+  - Includes: pytest 7.4.3, pytest-cov, pytest-mock, responses, freezegun
+  - Code quality: pytest-flake8, pytest-pylint
+  - Reporting: pytest-html, pytest-json-report
 
 ### Database Setup
 ```bash
@@ -207,7 +210,7 @@ setup_environment.bat
   - `exchange_models.py`: Core models (Branch, Currency, ExchangeTransaction, Operator, Role, Permission, etc.)
   - `denomination_models.py`: Denomination/rate publishing models
   - `report_models.py`: Reporting and compliance models
-- `src/services/`: Business logic layer (38+ service files)
+- `src/services/`: Business logic layer (40 service files)
   - `db_service.py`: Database connection and session management
   - `auth_service.py`: JWT authentication, token validation, permissions
   - PDF generators: `pdf_service.py`, `*_pdf_generator.py` (exchange, reversal, balance, EOD reports, etc.)
@@ -230,7 +233,7 @@ setup_environment.bat
 ### Frontend Structure
 
 **Core Directories:**
-- `src/views/`: Vue page components (40+ views)
+- `src/views/`: Vue page components (44 views)
   - App* views: Mobile-optimized views for "App" role users (teller operations)
   - Standard views: Desktop-optimized views for "System" role users (management)
   - Major views: `ExchangeView.vue`, `DualDirectionExchangeView.vue`, `DashboardView.vue`
@@ -331,7 +334,8 @@ Multiple PDF generation systems exist for different purposes (all in `src/servic
 1. `bot_excel_service.py`: BOT Excel reports
 2. `bot_template_based_generator.py`: Template-driven BOT reports
 3. `bot_template_generator_v3.py`: Latest BOT template generator
-4. Font support: Thai fonts in `src/fonts/Sarabun-*.ttf` for multilingual PDFs
+4. `amlo_pdf_filler_pymupdf.py`: AMLO form filling (may use PyMuPDF if available)
+5. Font support: Thai fonts in `src/fonts/Sarabun-*.ttf` for multilingual PDFs
 
 **Testing PDFs:**
 - Test scripts in `src/services/pdf/test_pdf_generator.py`

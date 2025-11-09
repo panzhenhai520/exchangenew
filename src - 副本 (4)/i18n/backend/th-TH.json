@@ -1,0 +1,69 @@
+{
+  "auth": {
+    "user_info_failed": "ไม่สามารถรับข้อมูลผู้ใช้ได้",
+    "login_expired": "การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
+    "permission_denied": "ไม่มีสิทธิ์เข้าถึง"
+  },
+  "validation": {
+    "missing_required_field": "ขาดฟิลด์ที่จำเป็น: {field}",
+    "missing_required_params": "ขาดพารามิเตอร์ที่จำเป็น",
+    "invalid_amount": "กรุณาใส่จำนวนเงินที่ถูกต้อง",
+    "currency_not_found": "ไม่พบสกุลเงิน",
+    "currency_no_rate": "ไม่พบสกุลเงินหรือยังไม่ได้ตั้งค่าอัตราแลกเปลี่ยนวันนี้",
+    "no_balance_record": "สกุลเงินนี้ไม่มีบันทึกยอดเงินในสาขานี้",
+    "branch_info_incomplete": "ข้อมูลสาขาไม่ครบถ้วน ไม่สามารถกำหนดประเภทสกุลเงินฐานได้",
+    "branch_not_found": "ไม่พบข้อมูลสาขา",
+    "branch_no_base_currency": "สาขายังไม่ได้ตั้งค่าสกุลเงินฐาน",
+    "base_currency_balance_not_exist": "บันทึกยอดเงินสกุลเงินฐานไม่มีอยู่",
+    "validation_failed_recalculate": "การตรวจสอบล้มเหลว กรุณาคำนวณใหม่",
+    "validation_passed": "การตรวจสอบผ่าน",
+    "validation_passed_can_execute": "การตรวจสอบผ่าน สามารถดำเนินการธุรกรรมได้",
+    "validation_passed_with_warnings": "การตรวจสอบผ่าน แต่มีการเตือนเกี่ยวกับขีดจำกัดยอดเงิน",
+    "validation_passed_with_critical_warnings": "การตรวจสอบผ่าน แต่มีการเตือนสำคัญเกี่ยวกับขีดจำกัดยอดเงิน",
+    "amount_exceeds_approved": "จำนวนเงินธุรกรรมเกินจำนวนเงินที่อนุมัติแล้ว กรุณาปรับจำนวนเงินหรือส่งขออนุมัติใหม่"
+  },
+  "balance": {
+    "insufficient_balance": "ยอดเงินไม่เพียงพอ",
+    "insufficient_stock": "สต็อกไม่เพียงพอ",
+    "balance_check_error": "เกิดข้อผิดพลาดในการตรวจสอบยอดเงิน: {error}",
+    "foreign_currency_insufficient": "{currency_name}ยอดเงินไม่เพียงพอ ต้องจ่าย {required_amount:.2f} {currency_code} ยอดเงินปัจจุบัน {current_balance:.2f} {currency_code} ขาด {shortfall:.2f} {currency_code}",
+    "foreign_stock_insufficient": "{currency_name}สต็อกไม่เพียงพอ ต้องการ {required_amount:.2f} {currency_code} สต็อกปัจจุบัน {current_stock:.2f} {currency_code} ขาด {missing_amount:.2f} {currency_code}",
+    "base_stock_insufficient": "{currency_name}สต็อกสกุลเงินหลักไม่เพียงพอ ต้องการ {required_amount:.2f} {currency_code} สต็อกปัจจุบัน {current_stock:.2f} {currency_code} ขาด {missing_amount:.2f} {currency_code}",
+    "balance_update_failed": "การอัปเดตยอดเงินล้มเหลว: {error}",
+    "balance_sufficient": "ยอดเงินเพียงพอ สามารถทำธุรกรรมได้",
+    "threshold_warning": "{currency_name} ({currency_code}) ยอดเงินหลังทำธุรกรรมจะเปลี่ยนจาก {current_balance:.2f} เป็น {new_balance:.2f}, {impact_analysis}"
+  },
+  "transaction": {
+    "transaction_successful": "ธุรกรรมสำเร็จ",
+    "transaction_failed": "ธุรกรรมล้มเหลว",
+    "transaction_execution_failed": "การดำเนินการธุรกรรมล้มเหลว: {error}",
+    "no_valid_combinations": "ไม่มีการรวมธุรกรรมที่ถูกต้อง",
+    "no_combinations_provided": "กรุณาเพิ่มการรวมมูลค่าอย่างน้อยหนึ่งรายการ",
+    "dual_direction_success": "ธุรกรรมสองทิศทางดำเนินการสำเร็จ",
+    "dual_direction_failed": "ธุรกรรมสองทิศทางล้มเหลว: {error}",
+    "business_group_not_found": "ไม่พบบันทึกธุรกรรมกลุ่มธุรกิจ",
+    "validation_error": "ข้อผิดพลาดการตรวจสอบ"
+  },
+  "customer": {
+    "name_required": "กรุณากรอกชื่อลูกค้า",
+    "id_required": "กรุณากรอกรหัสลูกค้า",
+    "info_incomplete": "ข้อมูลลูกค้าไม่ครบถ้วน"
+  },
+  "exchange": {
+    "rate_unavailable": "อัตราแลกเปลี่ยนไม่พร้อมใช้งาน",
+    "exchange_successful": "แลกเปลี่ยนสำเร็จ",
+    "exchange_failed": "แลกเปลี่ยนล้มเหลว",
+    "cannot_complete_exchange": "ยอดเงินไม่เพียงพอ ไม่สามารถแลกเปลี่ยนได้"
+  },
+  "system": {
+    "operation_successful": "การดำเนินการสำเร็จ",
+    "base_currency": "สกุลเงินหลัก",
+    "unknown_currency": "สกุลเงินไม่ทราบ",
+    "operation_failed": "การดำเนินการล้มเหลว",
+    "network_error": "ข้อผิดพลาดของเครือข่าย",
+    "system_error": "ข้อผิดพลาดของระบบ: {error}",
+    "data_not_found": "ไม่พบข้อมูล",
+    "access_denied": "การเข้าถึงถูกปฏิเสธ",
+    "unknown_currency": "สกุลเงินที่ไม่รู้จัก"
+  }
+}

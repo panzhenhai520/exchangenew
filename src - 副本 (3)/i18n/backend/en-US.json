@@ -1,0 +1,69 @@
+{
+  "auth": {
+    "user_info_failed": "Failed to get user information",
+    "login_expired": "Login expired, please log in again",
+    "permission_denied": "Access denied"
+  },
+  "validation": {
+    "missing_required_field": "Missing required field: {field}",
+    "missing_required_params": "Missing required parameters",
+    "invalid_amount": "Please enter a valid amount",
+    "currency_not_found": "Currency not found",
+    "currency_no_rate": "Currency not found or today's rate not set",
+    "no_balance_record": "This currency has no balance record at this branch",
+    "branch_info_incomplete": "Branch information incomplete, cannot determine base currency type",
+    "branch_not_found": "Branch information not found",
+    "branch_no_base_currency": "Branch base currency not set",
+    "base_currency_balance_not_exist": "Base currency balance record does not exist",
+    "validation_failed_recalculate": "Validation failed, please recalculate",
+    "validation_passed": "Validation passed",
+    "validation_passed_can_execute": "Validation passed, transaction can be executed",
+    "validation_passed_with_warnings": "Validation passed, but with balance threshold warnings",
+    "validation_passed_with_critical_warnings": "Validation passed, but with critical balance threshold warnings",
+    "amount_exceeds_approved": "Transaction amount exceeds approved amount, please adjust the amount or resubmit for approval"
+  },
+  "balance": {
+    "insufficient_balance": "Insufficient balance",
+    "insufficient_stock": "Insufficient stock",
+    "balance_check_error": "Error checking balance: {error}",
+    "foreign_currency_insufficient": "{currency_name} insufficient balance, need to pay {required_amount:.2f} {currency_code}, current balance {current_balance:.2f} {currency_code}, shortage {shortfall:.2f} {currency_code}",
+    "foreign_stock_insufficient": "{currency_name} insufficient stock, need {required_amount:.2f} {currency_code}, current stock {current_stock:.2f} {currency_code}, missing {missing_amount:.2f} {currency_code}",
+    "base_stock_insufficient": "{currency_name} base currency stock insufficient, need {required_amount:.2f} {currency_code}, current stock {current_stock:.2f} {currency_code}, missing {missing_amount:.2f} {currency_code}",
+    "balance_update_failed": "Failed to update balance: {error}",
+    "balance_sufficient": "Balance sufficient, transaction can be completed",
+    "threshold_warning": "{currency_name} ({currency_code}) balance will change from {current_balance:.2f} to {new_balance:.2f}, {impact_analysis}"
+  },
+  "transaction": {
+    "transaction_successful": "Transaction successful",
+    "transaction_failed": "Transaction failed",
+    "transaction_execution_failed": "Transaction execution failed: {error}",
+    "no_valid_combinations": "No valid transaction combinations",
+    "no_combinations_provided": "Please add at least one denomination combination",
+    "dual_direction_success": "Dual-direction transaction executed successfully",
+    "dual_direction_failed": "Dual-direction transaction failed: {error}",
+    "business_group_not_found": "Business group transaction records not found",
+    "validation_error": "Validation error"
+  },
+  "customer": {
+    "name_required": "Please enter customer name",
+    "id_required": "Please enter customer ID",
+    "info_incomplete": "Customer information incomplete"
+  },
+  "exchange": {
+    "rate_unavailable": "Rate unavailable",
+    "exchange_successful": "Exchange successful",
+    "exchange_failed": "Exchange failed",
+    "cannot_complete_exchange": "Insufficient balance, cannot complete exchange"
+  },
+  "system": {
+    "operation_successful": "Operation successful",
+    "base_currency": "Base Currency",
+    "unknown_currency": "Unknown Currency",
+    "operation_failed": "Operation failed",
+    "network_error": "Network error",
+    "system_error": "System error: {error}",
+    "data_not_found": "Data not found",
+    "access_denied": "Access denied",
+    "unknown_currency": "Unknown Currency"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "reservationRequired": "Please fill in necessary information",
+  "ctr": "CTR",
+  "atr": "ATR",
+  "str": "STR", 
+  "triggerAlertTitle": "Trigger Alert",
+  "transactionSummary": "Transaction Summary",
+  "direction": "Direction",
+  "foreignCurrency": "Foreign Currency",
+  "localAmount": "Local Amount",
+  "exchangeRate": "Exchange Rate",
+  "customerId": "Customer ID",
+  "customerName": "Customer Name",
+  "fillRequiredInfo": "Fill Required Information",
+  "loadingForm": "Loading Form",
+  "generatingReportNumber": "Generating Report Number",
+  "submitting": "Submitting",
+  "submitReservation": "Submit Reservation",
+  "saveFailed": "Save Failed"
+}
+
+
+
+
+

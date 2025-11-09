@@ -1,0 +1,163 @@
+/* 主样式文件 */
+
+/* 全局样式 */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Microsoft YaHei', 'Avenir', Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* 卡片样式 */
+.card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 12px 20px;
+  font-weight: bold;
+}
+
+/* 表格样式 */
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.table th, .table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #212529;
+}
+
+/* 表单样式 */
+.form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* 汇率看板样式 */
+.rate-card {
+  transition: transform 0.3s;
+}
+
+.rate-card:hover {
+  transform: translateY(-5px);
+}
+
+.currency-flag {
+  width: 30px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+/* 兑换交易样式 */
+.exchange-form {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rate-info {
+  background-color: #e9f7fe;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+/* 页面标题统一样式 - 最高优先级 */
+.container-fluid h1.page-title-bold,
+.container-fluid h2.page-title-bold,
+.container-fluid h3.page-title-bold,
+.container-fluid .page-title-bold,
+div h1.page-title-bold,
+div h2.page-title-bold,
+div h3.page-title-bold,
+div .page-title-bold,
+h1.page-title-bold,
+h2.page-title-bold, 
+h3.page-title-bold,
+.page-title-bold {
+  font-weight: 900 !important;
+  color: #2c2c2c !important;
+  font-size: 1.6rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: -1px !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 规范管理页面特定间距 - 通过Vue组件名称选择器 */
+[data-v-*] .container-fluid:has([data-icon="clipboard-list"]) .d-flex.justify-content-between.align-items-center.mb-4,
+.container-fluid:has([data-icon="clipboard-list"]) .d-flex.justify-content-between.align-items-center.mb-4 {
+  margin-top: 20px !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .card-header {
+    padding: 10px 15px;
+  }
+  
+  .table th, .table td {
+    padding: 8px 10px;
+  }
+  
+  /* 移动端标题调整 */
+  .page-title-bold {
+    font-size: 1.2rem !important;
+  }
+}
