@@ -12,37 +12,13 @@
 
         <!-- 主界面区域 -->
         <div class="row">
-          <!-- 左侧：币种和面值选择器 + 操作指导 -->
+          <!-- 左侧：AMLO预约列表 + 币种和面值选择器 -->
           <div class="col-md-4">
-            <!-- 操作指导卡片 -->
-            <div class="card mb-3 guidance-card">
-              <div class="card-header">
-                <h6 class="mb-0">
-                  <font-awesome-icon :icon="['fas', 'info-circle']" class="me-2" />
-                  {{ $t('exchange.operation_guidance') }}
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="operation-steps">
-                  <div class="step">
-                    <span class="step-number">1</span>
-                    <span class="step-text">{{ $t('exchange.select_currency_and_denomination') }}</span>
-                  </div>
-                  <div class="step">
-                    <span class="step-number">2</span>
-                    <span class="step-text">{{ $t('exchange.add_to_combination') }}</span>
-                  </div>
-                  <div class="step">
-                    <span class="step-number">3</span>
-                    <span class="step-text">{{ $t('exchange.fill_customer_info') }}</span>
-                  </div>
-                  <div class="step">
-                    <span class="step-number">4</span>
-                    <span class="step-text">{{ $t('exchange.validate_and_execute') }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- AMLO预约审核列表卡片 -->
+            <AMLOReservationCard
+              @load-reservation="handleLoadReservation"
+              @edit-reservation="handleEditReservation"
+            />
 
             <!-- 多币种面值选择器 -->
             <MultiCurrencyDenominationSelector
@@ -523,13 +499,15 @@
 import MultiCurrencyDenominationSelector from '@/components/MultiCurrencyDenominationSelector.vue'
 import DenominationCombinationManager from '@/components/DenominationCombinationManager.vue'
 import ReservationModal from '@/components/exchange/ReservationModal.vue'
+import AMLOReservationCard from '@/components/amlo/AMLOReservationCard.vue'
 
 export default {
   name: 'DualDirectionExchangeView',
   components: {
     MultiCurrencyDenominationSelector,
     DenominationCombinationManager,
-    ReservationModal
+    ReservationModal,
+    AMLOReservationCard
   },
   data() {
     return {
@@ -730,6 +708,106 @@ export default {
     window.removeEventListener('message', this.handlePDFWindowMessage)
   },
   methods: {
+    /**
+     * 处理加载AMLO预约（审核通过的）
+     * 从预约数据中加载兑换信息到表单
+     */
+    async handleLoadReservation(reservation) {
+      console.log('[DualDirectionExchangeView] 加载审核通过的预约:', reservation)
+
+      try {
+        // 获取完整预约数据
+        const response = await this.$api.get(`/amlo/reservations/${reservation.id}`)
+
+        if (response.data.success) {
+          const fullData = response.data.data
+          const formData = fullData.form_data || {}
+
+          // 提示用户
+          this.$toast?.success?.('已加载预约信息，可继续操作')
+
+          console.log('[DualDirectionExchangeView] 预约数据:', fullData)
+        }
+      } catch (error) {
+        console.error('[DualDirectionExchangeView] 加载预约失败:', error)
+        this.$toast?.error?.('加载预约失败: ' + (error.response?.data?.message || error.message))
+      }
+    },
+
+    /**
+     * 处理编辑AMLO预约（审核未通过的）
+     * 创建修订报告并打开PDF查看器
+     */
+    async handleEditReservation(reservation) {
+      console.log('[DualDirectionExchangeView] 编辑未通过审核的预约:', reservation)
+
+      try {
+        // 获取完整预约数据
+        const response = await this.$api.get(`/amlo/reservations/${reservation.id}`)
+
+        if (!response.data.success) {
+          this.$toast?.error?.('获取预约数据失败')
+          return
+        }
+
+        const fullData = response.data.data
+        const formData = fullData.form_data || {}
+
+        // 计算修改次数（从现有记录+1，如果没有则为1）
+        const currentAmendmentCount = parseInt(formData.amendment_count || '0', 10)
+        const newAmendmentCount = currentAmendmentCount + 1
+
+        console.log('[DualDirectionExchangeView] 创建第', newAmendmentCount, '次修订报告')
+
+        // 准备修订报告的表单数据
+        const amendmentFormData = {
+          ...formData,
+          is_amendment_report: true,  // 标记为修订报告
+          amendment_count: String(newAmendmentCount),  // 修改次数
+          amendment_date: new Date().toISOString().split('T')[0]  // 当前日期（YYYY-MM-DD）
+        }
+
+        // 调用resubmit API创建修订预约
+        const resubmitResponse = await this.$api.post(
+          `/amlo/reservations/${reservation.id}/resubmit`,
+          {
+            form_data: amendmentFormData,
+            denomination_data: fullData.denomination_data,
+            previous_report_number: fullData.reservation_no,
+            remarks: `第${newAmendmentCount}次修订报告`
+          }
+        )
+
+        if (resubmitResponse.data.success) {
+          const newReservation = resubmitResponse.data.data
+
+          this.$toast?.success?.(`已创建第${newAmendmentCount}次修订报告：${newReservation.reservation_no}`)
+
+          // 打开PDF查看器窗口，显示新的修订报告
+          const baseUrl = window.location.origin
+          const pdfViewerPath = '/amlo/pdf-viewer'
+          const params = new URLSearchParams({
+            id: newReservation.id,
+            title: `${newReservation.report_type} - ${newReservation.reservation_no}（修订报告）`,
+            reportType: newReservation.report_type,
+            mode: 'reservation'  // 使用预约模式，允许签名
+          })
+
+          const url = `${baseUrl}${pdfViewerPath}?${params.toString()}`
+          const windowFeatures = 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no'
+
+          window.open(url, 'AMLOPDFViewer', windowFeatures)
+
+          console.log('[DualDirectionExchangeView] 已打开修订报告PDF窗口:', newReservation.reservation_no)
+        } else {
+          this.$toast?.error?.('创建修订报告失败: ' + resubmitResponse.data.message)
+        }
+      } catch (error) {
+        console.error('[DualDirectionExchangeView] 创建修订报告失败:', error)
+        this.$toast?.error?.('创建修订报告失败: ' + (error.response?.data?.message || error.message))
+      }
+    },
+
     async loadCountries(localeOverride) {
       try {
         console.log('[DualDirectionExchangeView] 开始加载国家列表...')
@@ -2013,42 +2091,6 @@ export default {
 .modal-title {
   color: #1976d2;
   font-weight: 600;
-}
-
-/* 新增的指导卡片样式 */
-.guidance-card .card-body {
-  padding: 1rem;
-}
-
-.operation-steps .step {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.operation-steps .step:last-child {
-  margin-bottom: 0;
-}
-
-.step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
-  color: white;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-}
-
-.step-text {
-  color: #495057;
-  line-height: 1.4;
 }
 
 /* 余额信息卡片样式 */
