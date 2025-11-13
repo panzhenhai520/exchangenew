@@ -133,8 +133,8 @@
                   <td><span class="badge bg-primary">{{ item.currency_code }}</span></td>
                   <td class="text-end">{{ formatAmount(item.foreign_amount) }}</td>
                   <td class="text-end">{{ item.exchange_rate }}</td>
-                  <td class="text-end">{{ formatAmount(item.thb_amount) }}</td>
-                  <td>{{ formatDateTime(item.transaction_time) }}</td>
+                  <td class="text-end">{{ formatAmount(item.local_amount) }}</td>
+                  <td>{{ formatDateTime(item.transaction_date) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -178,8 +178,8 @@
                   <td><span class="badge bg-danger">{{ item.currency_code }}</span></td>
                   <td class="text-end">{{ formatAmount(item.foreign_amount) }}</td>
                   <td class="text-end">{{ item.exchange_rate }}</td>
-                  <td class="text-end">{{ formatAmount(item.thb_amount) }}</td>
-                  <td>{{ formatDateTime(item.transaction_time) }}</td>
+                  <td class="text-end">{{ formatAmount(item.local_amount) }}</td>
+                  <td>{{ formatDateTime(item.transaction_date) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -208,22 +208,24 @@ export default {
     const sellFXData = ref([])
 
     const buyFXSummary = computed(() => {
-      if (!buyFXData.value || buyFXData.value.length === 0) {
+      // 确保是数组类型
+      if (!Array.isArray(buyFXData.value) || buyFXData.value.length === 0) {
         return { count: 0, amount: 0 }
       }
       return {
         count: buyFXData.value.length,
-        amount: buyFXData.value.reduce((sum, item) => sum + parseFloat(item.thb_amount || 0), 0)
+        amount: buyFXData.value.reduce((sum, item) => sum + parseFloat(item.local_amount || 0), 0)
       }
     })
 
     const sellFXSummary = computed(() => {
-      if (!sellFXData.value || sellFXData.value.length === 0) {
+      // 确保是数组类型
+      if (!Array.isArray(sellFXData.value) || sellFXData.value.length === 0) {
         return { count: 0, amount: 0 }
       }
       return {
         count: sellFXData.value.length,
-        amount: sellFXData.value.reduce((sum, item) => sum + parseFloat(item.thb_amount || 0), 0)
+        amount: sellFXData.value.reduce((sum, item) => sum + parseFloat(item.local_amount || 0), 0)
       }
     })
 
@@ -231,13 +233,16 @@ export default {
       loadingBuy.value = true
       try {
         const response = await api.get('bot/t1-buy-fx', {
-          params: { 
+          params: {
             year: queryYear.value,
             month: queryMonth.value
           }
         })
         if (response.data.success) {
-          buyFXData.value = response.data.data || []
+          // 后端直接返回data数组
+          const data = response.data.data
+          buyFXData.value = Array.isArray(data) ? data : []
+          console.log(`加载买入外币成功: ${buyFXData.value.length} 条记录`)
         }
       } catch (error) {
         console.error('加载买入外币失败:', error)
@@ -251,13 +256,16 @@ export default {
       loadingSell.value = true
       try {
         const response = await api.get('bot/t1-sell-fx', {
-          params: { 
+          params: {
             year: queryYear.value,
             month: queryMonth.value
           }
         })
         if (response.data.success) {
-          sellFXData.value = response.data.data || []
+          // 后端直接返回data数组
+          const data = response.data.data
+          sellFXData.value = Array.isArray(data) ? data : []
+          console.log(`加载卖出外币成功: ${sellFXData.value.length} 条记录`)
         }
       } catch (error) {
         console.error('加载卖出外币失败:', error)
@@ -314,6 +322,8 @@ export default {
 
     const formatDateTime = (dt) => {
       if (!dt) return '-'
+      // 后端已经返回格式化的字符串，直接显示
+      if (typeof dt === 'string') return dt
       return new Date(dt).toLocaleString('zh-CN')
     }
 

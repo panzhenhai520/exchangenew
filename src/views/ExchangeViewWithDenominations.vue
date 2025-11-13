@@ -20,43 +20,16 @@
         </div>
         
         <div class="row">
-          <!-- 左侧：操作指引 -->
+          <!-- 左侧：AMLO预约审核列表 -->
           <div class="col-md-2">
-            <div class="card mb-4 exchange-guide-card">
-              <div class="card-header py-2 bg-primary text-white">
-                <h6 class="mb-0">
-                  <font-awesome-icon :icon="['fas', 'list-ol']" class="me-2" />
-                  {{ $t('exchange.exchange_steps') }}
-                </h6>
-              </div>
-              <div class="card-body p-2">
-                <div class="exchange-steps">
-                  <div class="step-item" :class="{ 'active': currentStep >= 1, 'completed': currentStep > 1 }">
-                    <div class="step-number">1</div>
-                    <div class="step-text">{{ $t('exchange.select_foreign_currency') }}</div>
-                  </div>
-                  <div class="step-item" :class="{ 'active': currentStep >= 2, 'completed': currentStep > 2 }">
-                    <div class="step-number">2</div>
-                    <div class="step-text">{{ $t('exchange.select_buy_sell') }}</div>
-                  </div>
-                  <div class="step-item" :class="{ 'active': currentStep >= 3, 'completed': currentStep > 3 }">
-                    <div class="step-number">3</div>
-                    <div class="step-text">{{ $t('exchange.select_purpose') }}</div>
-                  </div>
-                  <div class="step-item" :class="{ 'active': currentStep >= 4, 'completed': currentStep > 4 }">
-                    <div class="step-number">4</div>
-                    <div class="step-text">{{ $t('exchange.select_denomination') }}</div>
-                  </div>
-                  <div class="step-item" :class="{ 'active': currentStep >= 5, 'completed': currentStep > 5 }">
-                    <div class="step-number">5</div>
-                    <div class="step-text">{{ $t('exchange.calculate_confirm') }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
+            <!-- AMLO预约审核列表卡片 -->
+            <AMLOReservationCard
+              @load-reservation="handleLoadReservation"
+              @edit-reservation="handleEditReservation"
+            />
+
             <!-- 当前余额信息 -->
-            <CurrencyBalanceInfo 
+            <CurrencyBalanceInfo
               :selected-currency="selectedForeignCurrencyInfo"
               @balance-updated="onBalanceUpdated"
               ref="currencyBalanceInfo"
@@ -620,6 +593,7 @@ import CurrencyFlag from '@/components/CurrencyFlag.vue'
 import CurrencySelect from '@/components/CurrencySelect.vue'
 import CurrencyBalanceInfo from '@/components/CurrencyBalanceInfo.vue'
 import DenominationSelector from '@/components/DenominationSelector.vue'
+import AMLOReservationCard from '@/components/amlo/AMLOReservationCard.vue'
 import { getCurrencyName } from '@/utils/currencyTranslator'
 import rateService from '@/services/api/rateService'
 import customerReservationMixin from './exchange/mixins/customerReservationMixin'
@@ -631,7 +605,8 @@ export default {
     CurrencyFlag,
     CurrencySelect,
     CurrencyBalanceInfo,
-    DenominationSelector
+    DenominationSelector,
+    AMLOReservationCard
   },
   data() {
     const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
@@ -771,6 +746,91 @@ export default {
   methods: {
     isInstrumentPayment(method) {
       return ['instrument_cheque', 'instrument_draft', 'instrument_other'].includes(method);
+    },
+
+    /**
+     * 处理加载AMLO预约（审核通过的）
+     * 从预约数据中加载兑换信息，禁用交易验证按钮
+     */
+    async handleLoadReservation(reservation) {
+      console.log('[ExchangeView] 加载审核通过的预约:', reservation)
+
+      try {
+        // 获取完整预约数据
+        const response = await this.$api.get(`/amlo/reservations/${reservation.id}`)
+
+        if (response.data.success) {
+          const fullData = response.data.data
+          const formData = fullData.form_data || {}
+
+          // 加载兑换信息到表单
+          // 设置币种
+          if (formData.currency_code) {
+            this.foreignCurrency = formData.currency_code
+          }
+
+          // 设置交易方向
+          if (formData.direction === 'buy') {
+            this.exchangeMode = 'buy_foreign'
+          } else if (formData.direction === 'sell') {
+            this.exchangeMode = 'sell_foreign'
+          }
+
+          // 设置金额
+          if (formData.foreign_amount) {
+            this.foreignAmount = formData.foreign_amount
+          }
+          if (formData.local_amount) {
+            this.localAmount = formData.local_amount
+          }
+
+          // 禁用交易验证按钮（审核通过的预约不需要再次验证）
+          this.disableVerification = true
+
+          // 显示提示
+          this.$message.success('已加载审核通过的预约，可直接进行兑换')
+        }
+      } catch (error) {
+        console.error('[ExchangeView] 加载预约失败:', error)
+        this.$message.error('加载预约失败: ' + (error.response?.data?.message || error.message))
+      }
+    },
+
+    /**
+     * 处理编辑AMLO预约（审核未通过的）
+     * 打开修改报告模式，不允许直接兑换
+     */
+    async handleEditReservation(reservation) {
+      console.log('[ExchangeView] 编辑未通过审核的预约:', reservation)
+
+      try {
+        // 获取完整预约数据
+        const response = await this.$api.get(`/amlo/reservations/${reservation.id}`)
+
+        if (response.data.success) {
+          // eslint-disable-next-line no-unused-vars
+          const fullData = response.data.data
+
+          // 打开AMLO修改报告模式
+          // TODO: 需要实现修改报告功能（使用fullData）
+          // - 报告编号重新生成
+          // - 不勾选Check Box2（原报告）
+          // - 勾选Check Box3（修订报告）
+          // - fill_3记录修改次数
+
+          // 暂时提示用户
+          this.$message.warning('修改报告功能正在开发中，请前往AMLO预约管理页面修改')
+
+          // 可以跳转到AMLO预约修改页面
+          // this.$router.push({
+          //   name: 'ReservationEdit',
+          //   params: { id: reservation.id }
+          // })
+        }
+      } catch (error) {
+        console.error('[ExchangeView] 加载预约失败:', error)
+        this.$message.error('加载预约失败: ' + (error.response?.data?.message || error.message))
+      }
     },
 
     async initializeData() {
@@ -1408,51 +1468,6 @@ export default {
 
 <style scoped>
 /* 样式保持与原ExchangeView.vue一致 */
-.exchange-guide-card {
-  border-left: 4px solid var(--bs-primary);
-}
-
-.exchange-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-}
-
-.step-item.active {
-  background-color: var(--bs-primary);
-  color: white;
-}
-
-.step-item.completed {
-  background-color: var(--bs-success);
-  color: white;
-}
-
-.step-number {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: bold;
-  margin-right: 0.5rem;
-}
-
-.step-text {
-  font-size: 0.875rem;
-}
-
 .exchange-mode-card {
   cursor: pointer;
   transition: all 0.2s ease;

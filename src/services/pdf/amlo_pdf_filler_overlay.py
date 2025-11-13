@@ -260,6 +260,10 @@ class AMLOPDFFillerOverlay:
         except:
             align = 0
 
+        # 特殊处理：fill_2（总页数）强制居中显示
+        if field_name == 'fill_2':
+            align = 1  # 强制居中对齐
+
         # 计算文本位置
         if align == 1:  # 居中
             text_width = c.stringWidth(text, font_name, font_size)

@@ -214,21 +214,30 @@ def check_bot_trigger(current_user):
 @bot_permission_required('bot_report_view')
 def get_t1_buy_fx(current_user):
     """
-    查询T+1买入外币报表数据（昨天到今天）
+    查询买入外币报表数据（支持年月查询）
 
-    GET /api/bot/t1-buy-fx
+    GET /api/bot/t1-buy-fx?year=2025&month=10
+
+    查询参数:
+    - year: 年份（可选，默认当前年）
+    - month: 月份（可选，默认当前月）
 
     响应:
     {
         "success": true,
-        "data": {
-            "date_range": "2025-10-10 to 2025-10-11",
-            "items": [...],
-            "total_count": 10,
-            "total_amount_thb": 5000000,
-            "unreported_count": 5,
-            "overdue_count": 2
-        }
+        "data": [
+            {
+                "id": 1,
+                "transaction_no": "...",
+                "transaction_date": "2025-10-15",
+                "customer_name": "...",
+                "currency_code": "USD",
+                "foreign_amount": 5000,
+                "local_amount": 175000,
+                "exchange_rate": 35.0,
+                ...
+            }
+        ]
     }
     """
     session = SessionLocal()
@@ -236,12 +245,19 @@ def get_t1_buy_fx(current_user):
     try:
         # 获取当前用户的branch_id
         branch_id = g.current_user.get('branch_id')
-        
-        # T+1时间范围：昨天到今天
-        today = datetime.now().date()
-        yesterday = today - timedelta(days=1)
 
-        # 查询BOT_BuyFX记录（昨天到今天）
+        # 从查询参数获取年月，默认当前年月
+        year = int(request.args.get('year', datetime.now().year))
+        month = int(request.args.get('month', datetime.now().month))
+
+        # 计算该月的开始和结束日期
+        from calendar import monthrange
+        start_date = datetime(year, month, 1).date()
+        end_date = datetime(year, month, monthrange(year, month)[1]).date()
+
+        logger.info(f"查询BOT买入外币报表 - 年月: {year}-{month:02d}, 日期范围: {start_date} 至 {end_date}")
+
+        # 查询bot_buyfx记录（按指定年月）
         sql = text("""
             SELECT
                 b.id,
@@ -259,38 +275,44 @@ def get_t1_buy_fx(current_user):
                 b.report_time,
                 b.created_at,
                 DATEDIFF(CURDATE(), b.transaction_date) as days_diff
-            FROM BOT_BuyFX b
+            FROM bot_buyfx b
             WHERE b.branch_id = :branch_id
                 AND b.transaction_date >= :start_date
                 AND b.transaction_date <= :end_date
-            ORDER BY b.transaction_date ASC, b.transaction_no ASC
+            ORDER BY b.transaction_date DESC, b.transaction_no DESC
         """)
 
         result = session.execute(sql, {
             'branch_id': branch_id,
-            'start_date': yesterday,
-            'end_date': today
+            'start_date': start_date,
+            'end_date': end_date
         })
         items = [dict(row._mapping) for row in result]
 
-        # 计算汇总统计
-        total_count = len(items)
-        total_amount_thb = sum([float(item['local_amount'] or 0) for item in items])
-        unreported_count = sum([1 for item in items if not item['is_reported']])
-        overdue_count = sum([1 for item in items if not item['is_reported'] and item['days_diff'] > 1])
+        # 格式化日期时间字段为字符串
+        for item in items:
+            if item.get('transaction_date'):
+                item['transaction_date'] = item['transaction_date'].strftime('%Y-%m-%d')
+            if item.get('report_time'):
+                item['report_time'] = item['report_time'].strftime('%Y-%m-%d %H:%M:%S')
+            if item.get('created_at'):
+                item['created_at'] = item['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+            # 转换为浮点数
+            if item.get('foreign_amount'):
+                item['foreign_amount'] = float(item['foreign_amount'])
+            if item.get('local_amount'):
+                item['local_amount'] = float(item['local_amount'])
+            if item.get('exchange_rate'):
+                item['exchange_rate'] = float(item['exchange_rate'])
+            if item.get('usd_equivalent'):
+                item['usd_equivalent'] = float(item['usd_equivalent'])
 
+        logger.info(f"查询到 {len(items)} 条BOT买入外币记录")
+
+        # 直接返回数组，不嵌套在data对象中
         return jsonify({
             'success': True,
-            'data': {
-                'date_range': f"{yesterday} to {today}",
-                'start_date': str(yesterday),
-                'end_date': str(today),
-                'items': items,
-                'total_count': total_count,
-                'total_amount_thb': total_amount_thb,
-                'unreported_count': unreported_count,
-                'overdue_count': overdue_count
-            }
+            'data': items
         })
 
     except Exception as e:
@@ -310,21 +332,30 @@ def get_t1_buy_fx(current_user):
 @bot_permission_required('bot_report_view')
 def get_t1_sell_fx(current_user):
     """
-    查询T+1卖出外币报表数据（昨天到今天）
+    查询卖出外币报表数据（支持年月查询）
 
-    GET /api/bot/t1-sell-fx
+    GET /api/bot/t1-sell-fx?year=2025&month=10
+
+    查询参数:
+    - year: 年份（可选，默认当前年）
+    - month: 月份（可选，默认当前月）
 
     响应:
     {
         "success": true,
-        "data": {
-            "date_range": "2025-10-10 to 2025-10-11",
-            "items": [...],
-            "total_count": 8,
-            "total_amount_thb": 3000000,
-            "unreported_count": 3,
-            "overdue_count": 1
-        }
+        "data": [
+            {
+                "id": 1,
+                "transaction_no": "...",
+                "transaction_date": "2025-10-15",
+                "customer_name": "...",
+                "currency_code": "USD",
+                "foreign_amount": 3000,
+                "local_amount": 105000,
+                "exchange_rate": 35.0,
+                ...
+            }
+        ]
     }
     """
     session = SessionLocal()
@@ -332,12 +363,19 @@ def get_t1_sell_fx(current_user):
     try:
         # 获取当前用户的branch_id
         branch_id = g.current_user.get('branch_id')
-        
-        # T+1时间范围：昨天到今天
-        today = datetime.now().date()
-        yesterday = today - timedelta(days=1)
 
-        # 查询BOT_SellFX记录（昨天到今天）
+        # 从查询参数获取年月，默认当前年月
+        year = int(request.args.get('year', datetime.now().year))
+        month = int(request.args.get('month', datetime.now().month))
+
+        # 计算该月的开始和结束日期
+        from calendar import monthrange
+        start_date = datetime(year, month, 1).date()
+        end_date = datetime(year, month, monthrange(year, month)[1]).date()
+
+        logger.info(f"查询BOT卖出外币报表 - 年月: {year}-{month:02d}, 日期范围: {start_date} 至 {end_date}")
+
+        # 查询bot_sellfx记录（按指定年月）
         sql = text("""
             SELECT
                 b.id,
@@ -355,38 +393,44 @@ def get_t1_sell_fx(current_user):
                 b.report_time,
                 b.created_at,
                 DATEDIFF(CURDATE(), b.transaction_date) as days_diff
-            FROM BOT_SellFX b
+            FROM bot_sellfx b
             WHERE b.branch_id = :branch_id
                 AND b.transaction_date >= :start_date
                 AND b.transaction_date <= :end_date
-            ORDER BY b.transaction_date ASC, b.transaction_no ASC
+            ORDER BY b.transaction_date DESC, b.transaction_no DESC
         """)
 
         result = session.execute(sql, {
             'branch_id': branch_id,
-            'start_date': yesterday,
-            'end_date': today
+            'start_date': start_date,
+            'end_date': end_date
         })
         items = [dict(row._mapping) for row in result]
 
-        # 计算汇总统计
-        total_count = len(items)
-        total_amount_thb = sum([float(item['local_amount'] or 0) for item in items])
-        unreported_count = sum([1 for item in items if not item['is_reported']])
-        overdue_count = sum([1 for item in items if not item['is_reported'] and item['days_diff'] > 1])
+        # 格式化日期时间字段为字符串
+        for item in items:
+            if item.get('transaction_date'):
+                item['transaction_date'] = item['transaction_date'].strftime('%Y-%m-%d')
+            if item.get('report_time'):
+                item['report_time'] = item['report_time'].strftime('%Y-%m-%d %H:%M:%S')
+            if item.get('created_at'):
+                item['created_at'] = item['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+            # 转换为浮点数
+            if item.get('foreign_amount'):
+                item['foreign_amount'] = float(item['foreign_amount'])
+            if item.get('local_amount'):
+                item['local_amount'] = float(item['local_amount'])
+            if item.get('exchange_rate'):
+                item['exchange_rate'] = float(item['exchange_rate'])
+            if item.get('usd_equivalent'):
+                item['usd_equivalent'] = float(item['usd_equivalent'])
 
+        logger.info(f"查询到 {len(items)} 条BOT卖出外币记录")
+
+        # 直接返回数组，不嵌套在data对象中
         return jsonify({
             'success': True,
-            'data': {
-                'date_range': f"{yesterday} to {today}",
-                'start_date': str(yesterday),
-                'end_date': str(today),
-                'items': items,
-                'total_count': total_count,
-                'total_amount_thb': total_amount_thb,
-                'unreported_count': unreported_count,
-                'overdue_count': overdue_count
-            }
+            'data': items
         })
 
     except Exception as e:

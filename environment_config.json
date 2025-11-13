@@ -4,7 +4,7 @@
   "frontend_url": "http://192.168.0.6:8080",
   "backend_port": 5001,
   "frontend_port": 8080,
-  "generated_at": "2025-11-13 20:48:59",
+  "generated_at": "2025-11-14 03:00:06",
   "cors_origins": [
     "http://localhost:\\d+",
     "http://127\\.0\\.0\\.1:\\d+",

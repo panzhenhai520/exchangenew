@@ -76,8 +76,8 @@ class AMLODataMapper:
             # 修订日期 (fill_1)
             pdf_fields['fill_1'] = self._format_date(form_data.get('amendment_date'))
 
-        # 总页数 (fill_2)
-        pdf_fields['fill_2'] = form_data.get('total_pages', '1')
+        # 总页数 (fill_2) - 默认为2
+        pdf_fields['fill_2'] = form_data.get('total_pages', '2')
 
         # ===== 第1部分: 交易办理人信息 =====
 
