@@ -76,17 +76,26 @@ export default {
         const oneMonthAgo = new Date()
         oneMonthAgo.setMonth(today.getMonth() - 1)
 
+        // 格式化日期为 YYYY-MM-DD
+        const formatDate = (date) => {
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          return `${year}-${month}-${day}`
+        }
+
         const response = await api.get('/amlo/reservations', {
           params: {
             page: 1,
             page_size: 10,  // 只显示最近10条
-            // 可以添加日期范围过滤如果后端支持
+            start_date: formatDate(oneMonthAgo),  // 添加开始日期
+            end_date: formatDate(today)  // 添加结束日期
           }
         })
 
         if (response.data.success) {
           reservations.value = response.data.data.items || []
-          console.log(`[AMLOReservationCard] 加载了 ${reservations.value.length} 条预约记录`)
+          console.log(`[AMLOReservationCard] 加载了 ${reservations.value.length} 条预约记录（最近1个月）`)
         }
       } catch (error) {
         console.error('[AMLOReservationCard] 加载预约列表失败:', error)

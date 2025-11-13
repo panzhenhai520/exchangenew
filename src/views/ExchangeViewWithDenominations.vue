@@ -798,7 +798,7 @@ export default {
 
     /**
      * 处理编辑AMLO预约（审核未通过的）
-     * 打开修改报告模式，不允许直接兑换
+     * 创建修订报告并打开PDF查看器
      */
     async handleEditReservation(reservation) {
       console.log('[ExchangeView] 编辑未通过审核的预约:', reservation)
@@ -807,29 +807,66 @@ export default {
         // 获取完整预约数据
         const response = await this.$api.get(`/amlo/reservations/${reservation.id}`)
 
-        if (response.data.success) {
-          // eslint-disable-next-line no-unused-vars
-          const fullData = response.data.data
+        if (!response.data.success) {
+          this.$message.error('获取预约数据失败')
+          return
+        }
 
-          // 打开AMLO修改报告模式
-          // TODO: 需要实现修改报告功能（使用fullData）
-          // - 报告编号重新生成
-          // - 不勾选Check Box2（原报告）
-          // - 勾选Check Box3（修订报告）
-          // - fill_3记录修改次数
+        const fullData = response.data.data
+        const formData = fullData.form_data || {}
 
-          // 暂时提示用户
-          this.$message.warning('修改报告功能正在开发中，请前往AMLO预约管理页面修改')
+        // 计算修改次数（从现有记录+1，如果没有则为1）
+        const currentAmendmentCount = parseInt(formData.amendment_count || '0', 10)
+        const newAmendmentCount = currentAmendmentCount + 1
 
-          // 可以跳转到AMLO预约修改页面
-          // this.$router.push({
-          //   name: 'ReservationEdit',
-          //   params: { id: reservation.id }
-          // })
+        console.log('[ExchangeView] 创建第', newAmendmentCount, '次修订报告')
+
+        // 准备修订报告的表单数据
+        const amendmentFormData = {
+          ...formData,
+          is_amendment_report: true,  // 标记为修订报告
+          amendment_count: String(newAmendmentCount),  // 修改次数
+          amendment_date: new Date().toISOString().split('T')[0]  // 当前日期（YYYY-MM-DD）
+        }
+
+        // 调用resubmit API创建修订预约
+        const resubmitResponse = await this.$api.post(
+          `/amlo/reservations/${reservation.id}/resubmit`,
+          {
+            form_data: amendmentFormData,
+            denomination_data: fullData.denomination_data,
+            previous_report_number: fullData.reservation_no,
+            remarks: `第${newAmendmentCount}次修订报告`
+          }
+        )
+
+        if (resubmitResponse.data.success) {
+          const newReservation = resubmitResponse.data.data
+
+          this.$message.success(`已创建第${newAmendmentCount}次修订报告：${newReservation.reservation_no}`)
+
+          // 打开PDF查看器窗口，显示新的修订报告
+          const baseUrl = window.location.origin
+          const pdfViewerPath = '/amlo/pdf-viewer'
+          const params = new URLSearchParams({
+            id: newReservation.id,
+            title: `${newReservation.report_type} - ${newReservation.reservation_no}（修订报告）`,
+            reportType: newReservation.report_type,
+            mode: 'reservation'  // 使用预约模式，允许签名
+          })
+
+          const url = `${baseUrl}${pdfViewerPath}?${params.toString()}`
+          const windowFeatures = 'width=1200,height=800,menubar=no,toolbar=no,location=no,status=no'
+
+          window.open(url, 'AMLOPDFViewer', windowFeatures)
+
+          console.log('[ExchangeView] 已打开修订报告PDF窗口:', newReservation.reservation_no)
+        } else {
+          this.$message.error('创建修订报告失败: ' + resubmitResponse.data.message)
         }
       } catch (error) {
-        console.error('[ExchangeView] 加载预约失败:', error)
-        this.$message.error('加载预约失败: ' + (error.response?.data?.message || error.message))
+        console.error('[ExchangeView] 创建修订报告失败:', error)
+        this.$message.error('创建修订报告失败: ' + (error.response?.data?.message || error.message))
       }
     },
 
