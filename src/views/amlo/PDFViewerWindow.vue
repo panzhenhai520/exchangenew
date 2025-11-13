@@ -134,10 +134,13 @@ export default {
       try {
         const timestamp = Date.now()
 
-        // 如果不是强制加载生成的PDF，优先尝试加载用户上传的PDF
-        if (!forceGenerated) {
+        // 🔧 FIX: 在查看模式下，总是加载生成的PDF（包含签名的最新版本）
+        // 只有在预约模式（reservation mode）且未强制生成时，才尝试加载上传的PDF
+        const shouldLoadUploaded = !forceGenerated && viewMode.value === 'reservation'
+
+        if (shouldLoadUploaded) {
           try {
-            console.log('[PDFViewerWindow] 尝试加载上传的PDF...')
+            console.log('[PDFViewerWindow] 预约模式：尝试加载上传的PDF...')
             const uploadedResponse = await api.get(`/amlo/reservations/${reservationId.value}/uploaded-pdf?cache=${timestamp}`, {
               responseType: 'blob'
             })
@@ -155,6 +158,8 @@ export default {
           } catch (uploadErr) {
             console.log('[PDFViewerWindow] 没有找到上传的PDF，使用生成的PDF:', uploadErr.response?.status)
           }
+        } else {
+          console.log('[PDFViewerWindow] 查看模式：直接加载生成的PDF（包含签名）')
         }
 
         // 加载生成的PDF（签名后的版本）
