@@ -259,9 +259,6 @@ export default {
     // การแปลประวัติการจอง
     "reservation_history": "ประวัติการจอง",
     "search_customer_id": "ค้นหาด้วยเลขที่บัตรประชาชน",
-    "no_reservations": "ไม่พบข้อมูลการจอง",
-
-    // ผู้ทำรายการ
-    "transactor": "ผู้ทำรายการ"
+    "no_reservations": "ไม่พบข้อมูลการจอง"
   }
 }

@@ -28,11 +28,11 @@ PDF生成器模块
 from .amlo_pdf_generator import AMLOPDFGenerator
 from .amlo_form_filler import AMLOFormFiller, adapt_route_data_to_pdf_data
 
-# 新版AMLO PDF服务 (基于CSV字段映射)
+# 新版AMLO PDF服务 (使用ReportLab Overlay方式)
 from .amlo_pdf_service import AMLOPDFService, generate_amlo_pdf
 from .amlo_csv_field_loader import AMLOCSVFieldLoader, get_csv_field_loader
-from .amlo_pdf_filler_v2 import AMLOPDFFiller
 from .amlo_data_mapper import AMLODataMapper
+from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay
 
 __all__ = [
     # 旧版兼容
@@ -40,11 +40,11 @@ __all__ = [
     'AMLOFormFiller',
     'adapt_route_data_to_pdf_data',
 
-    # 新版服务 (推荐使用)
+    # 新版服务 (推荐使用 - ReportLab Overlay)
     'AMLOPDFService',
     'generate_amlo_pdf',
     'AMLOCSVFieldLoader',
     'get_csv_field_loader',
-    'AMLOPDFFiller',
     'AMLODataMapper',
+    'AMLOPDFFillerOverlay',
 ]

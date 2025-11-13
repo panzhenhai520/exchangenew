@@ -187,13 +187,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
-import { useOpenOnDisplay } from '@/utils/useOpenOnDisplay'
 
 export default {
   name: 'ReportListSimple',
   setup() {
     const { t } = useI18n()
-    const { openOnDisplay } = useOpenOnDisplay()
 
     const loading = ref(false)
     const downloading = ref(false)
@@ -299,7 +297,7 @@ export default {
       }
     }
 
-    const viewPDF = async (report) => {
+    const viewPDF = (report) => {
       try {
         console.log('[ReportList] Opening PDF viewer for report:', report)
 
@@ -309,28 +307,31 @@ export default {
         const params = new URLSearchParams({
           id: report.reservation_id,  // 使用reservation_id
           title: `${report.report_type} - ${report.report_no || report.id}`,
-          reportType: report.report_type,
-          readonly: 'true'  // 报告管理页面查看时为只读模式
+          reportType: report.report_type
         })
         const url = `${baseUrl}${pdfViewerPath}?${params.toString()}`
 
         console.log('[ReportList] PDF Viewer URL:', url)
 
-        // 使用useOpenOnDisplay在扩展显示器上打开PDF
-        const pdfWindow = await openOnDisplay({
-          url: url,
-          target: 'AMLOPDFViewer',
-          preferNonPrimary: true,         // 优先扩展显示器
-          includeTaskbarArea: false,      // 避开任务栏
-          fallbackGuess: 'right',         // 兜底猜测
-          features: 'noopener=no'
-        })
+        // 窗口参数 - 大窗口便于查看
+        const windowWidth = 1400
+        const windowHeight = 900
+        const windowLeft = (window.screen.width - windowWidth) / 2
+        const windowTop = (window.screen.height - windowHeight) / 2
+
+        const windowFeatures = `width=${windowWidth},height=${windowHeight},left=${windowLeft},top=${windowTop},resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no`
+
+        console.log('[ReportList] Window features:', windowFeatures)
+
+        // 打开新窗口
+        const pdfWindow = window.open(url, 'AMLOPDFViewer', windowFeatures)
 
         if (!pdfWindow) {
-          alert(t('amlo.reservation.popupBlocked') || '弹出窗口被阻止，请允许弹出窗口后重试')
+          alert('弹出窗口被阻止，请允许弹出窗口后重试')
           console.error('[ReportList] PDF窗口打开失败 - 弹窗被阻止')
         } else {
-          console.log('[ReportList] ✅ PDF查看器窗口已在扩展显示器上打开')
+          console.log('[ReportList] ✅ PDF查看器窗口已打开')
+          pdfWindow.focus()
         }
       } catch (error) {
         console.error('[ReportList] 查看PDF失败:', error)

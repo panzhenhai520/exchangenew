@@ -91,7 +91,6 @@
                 <thead class="table-light">
                   <tr>
                     <th style="width: 60px;">{{ t('amlo.reservation.id') }}</th>
-                    <th style="width: 150px;">{{ t('amlo.reservation.reportNo') }}</th>
                     <th style="width: 90px;">{{ t('amlo.reservation.reportType') }}</th>
                     <th style="width: 70px;">{{ t('amlo.reservation.direction') }}</th>
                     <th style="width: 100px;">{{ t('amlo.reservation.customerName') }}</th>
@@ -104,25 +103,19 @@
                 </thead>
                 <tbody>
                   <tr v-if="loading">
-                    <td colspan="10" class="text-center py-5">
+                    <td colspan="9" class="text-center py-5">
                       <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">{{ t('common.loading') }}</span>
                       </div>
                     </td>
                   </tr>
                   <tr v-else-if="reservations.length === 0">
-                    <td colspan="10" class="text-center text-muted py-5">
+                    <td colspan="9" class="text-center text-muted py-5">
                       {{ t('amlo.reservation.empty') }}
                     </td>
                   </tr>
                   <tr v-else v-for="item in reservations" :key="item.id">
                     <td class="text-truncate" style="max-width: 60px;">{{ item.id }}</td>
-                    <td class="text-truncate" style="max-width: 150px;" :title="item.report_no">
-                      <span v-if="item.report_no" class="badge bg-secondary" style="font-size: 0.65rem; font-family: monospace;">
-                        {{ item.report_no }}
-                      </span>
-                      <span v-else class="text-muted" style="font-size: 0.75rem;">-</span>
-                    </td>
                     <td>
                       <span class="badge bg-info" style="font-size: 0.7rem;">{{ item.report_type }}</span>
                     </td>
@@ -497,7 +490,7 @@ export default {
     const pageSize = ref(8)  // Changed from 20 to 8 per requirements
     const filter = ref({
       customer_id: '',
-      status: ''
+      status: 'pending'  // 默认只显示待审核的预约
     })
     
     const currentReservation = ref(null)
@@ -550,7 +543,7 @@ export default {
     }
 
     const resetFilter = () => {
-      filter.value = { customer_id: '', status: '' }
+      filter.value = { customer_id: '', status: 'pending' }  // 重置为默认的待审核状态
       currentPage.value = 1
       loadReservations()
     }
@@ -690,7 +683,8 @@ export default {
         const params = new URLSearchParams({
           id: item.id,
           title: `${item.report_type} - ${item.reservation_no || item.id}`,
-          reportType: item.report_type
+          reportType: item.report_type,
+          mode: 'view'  // 查看模式，不需要预约按钮
         })
         const url = `${baseUrl}${pdfViewerPath}?${params.toString()}`
 

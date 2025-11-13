@@ -26,6 +26,8 @@ export default {
     "welcome": "欢迎使用",
     "loading": "加载中...",
     "saving": "保存中...",
+    "downloading": "下载中...",
+    "uploading": "上传中...",
     "success": "成功",
     "error": "错误",
     "warning": "警告",
@@ -46,8 +48,6 @@ export default {
     "previous": "上一步",
     "submit": "提交",
     "close": "关闭",
-    "readonly": "只读",
-    "modified": "已修改",
     "fullscreen": "全屏",
     "no_data": "暂无数据",
     "system_maintenance": "系统",
@@ -167,16 +167,6 @@ export default {
     "fieldRequired": "此字段为必填项",
     "remarks": "备注",
     "undo": "撤销",
-
-    // 信息分类
-    "basicInfo": "基本信息",
-    "branchInfo": "机构信息",
-    "transactionInfo": "交易信息",
-    "customerInfo": "客户信息",
-    "infoSuffix": "信息",
-    "checkboxes": "勾选项",
-    "combFields": "框格字段",
-    "otherFields": "其他字段",
 
     // 时间相关翻译
     "just_now": "刚刚",

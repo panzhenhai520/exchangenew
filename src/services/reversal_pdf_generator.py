@@ -37,7 +37,7 @@ class ReversalPDFGenerator(PDFBase):
             dir_path = os.path.dirname(file_path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
-                logger.info(f"[OK] 目录创建成功: {dir_path}")
+                logger.info(f"✅ 目录创建成功: {dir_path}")
             
             # 获取多语言文本
             texts = ReversalPDFGenerator._get_language_texts(language)

@@ -18,6 +18,9 @@ from datetime import datetime
 import traceback
 import logging
 import os
+import json
+from io import BytesIO
+from sqlalchemy import text
 
 # Import AMLO services
 from services.amlo import (
@@ -28,11 +31,20 @@ from services.amlo import (
     SignatureService
 )
 
+# PDF helpers
+from services.pdf.amlo_data_mapper import AMLODataMapper
+from services.pdf.pdf_field_mapping import map_pdf_fields_to_db
+
 # Get logger instance
 logger = logging.getLogger(__name__)
 
 # Create Blueprint
 app_amlo = Blueprint('app_amlo', __name__, url_prefix='/api/amlo')
+
+# Paths
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+AMLO_TEMPLATE_DIR = os.path.join(PROJECT_ROOT, 'Re')
+AMLO_UPLOAD_BASE_DIR = os.path.join(PROJECT_ROOT, 'src', 'amlo_uploads')
 
 
 def amlo_permission_required(permission):
@@ -47,6 +59,104 @@ def amlo_permission_required(permission):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+
+def _ensure_directory(path: str):
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+
+
+def _resolve_project_path(relative_path: str):
+    return os.path.normpath(os.path.join(PROJECT_ROOT, relative_path))
+
+
+def _load_form_data(raw):
+    if not raw:
+        return {}
+    if isinstance(raw, dict):
+        return raw.copy()
+    try:
+        return json.loads(raw)
+    except Exception:
+        return {}
+
+
+def _sanitize_filename(value: str, fallback: str) -> str:
+    if not value:
+        return fallback
+    value = value.strip().replace(' ', '_')
+    allowed = []
+    for ch in value:
+        if ch.isalnum() or ch in ('-', '_', '.'):
+            allowed.append(ch)
+    safe = ''.join(allowed)
+    return safe or fallback
+
+
+def _extract_pdf_form_fields(pdf_path: str):
+    import fitz  # PyMuPDF
+
+    field_values = {}
+    doc = fitz.open(pdf_path)
+    try:
+        for page in doc:
+            widgets = page.widgets() or []
+            for widget in widgets:
+                name = widget.field_name
+                if not name:
+                    continue
+                value = widget.field_value
+                field_type = widget.field_type
+                if field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                    if isinstance(value, str):
+                        normalized = value.lower() in ('yes', 'on', 'true', '1')
+                    else:
+                        normalized = bool(value)
+                else:
+                    normalized = '' if value is None else str(value)
+                field_values[name] = normalized
+    finally:
+        doc.close()
+    return field_values
+
+
+def _fill_pdf_form_fields(doc, form_data):
+    import fitz  # PyMuPDF
+
+    filled_count = 0
+    for page in doc:
+        for widget in page.widgets():
+            field_name = widget.field_name
+            if not field_name or field_name not in form_data:
+                continue
+            value = form_data[field_name]
+            field_type = widget.field_type
+            try:
+                if field_type == fitz.PDF_WIDGET_TYPE_TEXT:
+                    widget.field_value = '' if value is None else str(value)
+                    widget.update()
+                    filled_count += 1
+                elif field_type == fitz.PDF_WIDGET_TYPE_CHECKBOX:
+                    if isinstance(value, bool):
+                        widget.field_value = value
+                    elif isinstance(value, str):
+                        widget.field_value = value.lower() in ('true', 'yes', '1', 'on')
+                    else:
+                        widget.field_value = bool(value)
+                    widget.update()
+                    filled_count += 1
+                elif field_type == fitz.PDF_WIDGET_TYPE_COMBOBOX:
+                    widget.field_value = '' if value is None else str(value)
+                    widget.update()
+                    filled_count += 1
+                else:
+                    # Fall back to string value
+                    widget.field_value = '' if value is None else str(value)
+                    widget.update()
+                    filled_count += 1
+            except Exception as widget_error:
+                logger.warning(f"[fill_pdf_form_fields] Failed field {field_name}: {widget_error}")
+    return filled_count
 
 
 # ==============================================================================
@@ -684,6 +794,228 @@ def batch_report(current_user):
 
 
 # ==============================================================================
+# PDF EDITING & UPLOAD ROUTES
+# ==============================================================================
+
+@app_amlo.route('/reservations/<int:reservation_id>/editable-pdf', methods=['GET'])
+@token_required
+def get_editable_pdf(current_user, reservation_id):
+    """
+    Return editable PDF with AcroForm fields pre-filled using reservation data.
+    """
+    session = SessionLocal()
+    try:
+        reservation = session.execute(
+            text("""
+                SELECT
+                    rt.id,
+                    rt.report_type,
+                    rt.reservation_no,
+                    rt.customer_id,
+                    rt.customer_name,
+                    rt.amount,
+                    rt.local_amount,
+                    rt.form_data,
+                    ar.report_no
+                FROM Reserved_Transaction rt
+                LEFT JOIN AMLOReport ar ON rt.id = ar.reserved_id
+                WHERE rt.id = :id
+            """),
+            {'id': reservation_id}
+        ).fetchone()
+
+        if not reservation:
+            return jsonify({'success': False, 'message': 'Reservation not found'}), 404
+
+        form_data = _load_form_data(reservation.form_data)
+        reservation_no = reservation.reservation_no or ''
+        report_no = reservation.report_no or ''
+
+        mapper = AMLODataMapper()
+        reservation_dict = {
+            'report_type': reservation.report_type,
+            'reservation_no': reservation_no,
+            'customer_name': reservation.customer_name,
+            'customer_id': reservation.customer_id,
+            'amount': reservation.amount,
+            'local_amount': reservation.local_amount,
+            'form_data': form_data
+        }
+
+        pdf_fields = mapper.map_reservation_to_pdf_fields(
+            reservation.report_type or 'AMLO-1-01',
+            reservation_dict,
+            form_data
+        )
+
+        template_map = {
+            'AMLO-1-01': '1-01-fill.pdf',
+            'AMLO-1-02': '1-02-fill.pdf',
+            'AMLO-1-03': '1-03-fill.pdf'
+        }
+        template_name = template_map.get(reservation.report_type, '1-01-fill.pdf')
+        template_path = os.path.join(AMLO_TEMPLATE_DIR, template_name)
+
+        if not os.path.exists(template_path):
+            return jsonify({'success': False, 'message': f'PDF template not found: {template_name}'}), 404
+
+        import fitz  # PyMuPDF
+        doc = fitz.open(template_path)
+        try:
+            filled_count = _fill_pdf_form_fields(doc, pdf_fields)
+            logger.info(f"[get_editable_pdf] Filled {filled_count} fields for reservation {reservation_id}")
+
+            buffer = BytesIO()
+            doc.save(buffer, deflate=True)
+            buffer.seek(0)
+        finally:
+            doc.close()
+
+        download_flag = request.args.get('download', '').lower()
+        force_download = download_flag in ('1', 'true', 'yes', 'download')
+        filename_base = report_no or reservation_no or f'AMLO-{reservation_id}'
+        download_name = f'{filename_base}.pdf'
+
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=force_download,
+            download_name=download_name
+        )
+
+    except Exception as e:
+        logger.error(f"[get_editable_pdf] Error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Failed to generate editable PDF: {str(e)}'
+        }), 500
+    finally:
+        session.close()
+
+
+@app_amlo.route('/reservations/<int:reservation_id>/upload-filled-pdf', methods=['POST'])
+@token_required
+def upload_filled_pdf(current_user, reservation_id):
+    """
+    Upload a locally edited PDF, parse its fields, and store the parsed data back into the reservation.
+    """
+    session = SessionLocal()
+    try:
+        file_storage = request.files.get('file')
+        if file_storage is None or not file_storage.filename:
+            return jsonify({'success': False, 'message': 'PDF file is required'}), 400
+
+        if not file_storage.filename.lower().endswith('.pdf'):
+            return jsonify({'success': False, 'message': 'Only PDF files are supported'}), 400
+
+        reservation = session.execute(
+            text("""
+                SELECT rt.report_type, rt.reservation_no, ar.report_no, rt.form_data
+                FROM Reserved_Transaction rt
+                LEFT JOIN AMLOReport ar ON rt.id = ar.reserved_id
+                WHERE rt.id = :reservation_id
+            """),
+            {'reservation_id': reservation_id}
+        ).fetchone()
+
+        if not reservation:
+            return jsonify({'success': False, 'message': 'Reservation not found'}), 404
+
+        now = datetime.now()
+        relative_dir = os.path.join('src', 'amlo_uploads', str(now.year), f'{now.month:02d}')
+        absolute_dir = os.path.join(PROJECT_ROOT, relative_dir)
+        _ensure_directory(absolute_dir)
+
+        safe_base = _sanitize_filename(
+            reservation.report_no or reservation.reservation_no or f"reservation-{reservation_id}",
+            f"reservation-{reservation_id}"
+        )
+        saved_filename = f"{reservation.report_type or 'AMLO'}_{safe_base}_{int(now.timestamp())}.pdf"
+        saved_path = os.path.join(absolute_dir, saved_filename)
+        file_storage.save(saved_path)
+        relative_path = os.path.relpath(saved_path, PROJECT_ROOT).replace('\\', '/')
+
+        pdf_fields = _extract_pdf_form_fields(saved_path)
+        mapped_fields = map_pdf_fields_to_db(reservation.report_type or 'AMLO-1-01', pdf_fields)
+
+        form_data = _load_form_data(reservation.form_data)
+        form_data.update(mapped_fields)
+        form_data['__uploaded_pdf_path'] = relative_path
+        form_data['__uploaded_pdf_filename'] = saved_filename
+        form_data['__uploaded_pdf_uploaded_at'] = now.isoformat()
+        form_data['__uploaded_pdf_fields'] = pdf_fields
+
+        session.execute(
+            text("""
+                UPDATE Reserved_Transaction
+                SET form_data = :form_data,
+                    updated_at = NOW()
+                WHERE id = :reservation_id
+            """),
+            {
+                'form_data': json.dumps(form_data, ensure_ascii=False),
+                'reservation_id': reservation_id
+            }
+        )
+        session.commit()
+
+        logger.info(f"[upload_filled_pdf] Reservation {reservation_id} uploaded PDF saved to {relative_path}")
+
+        return jsonify({
+            'success': True,
+            'message': 'PDF uploaded successfully',
+            'uploaded_pdf_url': f"/api/amlo/reservations/{reservation_id}/uploaded-pdf?cache={int(now.timestamp())}",
+            'parsed_fields': len(mapped_fields)
+        })
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"[upload_filled_pdf] Error: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'Failed to upload PDF: {str(e)}'}), 500
+    finally:
+        session.close()
+
+
+@app_amlo.route('/reservations/<int:reservation_id>/uploaded-pdf', methods=['GET'])
+@token_required
+def serve_uploaded_pdf(current_user, reservation_id):
+    """
+    Serve the previously uploaded PDF file back to the browser.
+    """
+    session = SessionLocal()
+    try:
+        record = session.execute(
+            text("SELECT form_data FROM Reserved_Transaction WHERE id = :reservation_id"),
+            {'reservation_id': reservation_id}
+        ).fetchone()
+
+        if not record:
+            return jsonify({'success': False, 'message': 'Reservation not found'}), 404
+
+        form_data = _load_form_data(record[0])
+        relative_path = form_data.get('__uploaded_pdf_path')
+        if not relative_path:
+            return jsonify({'success': False, 'message': 'No uploaded PDF available'}), 404
+
+        absolute_path = _resolve_project_path(relative_path)
+        if not os.path.exists(absolute_path):
+            return jsonify({'success': False, 'message': 'Uploaded PDF file missing'}), 404
+
+        return send_file(
+            absolute_path,
+            mimetype='application/pdf',
+            as_attachment=False,
+            download_name=os.path.basename(absolute_path)
+        )
+
+    except Exception as e:
+        logger.error(f"[serve_uploaded_pdf] Error: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        session.close()
+
+
+# ==============================================================================
 # PDF GENERATION ROUTES
 # ==============================================================================
 
@@ -932,17 +1264,17 @@ def save_reporter_signature(current_user, reservation_id):
 
             if pdf_success:
                 logger.info(f"[save_reporter_signature] PDF regenerated successfully: {pdf_path}")
-                print(f"[SIGNATURE_DEBUG] [OK] PDF regenerated successfully: {pdf_path}", flush=True)
+                print(f"[SIGNATURE_DEBUG] ✅ PDF regenerated successfully: {pdf_path}", flush=True)
                 result_data['pdf_regenerated'] = True
                 result_data['pdf_path'] = pdf_path
             else:
                 logger.warning(f"[save_reporter_signature] PDF regeneration failed: {pdf_error}")
-                print(f"[SIGNATURE_DEBUG] [ERROR] PDF regeneration failed: {pdf_error}", flush=True)
+                print(f"[SIGNATURE_DEBUG] ❌ PDF regeneration failed: {pdf_error}", flush=True)
                 result_data['pdf_regenerated'] = False
                 result_data['pdf_error'] = pdf_error
         except Exception as pdf_ex:
             logger.error(f"[save_reporter_signature] PDF regeneration error: {pdf_ex}", exc_info=True)
-            print(f"[SIGNATURE_DEBUG] [ERROR] PDF regeneration exception: {pdf_ex}", flush=True)
+            print(f"[SIGNATURE_DEBUG] ❌ PDF regeneration exception: {pdf_ex}", flush=True)
             import traceback
             traceback.print_exc()
             result_data['pdf_regenerated'] = False
@@ -961,726 +1293,6 @@ def save_reporter_signature(current_user, reservation_id):
             'success': False,
             'message': f'Failed to save signature: {str(e)}'
         }), 500
-    finally:
-        session.close()
-
-
-# ==============================================================================
-# PDF EDITABLE REPORT ENDPOINTS
-# ==============================================================================
-
-@app_amlo.route('/reservations/<int:reservation_id>/editable-pdf', methods=['GET'])
-@token_required
-def get_editable_pdf(current_user, reservation_id):
-    """
-    Return editable PDF with AcroForm fields filled with reservation data
-    This PDF can be edited directly in the browser
-    """
-    logger.info(f"[get_editable_pdf] Getting editable PDF for reservation {reservation_id}")
-
-    session = SessionLocal()
-    try:
-        from sqlalchemy import text
-        import pymupdf
-        import json
-        from io import BytesIO
-
-        # 1. Get reservation data
-        reservation = session.execute(text("""
-            SELECT
-                rt.id,
-                rt.report_type,
-                rt.customer_id,
-                rt.customer_name,
-                rt.amount,
-                rt.local_amount,
-                rt.form_data,
-                rt.reporter_signature,
-                ar.report_no
-            FROM Reserved_Transaction rt
-            LEFT JOIN AMLOReport ar ON rt.id = ar.reserved_id
-            WHERE rt.id = :id
-        """), {'id': reservation_id}).fetchone()
-
-        if not reservation:
-            return jsonify({
-                'success': False,
-                'error': 'Reservation not found'
-            }), 404
-
-        # 2. Parse form_data
-        form_data = {}
-        if reservation.form_data:
-            try:
-                form_data = json.loads(reservation.form_data) if isinstance(reservation.form_data, str) else reservation.form_data
-            except:
-                form_data = {}
-
-        # Add structured fields to form_data for unified processing
-        form_data['report_no'] = reservation.report_no or ''
-        form_data['customer_name'] = reservation.customer_name or ''
-        form_data['customer_id'] = reservation.customer_id or ''
-        form_data['amount'] = str(reservation.amount or 0)
-        form_data['local_amount'] = str(reservation.local_amount or 0)
-
-        # 3. Convert database field names to PDF field names using mapper
-        try:
-            from services.pdf.amlo_data_mapper import AMLODataMapper
-
-            mapper = AMLODataMapper()
-            reservation_dict = {
-                'reservation_no': reservation.report_no,
-                'customer_name': reservation.customer_name,
-                'customer_id': reservation.customer_id,
-                'amount': reservation.amount,
-                'local_amount': reservation.local_amount
-            }
-
-            # Map to PDF field names (fill_52, comb_1, etc.)
-            pdf_fields = mapper.map_reservation_to_pdf_fields(
-                report_type='AMLO-1-01',
-                reservation_data=reservation_dict,
-                form_data=form_data
-            )
-            logger.info(f"[get_editable_pdf] Mapped {len(pdf_fields)} fields using AMLODataMapper")
-
-        except Exception as e:
-            logger.warning(f"[get_editable_pdf] Failed to use mapper, using raw form_data: {e}")
-            pdf_fields = form_data  # Fallback to original data
-
-        # 4. Open PDF template (user's marked PDF with AcroForm fields)
-        template_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            'Re', '1-01-fill.pdf'
-        )
-
-        if not os.path.exists(template_path):
-            logger.error(f"[get_editable_pdf] Template PDF not found: {template_path}")
-            return jsonify({
-                'success': False,
-                'error': f'Template PDF not found: {template_path}'
-            }), 404
-
-        logger.info(f"[get_editable_pdf] Opening template: {template_path}")
-        doc = pymupdf.open(template_path)
-
-        # 5. Fill PDF form fields with mapped data (keep fields editable, don't flatten)
-        filled_count = _fill_pdf_form_fields(doc, pdf_fields)
-        logger.info(f"[get_editable_pdf] Filled {filled_count} form fields")
-
-        # 5. Save to BytesIO (keep as editable form)
-        pdf_bytes = BytesIO()
-        doc.save(pdf_bytes, garbage=4, deflate=True)
-        pdf_bytes.seek(0)
-        doc.close()
-
-        logger.info(f"[get_editable_pdf] Returning editable PDF ({pdf_bytes.getbuffer().nbytes} bytes)")
-
-        # 6. Return PDF
-        return send_file(
-            pdf_bytes,
-            mimetype='application/pdf',
-            as_attachment=False,
-            download_name=f'AMLO_{reservation_id}_editable.pdf'
-        )
-
-    except Exception as e:
-        logger.error(f"[get_editable_pdf] Error: {e}", exc_info=True)
-        return jsonify({
-            'success': False,
-            'error': f'Failed to generate editable PDF: {str(e)}'
-        }), 500
-    finally:
-        session.close()
-
-
-def _fill_pdf_form_fields(doc, form_data):
-    """
-    Fill PDF form fields with data from form_data dictionary
-
-    Args:
-        doc: PyMuPDF document object
-        form_data: Dictionary of field_name -> value
-
-    Returns:
-        int: Number of fields filled
-    """
-    import pymupdf
-
-    filled_count = 0
-
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-
-        # Iterate through all form widgets on the page
-        for widget in page.widgets():
-            field_name = widget.field_name
-
-            if not field_name or field_name not in form_data:
-                continue
-
-            value = form_data[field_name]
-            field_type = widget.field_type
-
-            try:
-                # Handle different field types
-                if field_type == pymupdf.PDF_WIDGET_TYPE_TEXT:
-                    # Text field
-                    widget.field_value = str(value) if value is not None else ''
-                    widget.update()
-                    filled_count += 1
-
-                elif field_type == pymupdf.PDF_WIDGET_TYPE_CHECKBOX:
-                    # Checkbox field
-                    # PyMuPDF uses True/False or 'Yes'/'Off' for checkboxes
-                    if isinstance(value, bool):
-                        widget.field_value = value
-                    elif isinstance(value, str):
-                        widget.field_value = value.lower() in ('true', 'yes', '1', 'on')
-                    else:
-                        widget.field_value = bool(value)
-                    widget.update()
-                    filled_count += 1
-
-                elif field_type == pymupdf.PDF_WIDGET_TYPE_COMBOBOX or field_type == pymupdf.PDF_WIDGET_TYPE_LISTBOX:
-                    # Dropdown/List field
-                    widget.field_value = str(value) if value is not None else ''
-                    widget.update()
-                    filled_count += 1
-
-                # Note: We don't flatten the form, keeping fields editable
-
-            except Exception as e:
-                logger.warning(f"[_fill_pdf_form_fields] Failed to fill field '{field_name}': {e}")
-                continue
-
-    return filled_count
-
-
-@app_amlo.route('/reservations/<int:reservation_id>/flatten-pdf', methods=['POST'])
-@token_required
-def flatten_pdf_with_data(current_user, reservation_id):
-    """
-    Flatten PDF (convert form fields to static content) with latest data
-    This endpoint:
-    1. Accepts final form_data from frontend
-    2. Fills PDF form fields
-    3. Flattens the PDF (removes interactive fields)
-    4. Saves as final PDF
-    5. Returns flattened PDF file
-    """
-    logger.info(f"[flatten_pdf_with_data] Flattening PDF for reservation {reservation_id}")
-
-    session = SessionLocal()
-    try:
-        from sqlalchemy import text
-        import pymupdf
-        import json
-        from io import BytesIO
-
-        # Get submitted form data
-        request_data = request.get_json() or {}
-        form_data = request_data.get('form_data', {})
-        signature_data = request_data.get('signature_data', {})
-
-        if not form_data:
-            return jsonify({
-                'success': False,
-                'error': 'Form data is required'
-            }), 400
-
-        logger.info(f"[flatten_pdf_with_data] Received form_data with {len(form_data)} fields")
-
-        # 1. Get reservation for report number and basic info
-        reservation = session.execute(text("""
-            SELECT
-                rt.id,
-                ar.report_no,
-                rt.customer_name,
-                rt.amount
-            FROM Reserved_Transaction rt
-            LEFT JOIN AMLOReport ar ON rt.id = ar.reserved_id
-            WHERE rt.id = :id
-        """), {'id': reservation_id}).fetchone()
-
-        if not reservation:
-            return jsonify({
-                'success': False,
-                'error': 'Reservation not found'
-            }), 404
-
-        report_no = reservation.report_no or 'DRAFT'
-
-        # 2. Open PDF template
-        template_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            'Re', '1-01-fill.pdf'
-        )
-
-        if not os.path.exists(template_path):
-            return jsonify({
-                'success': False,
-                'error': f'Template PDF not found: {template_path}'
-            }), 404
-
-        doc = pymupdf.open(template_path)
-
-        # 3. Fill form fields with latest data
-        filled_count = _fill_pdf_form_fields(doc, form_data)
-        logger.info(f"[flatten_pdf_with_data] Filled {filled_count} form fields")
-
-        # 4. Add signature if provided
-        if signature_data and signature_data.get('reporter_signature'):
-            # TODO: Add signature to PDF using the signature service
-            logger.info(f"[flatten_pdf_with_data] Signature data provided (will be added in future)")
-
-        # 5. Flatten the PDF (convert form fields to static content)
-        logger.info(f"[flatten_pdf_with_data] Flattening PDF...")
-        for page_num in range(len(doc)):
-            page = doc[page_num]
-            # Remove all widgets (form fields), converting them to static text
-            # PyMuPDF API: iterate through widgets and delete each one
-            widgets = list(page.widgets())
-            for widget in widgets:
-                widget.update()  # Ensure widget value is rendered
-            # Delete all form widgets to flatten the PDF
-            for widget in widgets:
-                page.delete_widget(widget)
-
-        logger.info(f"[flatten_pdf_with_data] ✅ PDF flattened, form fields converted to static content")
-
-        # 6. Save final PDF
-        final_pdf_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            'amlo_pdfs'
-        )
-        os.makedirs(final_pdf_dir, exist_ok=True)
-
-        final_pdf_filename = f"AMLO-1-01_{report_no}USD.pdf"
-        final_pdf_path = os.path.join(final_pdf_dir, final_pdf_filename)
-
-        doc.save(final_pdf_path, garbage=4, deflate=True)
-        doc.close()
-
-        logger.info(f"[flatten_pdf_with_data] Final PDF saved: {final_pdf_path}")
-
-        # 7. Update database with final form_data
-        update_sql = text("""
-            UPDATE Reserved_Transaction
-            SET form_data = :form_data,
-                pdf_path = :pdf_path
-            WHERE id = :reservation_id
-        """)
-        session.execute(update_sql, {
-            'form_data': json.dumps(form_data, ensure_ascii=False),
-            'pdf_path': final_pdf_path,
-            'reservation_id': reservation_id
-        })
-        session.commit()
-
-        logger.info(f"[flatten_pdf_with_data] Database updated with final data")
-
-        # 8. Return flattened PDF
-        return send_file(
-            final_pdf_path,
-            mimetype='application/pdf',
-            as_attachment=False,
-            download_name=final_pdf_filename
-        )
-
-    except Exception as e:
-        logger.error(f"[flatten_pdf_with_data] Error: {e}", exc_info=True)
-        session.rollback()
-        return jsonify({
-            'success': False,
-            'error': f'Failed to flatten PDF: {str(e)}'
-        }), 500
-    finally:
-        session.close()
-
-
-@app_amlo.route('/submit-modified-report', methods=['POST'])
-@token_required
-def submit_modified_report(current_user):
-    """
-    Submit modified report content with signature
-    Saves all modifications to database and regenerates PDF
-    """
-    print("\n" + "="*100, flush=True)
-    print("[submit_modified_report] 🚀 开始处理表单修改提交", flush=True)
-    print(f"[submit_modified_report] 用户: {current_user.get('username')}", flush=True)
-    print("="*100 + "\n", flush=True)
-    logger.info(f"[submit_modified_report] User {current_user.get('username')} submitting modified report")
-
-    session = SessionLocal()
-    try:
-        data = request.get_json() or {}
-        print(f"[submit_modified_report] 📦 接收到的数据键:", list(data.keys()), flush=True)
-
-        reservation_id = data.get('reservation_id')
-        modified_data = data.get('modified_data', {})
-        modified_fields = data.get('modified_fields', [])
-        signature_data = data.get('signature', {})
-        modifications_summary = data.get('modifications_summary', [])
-
-        print(f"[submit_modified_report] - 预约ID: {reservation_id}", flush=True)
-        print(f"[submit_modified_report] - 修改的字段: {modified_fields}", flush=True)
-        print(f"[submit_modified_report] - modified_data键: {list(modified_data.keys())}", flush=True)
-        print(f"[submit_modified_report] - modified_data.form_data键: {list(modified_data.get('form_data', {}).keys())}", flush=True)
-
-        if not reservation_id:
-            print("[submit_modified_report] ❌ 缺少reservation_id", flush=True)
-            return jsonify({
-                'success': False,
-                'error': 'reservation_id is required'
-            }), 400
-
-        logger.info(f"[submit_modified_report] Processing reservation {reservation_id}, {len(modified_fields)} fields modified")
-        print(f"\n[submit_modified_report] 📝 处理预约 {reservation_id}，修改了 {len(modified_fields)} 个字段", flush=True)
-
-        # 1. Query original reservation
-        from sqlalchemy import text
-        original_reservation = session.execute(text("""
-            SELECT * FROM Reserved_Transaction
-            WHERE id = :id
-        """), {'id': reservation_id}).fetchone()
-
-        if not original_reservation:
-            return jsonify({
-                'success': False,
-                'error': 'Reservation not found'
-            }), 404
-
-        # 2. Prepare audit log (record before/after comparison)
-        import json
-        old_data = {
-            'customer_name': original_reservation.customer_name,
-            'customer_id': original_reservation.customer_id,
-            'local_amount': float(original_reservation.local_amount) if original_reservation.local_amount else 0,
-            'amount': float(original_reservation.amount) if original_reservation.amount else 0,
-            'form_data': json.loads(original_reservation.form_data) if original_reservation.form_data else {}
-        }
-
-        # 3. Update Reserved_Transaction table
-        update_fields = []
-        update_params = {'reservation_id': reservation_id}
-
-        # Update structured fields
-        if 'customer_name' in modified_fields:
-            update_fields.append('customer_name = :customer_name')
-            update_params['customer_name'] = modified_data.get('customer_name')
-
-        if 'customer_id' in modified_fields:
-            update_fields.append('customer_id = :customer_id')
-            update_params['customer_id'] = modified_data.get('customer_id')
-
-        if 'local_amount' in modified_fields:
-            update_fields.append('local_amount = :local_amount')
-            update_params['local_amount'] = modified_data.get('local_amount')
-
-        if 'amount' in modified_fields:
-            update_fields.append('amount = :amount')
-            update_params['amount'] = modified_data.get('amount')
-
-        # Update form_data (merge modifications)
-        print(f"\n[submit_modified_report] 🔄 更新form_data...", flush=True)
-        updated_form_data = json.loads(original_reservation.form_data) if original_reservation.form_data else {}
-        print(f"[submit_modified_report] - 原始form_data字段数: {len(updated_form_data)}", flush=True)
-        print(f"[submit_modified_report] - 原始form_data键: {list(updated_form_data.keys())[:20]}", flush=True)  # 只显示前20个
-
-        if modified_data.get('form_data'):
-            print(f"[submit_modified_report] - 要合并的新字段数: {len(modified_data['form_data'])}", flush=True)
-            print(f"[submit_modified_report] - 要合并的新字段: {list(modified_data['form_data'].keys())}", flush=True)
-            updated_form_data.update(modified_data['form_data'])
-            print(f"[submit_modified_report] - 合并后form_data字段数: {len(updated_form_data)}", flush=True)
-        else:
-            print(f"[submit_modified_report] - 没有新的form_data需要合并", flush=True)
-
-        update_fields.append('form_data = :form_data')
-        update_params['form_data'] = json.dumps(updated_form_data, ensure_ascii=False)
-        print(f"[submit_modified_report] ✅ form_data准备完成，JSON长度: {len(update_params['form_data'])} 字符", flush=True)
-
-        # Update signatures
-        if signature_data:
-            if signature_data.get('reporter_signature'):
-                update_fields.append('reporter_signature = :reporter_signature')
-                update_params['reporter_signature'] = signature_data['reporter_signature']
-
-            if signature_data.get('customer_signature'):
-                update_fields.append('customer_signature = :customer_signature')
-                update_params['customer_signature'] = signature_data['customer_signature']
-
-            if signature_data.get('auditor_signature'):
-                update_fields.append('auditor_signature = :auditor_signature')
-                update_params['auditor_signature'] = signature_data['auditor_signature']
-
-        # Execute update
-        if update_fields:
-            print(f"\n[submit_modified_report] 💾 执行数据库更新...", flush=True)
-            print(f"[submit_modified_report] - 要更新的字段: {update_fields}", flush=True)
-            print(f"[submit_modified_report] - 参数键: {list(update_params.keys())}", flush=True)
-
-            update_sql = text(f"""
-                UPDATE Reserved_Transaction
-                SET {', '.join(update_fields)}
-                WHERE id = :reservation_id
-            """)
-            print(f"[submit_modified_report] - SQL: UPDATE Reserved_Transaction SET {', '.join(update_fields)} WHERE id = {reservation_id}", flush=True)
-
-            session.execute(update_sql, update_params)
-            session.commit()
-            print(f"[submit_modified_report] ✅ 数据库更新成功，更新了 {len(update_fields)} 个字段", flush=True)
-            logger.info(f"[submit_modified_report] Updated {len(update_fields)} fields for reservation {reservation_id}")
-        else:
-            print(f"[submit_modified_report] ⚠️ 没有字段需要更新", flush=True)
-
-        # 4. Record audit log
-        audit_log_sql = text("""
-            INSERT INTO audit_log (
-                operation_type, module, entity_type, entity_id,
-                action, old_value, new_value,
-                operator_id, operator_name, branch_id, remarks, created_at
-            ) VALUES (
-                'UPDATE', 'AMLO', 'Reserved_Transaction', :entity_id,
-                'MODIFY_REPORT_CONTENT', :old_value, :new_value,
-                :operator_id, :operator_name, :branch_id, :remarks, NOW()
-            )
-        """)
-
-        session.execute(audit_log_sql, {
-            'entity_id': reservation_id,
-            'old_value': json.dumps(old_data, ensure_ascii=False),
-            'new_value': json.dumps(modified_data, ensure_ascii=False),
-            'operator_id': current_user.get('id'),
-            'operator_name': current_user.get('name') or current_user.get('username'),
-            'branch_id': current_user.get('branch_id'),
-            'remarks': f"Modified {len(modified_fields)} fields: {', '.join(modified_fields)}"
-        })
-        session.commit()
-        logger.info(f"[submit_modified_report] Audit log recorded")
-
-        # 5. Regenerate PDF with modified data
-        pdf_result = {'success': False}
-        report_no = None
-
-        try:
-            # Get report number
-            report = session.execute(text("""
-                SELECT report_no FROM AMLOReport WHERE reserved_id = :id
-            """), {'id': reservation_id}).fetchone()
-
-            report_no = report.report_no if report else None
-
-            if report_no:
-                # Regenerate PDF using the service
-                from services.amlo.report_creation_service import ReportCreationService
-                pdf_result = ReportCreationService._generate_pdf(
-                    session, reservation_id, report_no
-                )
-
-                if pdf_result['success']:
-                    logger.info(f"[submit_modified_report] PDF regenerated successfully: {pdf_result.get('pdf_path')}")
-                else:
-                    logger.warning(f"[submit_modified_report] PDF regeneration failed: {pdf_result.get('error')}")
-            else:
-                logger.warning(f"[submit_modified_report] No report number found for reservation {reservation_id}")
-
-        except Exception as pdf_error:
-            logger.error(f"[submit_modified_report] PDF regeneration error: {pdf_error}", exc_info=True)
-            pdf_result = {'success': False, 'error': str(pdf_error)}
-
-        # 6. Return result
-        import time
-        return jsonify({
-            'success': True,
-            'data': {
-                'reservation_id': reservation_id,
-                'report_no': report_no,
-                'updated_fields': modified_fields,
-                'pdf_regenerated': pdf_result.get('success', False),
-                'new_pdf_path': f"/api/amlo/reservation/{reservation_id}/pdf?v={int(time.time())}"
-            }
-        })
-
-    except Exception as e:
-        logger.error(f"[submit_modified_report] Error: {e}", exc_info=True)
-        session.rollback()
-        return jsonify({
-            'success': False,
-            'error': f'Failed to submit modifications: {str(e)}'
-        }), 500
-
-    finally:
-        session.close()
-
-
-@app_amlo.route('/report-fields/<string:report_type>', methods=['GET'])
-@token_required
-def get_report_fields(current_user, report_type):
-    """
-    Get editable field configuration for a report type
-    Returns field metadata including name, label, type, validation rules
-    """
-    logger.info(f"[get_report_fields] Getting fields for report type: {report_type}")
-
-    session = SessionLocal()
-    try:
-        from sqlalchemy import text
-
-        # Query report_fields table for the specific report type
-        fields_result = session.execute(text("""
-            SELECT
-                field_name,
-                field_type,
-                field_cn_name,
-                field_en_name,
-                field_th_name,
-                is_required,
-                default_value,
-                validation_rule,
-                placeholder_cn,
-                field_group
-            FROM report_fields
-            WHERE report_type = :report_type
-              AND is_active = 1
-            ORDER BY fill_order
-        """), {'report_type': report_type}).fetchall()
-
-        # Build field configuration
-        fields = []
-        for row in fields_result:
-            field = {
-                'name': row.field_name,
-                'type': row.field_type.lower(),
-                'label': row.field_cn_name,  # Default to Chinese
-                'label_en': row.field_en_name,
-                'label_th': row.field_th_name,
-                'is_editable': row.field_name != 'report_no',  # Report number is not editable
-                'is_required': bool(row.is_required),
-                'default_value': row.default_value,
-                'placeholder': row.placeholder_cn,
-                'group': row.field_group
-            }
-
-            # Parse validation rules if exists
-            if row.validation_rule:
-                try:
-                    import json
-                    field['validation'] = json.loads(row.validation_rule)
-                except:
-                    field['validation'] = {}
-
-            fields.append(field)
-
-        logger.info(f"[get_report_fields] Found {len(fields)} fields for {report_type}")
-
-        return jsonify({
-            'success': True,
-            'fields': fields
-        })
-
-    except Exception as e:
-        logger.error(f"[get_report_fields] Error: {e}", exc_info=True)
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get report fields: {str(e)}'
-        }), 500
-
-    finally:
-        session.close()
-
-
-@app_amlo.route('/reservation/<int:reservation_id>', methods=['GET'])
-@token_required
-def get_reservation_for_editing(current_user, reservation_id):
-    """
-    Get detailed reservation information for PDF editing
-    Returns all data needed for PDF editing including form_data and report_no
-    """
-    logger.info(f"[get_reservation_for_editing] Getting details for reservation {reservation_id}")
-
-    session = SessionLocal()
-    try:
-        from sqlalchemy import text
-
-        # Query reservation with all fields
-        reservation = session.execute(text("""
-            SELECT
-                rt.id,
-                rt.reservation_no,
-                rt.report_type,
-                rt.customer_id,
-                rt.customer_name,
-                rt.customer_country_code,
-                rt.direction,
-                rt.amount,
-                rt.local_amount,
-                rt.rate,
-                rt.form_data,
-                rt.status,
-                rt.created_at,
-                rt.reporter_signature,
-                rt.customer_signature,
-                rt.auditor_signature,
-                ar.report_no,
-                c.currency_code
-            FROM Reserved_Transaction rt
-            LEFT JOIN AMLOReport ar ON rt.id = ar.reserved_id
-            LEFT JOIN currencies c ON rt.currency_id = c.id
-            WHERE rt.id = :id
-        """), {'id': reservation_id}).fetchone()
-
-        if not reservation:
-            return jsonify({
-                'success': False,
-                'error': 'Reservation not found'
-            }), 404
-
-        # Parse form_data
-        import json
-        form_data = {}
-        if reservation.form_data:
-            try:
-                form_data = json.loads(reservation.form_data) if isinstance(reservation.form_data, str) else reservation.form_data
-            except:
-                form_data = {}
-
-        # Build response data
-        data = {
-            'id': reservation.id,
-            'reservation_no': reservation.reservation_no,
-            'report_no': reservation.report_no,
-            'report_type': reservation.report_type,
-            'customer_id': reservation.customer_id,
-            'customer_name': reservation.customer_name,
-            'customer_country_code': reservation.customer_country_code,
-            'direction': reservation.direction,
-            'amount': float(reservation.amount) if reservation.amount else 0,
-            'local_amount': float(reservation.local_amount) if reservation.local_amount else 0,
-            'rate': float(reservation.rate) if reservation.rate else 0,
-            'currency_code': reservation.currency_code,
-            'form_data': form_data,
-            'status': reservation.status,
-            'created_at': reservation.created_at.isoformat() if reservation.created_at else None,
-            'has_reporter_signature': bool(reservation.reporter_signature),
-            'has_customer_signature': bool(reservation.customer_signature),
-            'has_auditor_signature': bool(reservation.auditor_signature)
-        }
-
-        logger.info(f"[get_reservation_for_editing] Retrieved reservation {reservation_id}")
-
-        return jsonify({
-            'success': True,
-            'data': data
-        })
-
-    except Exception as e:
-        logger.error(f"[get_reservation_for_editing] Error: {e}", exc_info=True)
-        return jsonify({
-            'success': False,
-            'error': f'Failed to get reservation detail: {str(e)}'
-        }), 500
-
     finally:
         session.close()
 

@@ -811,7 +811,7 @@ def download_eod_report(current_user, eod_no):
                 message = I18nUtils.get_message('eod.invalid_eod_id_format', 'th-TH')
             else:
                 message = I18nUtils.get_message('eod.invalid_eod_id_format', 'zh-CN')
-            logger.error(f"[ERROR] EOD编号格式错误 - eod_no: '{eod_no}', 翻译消息: '{message}'")
+            logger.error(f"❌ EOD编号格式错误 - eod_no: '{eod_no}', 翻译消息: '{message}'")
             return jsonify({'success': False, 'message': message}), 400
         
         try:
@@ -898,17 +898,17 @@ def download_eod_report(current_user, eod_no):
                         logger.info(f"🌍 使用默认语言文件: {pdf_files}")
             
             if not pdf_files:
-                logger.error(f"[ERROR] 未找到任何PDF文件 (语言: {language})")
+                logger.error(f"❌ 未找到任何PDF文件 (语言: {language})")
                 return jsonify({'success': False, 'message': f'日结报表文件不存在 (语言: {language})'}), 404
             
             # 使用最新的文件
             file_path = max(pdf_files, key=os.path.getctime)
             
             if not os.path.exists(file_path):
-                logger.error(f"[ERROR] 文件不存在: {file_path}")
+                logger.error(f"❌ 文件不存在: {file_path}")
                 return jsonify({'success': False, 'message': '日结报表文件不存在'}), 404
             
-            logger.info(f"[OK] 最终选择PDF文件: {file_path}")
+            logger.info(f"✅ 最终选择PDF文件: {file_path}")
             
             # 构建正确的下载文件名
             date_str = eod_status.date.strftime('%Y%m%d')
@@ -2348,7 +2348,7 @@ def print_difference_adjustment_report(current_user, eod_id):
         try:
             eod_status = session.query(EODStatus).filter_by(id=eod_id).first()
             if not eod_status:
-                logger.error(f"[ERROR] EOD记录不存在: {eod_id}")
+                logger.error(f"❌ EOD记录不存在: {eod_id}")
                 return jsonify({'success': False, 'message': '日结记录不存在'}), 404
             
             logger.info(f"🌍 找到EOD记录: 日期={eod_status.date}, 分支={eod_status.branch_id}")
@@ -2370,7 +2370,7 @@ def print_difference_adjustment_report(current_user, eod_id):
             logger.info(f"🌍 构建文件路径: {filepath}")
             
             if os.path.exists(filepath):
-                logger.info(f"[OK] 差额调节报告文件存在: {filepath}")
+                logger.info(f"✅ 差额调节报告文件存在: {filepath}")
                 formatted_eod_no = f"EOD{eod_id:08d}"
                 logger.info(f"🌍 返回格式化EOD编号: {formatted_eod_no}")
                 
@@ -2382,14 +2382,14 @@ def print_difference_adjustment_report(current_user, eod_id):
                     'filepath': filepath
                 }), 200
             else:
-                logger.error(f"[ERROR] 差额调节报告文件不存在: {filepath}")
+                logger.error(f"❌ 差额调节报告文件不存在: {filepath}")
                 return jsonify({'success': False, 'message': '差额调节报告文件不存在'}), 404
                 
         finally:
             DatabaseService.close_session(session)
             
     except Exception as e:
-        logger.error(f"[ERROR] 获取差额调节报告失败: {str(e)}")
+        logger.error(f"❌ 获取差额调节报告失败: {str(e)}")
         return jsonify({'success': False, 'message': f'获取差额调节报告失败: {str(e)}'}), 500
 
 @end_of_day_bp.route('/<int:eod_id>/print_difference_report', methods=['GET'])
@@ -2419,7 +2419,7 @@ def print_difference_report(current_user, eod_id):
         try:
             eod_status = session.query(EODStatus).filter_by(id=eod_id).first()
             if not eod_status:
-                logger.error(f"[ERROR] EOD记录不存在: {eod_id}")
+                logger.error(f"❌ EOD记录不存在: {eod_id}")
                 return jsonify({'success': False, 'message': '日结记录不存在'}), 404
             
             logger.info(f"🌍 找到EOD记录: 日期={eod_status.date}, 分支={eod_status.branch_id}")
@@ -2441,7 +2441,7 @@ def print_difference_report(current_user, eod_id):
             logger.info(f"🌍 构建文件路径: {filepath}")
             
             if os.path.exists(filepath):
-                logger.info(f"[OK] 差额报告文件存在: {filepath}")
+                logger.info(f"✅ 差额报告文件存在: {filepath}")
                 formatted_eod_no = f"EOD{eod_id:08d}"
                 logger.info(f"🌍 返回格式化EOD编号: {formatted_eod_no}")
                 
@@ -2453,14 +2453,14 @@ def print_difference_report(current_user, eod_id):
                     'filepath': filepath
                 }), 200
             else:
-                logger.error(f"[ERROR] 差额报告文件不存在: {filepath}")
+                logger.error(f"❌ 差额报告文件不存在: {filepath}")
                 return jsonify({'success': False, 'message': '差额报告文件不存在'}), 404
                 
         finally:
             DatabaseService.close_session(session)
             
     except Exception as e:
-        logger.error(f"[ERROR] 获取差额报告失败: {str(e)}")
+        logger.error(f"❌ 获取差额报告失败: {str(e)}")
         return jsonify({'success': False, 'message': f'获取差额报告失败: {str(e)}'}), 500
 
 @end_of_day_bp.route('/<int:eod_id>/currency/<currency_code>/transactions', methods=['GET'])

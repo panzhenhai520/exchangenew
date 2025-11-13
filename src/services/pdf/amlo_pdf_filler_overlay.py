@@ -719,9 +719,9 @@ class AMLOPDFFillerOverlay:
 
             # 验证签名图像
             if len(images_after) > len(images_before):
-                print(f"[AMLOPDFFillerOverlay] [OK] 成功添加 {len(images_after) - len(images_before)} 个签名图像")
+                print(f"[AMLOPDFFillerOverlay] ✅ 成功添加 {len(images_after) - len(images_before)} 个签名图像")
             else:
-                print(f"[AMLOPDFFillerOverlay] [WARNING] 警告：图像数量没有增加！")
+                print(f"[AMLOPDFFillerOverlay] ⚠️ 警告：图像数量没有增加！")
 
         # 5. 保存最终PDF
         try:
@@ -752,17 +752,17 @@ class AMLOPDFFillerOverlay:
             # 验证文件是否真的创建了
             if os.path.exists(output_path):
                 file_size = os.path.getsize(output_path)
-                print(f"[AMLOPDFFillerOverlay] [OK] PDF保存成功")
+                print(f"[AMLOPDFFillerOverlay] ✅ PDF保存成功")
                 print(f"[AMLOPDFFillerOverlay] 文件大小: {file_size} bytes")
                 print(f"[AMLOPDFFillerOverlay] 文件路径: {output_path}")
             else:
-                print(f"[AMLOPDFFillerOverlay] [WARNING] 警告：文件保存后不存在！")
+                print(f"[AMLOPDFFillerOverlay] ⚠️ 警告：文件保存后不存在！")
                 print(f"[AMLOPDFFillerOverlay] 尝试的路径: {output_path}")
 
             print(f"[AMLOPDFFillerOverlay] ===== PDF合并完成 =====")
 
         except Exception as e:
-            print(f"[AMLOPDFFillerOverlay] [ERROR] PDF保存失败: {e}")
+            print(f"[AMLOPDFFillerOverlay] ❌ PDF保存失败: {e}")
             import traceback
             traceback.print_exc()
             raise
@@ -848,15 +848,15 @@ class AMLOPDFFillerOverlay:
 
                     if result:
                         inserted = True
-                        print(f"[AMLOPDFFillerOverlay] [OK] Successfully inserted {sig_type} with PyMuPDF")
+                        print(f"[AMLOPDFFillerOverlay] ✅ Successfully inserted {sig_type} with PyMuPDF")
                         print(f"[AMLOPDFFillerOverlay] Position: {rect}")
                         # 注意：report_date通过字段填充显示（Line 86-91），不需要在此重复绘制
 
                     else:
-                        print(f"[AMLOPDFFillerOverlay] [WARNING] insert_image returned None or empty result")
+                        print(f"[AMLOPDFFillerOverlay] ⚠️ insert_image returned None or empty result")
 
                 except Exception as img_err:
-                    print(f"[AMLOPDFFillerOverlay] [ERROR] Method 1 failed: {img_err}")
+                    print(f"[AMLOPDFFillerOverlay] ❌ Method 1 failed: {img_err}")
                     import traceback
                     traceback.print_exc()
 
@@ -880,22 +880,22 @@ class AMLOPDFFillerOverlay:
 
                         if result:
                             inserted = True
-                            print(f"[AMLOPDFFillerOverlay] [OK] Successfully inserted {sig_type} using temp file method")
+                            print(f"[AMLOPDFFillerOverlay] ✅ Successfully inserted {sig_type} using temp file method")
                         else:
-                            print(f"[AMLOPDFFillerOverlay] [WARNING] insert_image (file) returned None")
+                            print(f"[AMLOPDFFillerOverlay] ⚠️ insert_image (file) returned None")
 
                     except Exception as file_err:
-                        print(f"[AMLOPDFFillerOverlay] [ERROR] Method 2 failed: {file_err}")
+                        print(f"[AMLOPDFFillerOverlay] ❌ Method 2 failed: {file_err}")
                         import traceback
                         traceback.print_exc()
 
                 if not inserted:
-                    print(f"[AMLOPDFFillerOverlay] [ERROR][ERROR] CRITICAL: Failed to insert {sig_type} using all methods!")
+                    print(f"[AMLOPDFFillerOverlay] ❌❌ CRITICAL: Failed to insert {sig_type} using all methods!")
                 else:
-                    print(f"[AMLOPDFFillerOverlay] [OK][OK] {sig_type} insertion confirmed")
+                    print(f"[AMLOPDFFillerOverlay] ✅✅ {sig_type} insertion confirmed")
 
             except Exception as e:
-                print(f"[AMLOPDFFillerOverlay] [ERROR] Error drawing {sig_type} with PyMuPDF: {e}")
+                print(f"[AMLOPDFFillerOverlay] ❌ Error drawing {sig_type} with PyMuPDF: {e}")
                 import traceback
                 traceback.print_exc()
 

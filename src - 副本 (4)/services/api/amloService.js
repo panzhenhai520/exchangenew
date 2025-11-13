@@ -84,6 +84,20 @@ export default {
   },
 
   /**
+   * 鏇存柊棰勭害琛ㄥ崟鏁版嵁
+   * @param {number} reservationId
+   * @param {Object} formData
+   * @param {Object|null} denominationData
+   * @returns {Promise}
+   */
+  updateReservationFormData(reservationId, formData, denominationData = null) {
+    return api.put(`/amlo/reservations/${reservationId}`, {
+      form_data: formData,
+      denomination_data: denominationData
+    });
+  },
+
+  /**
    * 生成AMLO报告PDF文件
    * @param {number} reportId 报告ID
    * @returns {Promise} 返回PDF文件流
@@ -91,6 +105,43 @@ export default {
   generateReportPDF(reportId) {
     return api.get(`/amlo/reports/${reportId}/generate-pdf`, {
       responseType: 'blob'
+    });
+  },
+
+  /**
+   * 鑾峰彇棰勭害璇︽儏
+   * @param {number} reservationId
+   * @returns {Promise}
+   */
+  getReservationDetail(reservationId) {
+    return api.get(`/amlo/reservations/${reservationId}`);
+  },
+
+  /**
+   * 鑾峰彇鍙紪杈戣〃鍗曞舰寮?
+   * @param {number} reservationId
+   * @param {boolean} download 鏄惁寮€鍙戦€佹嫿
+   * @returns {Promise<Blob>}
+   */
+  downloadEditablePdf(reservationId, download = false) {
+    const params = download ? { download: 1 } : {};
+    return api.get(`/amlo/reservations/${reservationId}/editable-pdf`, {
+      params,
+      responseType: 'blob'
+    });
+  },
+
+  /**
+   * 涓婁紶宸茬紪杈戣繛鏂囨。鐨刾df
+   * @param {number} reservationId
+   * @param {File} file
+   * @returns {Promise}
+   */
+  uploadFilledPdf(reservationId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/amlo/reservations/${reservationId}/upload-filled-pdf`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
 

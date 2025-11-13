@@ -146,17 +146,7 @@ export default {
     "system_log_query": "สอบถามบันทึกระบบ",
     "app_user": "ผู้ใช้แอป",
     "app_role": "บทบาทแอป",
-
-    // หมวดหมู่ข้อมูล
-    "basicInfo": "ข้อมูลพื้นฐาน",
-    "branchInfo": "ข้อมูลสาขา",
-    "transactionInfo": "ข้อมูลรายการ",
-    "customerInfo": "ข้อมูลลูกค้า",
-    "infoSuffix": "ข้อมูล",
-    "checkboxes": "ช่องทำเครื่องหมาย",
-    "combFields": "ฟิลด์ช่องตัวเลข",
-    "otherFields": "ฟิลด์อื่นๆ",
-
+    
     // แปลเวลาที่เกี่ยวข้อง
     "just_now": "เมื่อสักครู่",
     "minutes_ago": "{minutes} นาทีที่แล้ว",

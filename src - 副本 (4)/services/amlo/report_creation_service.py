@@ -26,6 +26,7 @@ class ReportCreationService:
     ) -> Dict[str, Any]:
         """
         Create AMLO report and generate PDF for a reservation
+        If report already exists for this reservation, return existing report info
 
         Args:
             session: SQLAlchemy session
@@ -35,6 +36,25 @@ class ReportCreationService:
             Dict with success, report_id, report_no, pdf_path, error
         """
         try:
+            # 0. 检查是否已经为该预约创建过报告（防止重复创建导致跳号）
+            existing_report = session.execute(text("""
+                SELECT id, report_no, pdf_filename, pdf_path
+                FROM AMLOReport
+                WHERE reserved_id = :reservation_id
+                LIMIT 1
+            """), {'reservation_id': reservation_id}).fetchone()
+
+            if existing_report:
+                logger.info(f"[ReportCreationService] Report already exists for reservation {reservation_id}: {existing_report[1]}")
+                return {
+                    'success': True,
+                    'report_id': existing_report[0],
+                    'report_no': existing_report[1],
+                    'pdf_path': existing_report[3],
+                    'pdf_generated': True,
+                    'already_existed': True  # 标记为已存在的报告
+                }
+
             # 1. 查询预约信息
             reservation = session.execute(text("""
                 SELECT

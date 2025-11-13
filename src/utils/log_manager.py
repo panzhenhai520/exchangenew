@@ -305,19 +305,19 @@ def main():
     
     if args.clean_old:
         count = log_manager.clean_old_logs(args.clean_old)
-        print(f"[OK] 已清理 {count} 个旧日志文件")
+        print(f"✅ 已清理 {count} 个旧日志文件")
     
     if args.clean_large:
         count = log_manager.clean_large_logs(args.clean_large)
-        print(f"[OK] 已清理 {count} 个大日志文件")
+        print(f"✅ 已清理 {count} 个大日志文件")
     
     if args.compress:
         count = log_manager.compress_old_logs(args.compress)
-        print(f"[OK] 已压缩 {count} 个日志文件")
+        print(f"✅ 已压缩 {count} 个日志文件")
     
     if args.archive:
         count = log_manager.archive_logs()
-        print(f"[OK] 已归档 {count} 个日志文件")
+        print(f"✅ 已归档 {count} 个日志文件")
     
     # 如果没有指定任何操作，显示帮助
     if not any([args.stats, args.clean_old, args.clean_large, args.compress, args.archive]):

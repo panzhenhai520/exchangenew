@@ -18,12 +18,14 @@ from sqlalchemy.orm import Session
 
 try:
     from .amlo_csv_field_loader import get_csv_field_loader
-    from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay  # 使用覆盖层方式
+    from .amlo_pdf_filler_pymupdf import AMLOPDFFillerPyMuPDF  # 使用PyMuPDF支持可编辑表单
+    from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay  # 用于签名PDF（不可编辑）
     from .amlo_data_mapper import AMLODataMapper
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(__file__))
     from amlo_csv_field_loader import get_csv_field_loader
+    from amlo_pdf_filler_pymupdf import AMLOPDFFillerPyMuPDF
     from amlo_pdf_filler_overlay import AMLOPDFFillerOverlay
     from amlo_data_mapper import AMLODataMapper
 
@@ -34,9 +36,10 @@ class AMLOPDFService:
     def __init__(self):
         """初始化服务"""
         self.csv_loader = get_csv_field_loader()
-        self.pdf_filler = AMLOPDFFillerOverlay()  # 使用覆盖层方式
+        self.pdf_filler_editable = AMLOPDFFillerPyMuPDF()  # 可编辑PDF（无签名）
+        self.pdf_filler_with_signature = AMLOPDFFillerOverlay()  # 带签名PDF（不可编辑）
         self.data_mapper = AMLODataMapper()
-        print("[AMLOPDFService] Initialized successfully (using Overlay method)")
+        print("[AMLOPDFService] Initialized successfully (hybrid mode: editable + signature support)")
 
     def generate_pdf_from_reservation(
         self,
@@ -116,20 +119,20 @@ class AMLOPDFService:
                 print(f"[AMLOPDFService] Auditor signature length: {len(sig_data) if sig_data else 0}")
                 signatures['auditor_signature'] = sig_data
 
-            if signatures:
-                print(f"[AMLOPDFService] Embedding {len(signatures)} signature(s)")
-            else:
-                print(f"[AMLOPDFService] No signatures to embed")
-
-            # 2. 填充PDF表单（使用覆盖层方式，包含签名）
-            result_path = self.pdf_filler.fill_form(
+            # 2. 填充PDF表单
+            # 🔧 修复：始终使用Overlay filler（ReportLab）以确保：
+            # - 中文、泰文、英文正确显示（SimHei + Sarabun字体）
+            # - 报告编号精确对齐到PDF模板的框格中
+            # - checkbox和所有字段正确渲染
+            #
+            # 注意：Overlay方式生成的PDF不可编辑（这是预期行为，确保数据完整性）
+            print(f"[AMLOPDFService] Using Overlay filler for multilingual support")
+            result_path = self.pdf_filler_with_signature.fill_form(
                 report_type,
                 pdf_fields,
                 output_path,
                 signatures=signatures if signatures else None
             )
-
-            # 确认签名已嵌入
             if signatures:
                 print(f"[AMLOPDFService] Embedded {len(signatures)} signature(s)")
 

@@ -322,12 +322,12 @@ class EODReportPDFGenerator(PDFBase):
                     
             except Exception as e:
                 # 如果时间格式化失败，直接使用原始时间字符串，不做任何转换
-                logger.error(f"[ERROR] 时间范围格式化失败: {e}, start_time={start_time}, end_time={end_time}")
+                logger.error(f"❌ 时间范围格式化失败: {e}, start_time={start_time}, end_time={end_time}")
                 time_range_str = f"{start_time} - {end_time}"
                 logger.info(f"📅 使用原始时间字符串: {time_range_str}")
         else:
             # 【警告】只有在start_time和end_time都为None时才回退到使用eod_date
-            logger.warning(f"[WARNING] start_time或end_time为None，回退到使用eod_date: {eod_date}")
+            logger.warning(f"⚠️ start_time或end_time为None，回退到使用eod_date: {eod_date}")
             
             # 回退到使用eod_date
             if isinstance(eod_date, str):
@@ -851,7 +851,7 @@ class EODReportPDFGenerator(PDFBase):
                 font_name = EODReportPDFGenerator.init_fonts(language)
                 logger.info(f"🎨 字体初始化成功: {font_name}")
             except Exception as font_error:
-                logger.error(f"[ERROR] 字体初始化失败: {font_error}")
+                logger.error(f"❌ 字体初始化失败: {font_error}")
                 # 降级到默认字体
                 font_name = 'Helvetica'
                 logger.info(f"🎨 使用降级字体: {font_name}")
@@ -938,7 +938,7 @@ class EODReportPDFGenerator(PDFBase):
             # 生成PDF
             doc.build(story)
             
-            logger.info(f"[OK] 第7步PDF生成成功: {file_path}")
+            logger.info(f"✅ 第7步PDF生成成功: {file_path}")
             return {
                 'success': True,
                 'file_path': file_path,
@@ -1007,8 +1007,8 @@ class EODReportPDFGenerator(PDFBase):
                 print(f"🔍 PDF头部 - 添加时间范围行: {time_line}")
                 
             except Exception as e:
-                logger.error(f"[ERROR] 日结时间范围格式化失败: {e}")
-                print(f"[ERROR] 日结时间范围格式化失败: {e}")
+                logger.error(f"❌ 日结时间范围格式化失败: {e}")
+                print(f"❌ 日结时间范围格式化失败: {e}")
         else:
             print(f"🔍 PDF头部 - 没有营业时间范围数据")
         

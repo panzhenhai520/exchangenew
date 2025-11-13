@@ -213,7 +213,7 @@ def CalGain(branch_id, start_time, end_time):
             if currency_id not in all_currency_ids:
                 logging.info(f"🚫 已过滤币种ID {currency_id}：买入={stats['total_buy']}, 卖出={stats['total_sell']}, 冲正={stats['total_reversal']}")
             else:
-                logging.info(f"[OK] 包含币种ID {currency_id}：买入={stats['total_buy']}, 卖出={stats['total_sell']}, 冲正={stats['total_reversal']}")
+                logging.info(f"✅ 包含币种ID {currency_id}：买入={stats['total_buy']}, 卖出={stats['total_sell']}, 冲正={stats['total_reversal']}")
         
         # 获取币种信息并计算收入
         currencies = session.query(Currency).filter(
@@ -804,7 +804,7 @@ def get_daily_time_range(branch_id):
             # 如果有上一次日结，从其结束时间+1秒开始
             from datetime import timedelta
             start_time = last_completed_eod.completed_at + timedelta(seconds=1)
-            logging.info(f"[OK] 找到上一次日结记录，开始时间: {start_time.strftime('%Y-%m-%d %H:%M:%S')} (+1秒)")
+            logging.info(f"✅ 找到上一次日结记录，开始时间: {start_time.strftime('%Y-%m-%d %H:%M:%S')} (+1秒)")
             logging.info(f"📝 上一次日结ID: {last_completed_eod.id}, 完成时间: {last_completed_eod.completed_at}")
         else:
             # 如果没有上一次日结，从第一笔交易时间开始
@@ -814,13 +814,13 @@ def get_daily_time_range(branch_id):
             
             if first_transaction:
                 start_time = first_transaction.created_at
-                logging.info(f"[OK] 找到第一笔交易，开始时间: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                logging.info(f"✅ 找到第一笔交易，开始时间: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
                 logging.info(f"📝 第一笔交易ID: {first_transaction.id}, 币种: {first_transaction.currency_id}")
             else:
                 # 如果没有任何交易，从当天0点开始
                 today = date.today()
                 start_time = datetime.combine(today, datetime.min.time())
-                logging.info(f"[WARNING] 未找到任何交易记录，从当天0点开始: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                logging.info(f"⚠️ 未找到任何交易记录，从当天0点开始: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
                 logging.info(f"📅 当天日期: {today}")
         
         # 【日志】记录最终的时间范围
@@ -1162,7 +1162,7 @@ def test_income_simple(current_user):
     logger.info(f"🔍 system_manage权限: {has_system_manage}")
     
     if not has_branch_manage and not has_system_manage:
-        logger.warning(f"[ERROR] 权限不足")
+        logger.warning(f"❌ 权限不足")
         return jsonify({
             'success': False,
             'message': '权限不足，需要branch_manage或system_manage权限',
@@ -1170,7 +1170,7 @@ def test_income_simple(current_user):
             'required_permissions': ['branch_manage', 'system_manage']
         }), 403
     
-    logger.info(f"[OK] 权限检查通过，返回简单数据")
+    logger.info(f"✅ 权限检查通过，返回简单数据")
     return jsonify({
         'success': True,
         'message': '权限检查通过',
@@ -1218,7 +1218,7 @@ def get_currency_transactions(current_user, currency_code):
         
         # 检查权限
         if 'branch_manage' not in user_permissions and 'system_manage' not in user_permissions:
-            logger.warning(f"[ERROR] 权限不足: 需要branch_manage或system_manage，当前有: {user_permissions}")
+            logger.warning(f"❌ 权限不足: 需要branch_manage或system_manage，当前有: {user_permissions}")
             return jsonify({
                 'success': False,
                 'message': '权限不足，需要branch_manage或system_manage权限'
@@ -1226,7 +1226,7 @@ def get_currency_transactions(current_user, currency_code):
         
         branch_id = current_user.get('branch_id')
         if not branch_id:
-            logger.error("[ERROR] 网点信息不存在")
+            logger.error("❌ 网点信息不存在")
             return jsonify({
                 'success': False,
                 'message': '网点信息不存在'
@@ -1264,7 +1264,7 @@ def get_currency_transactions(current_user, currency_code):
         ).first()
         
         if not currency:
-            logger.error(f"[ERROR] 币种代码 {currency_code} 不存在")
+            logger.error(f"❌ 币种代码 {currency_code} 不存在")
             return jsonify({
                 'success': False,
                 'message': f'币种代码 {currency_code} 不存在'
@@ -1402,7 +1402,7 @@ def get_currency_transactions(current_user, currency_code):
         })
         
     except Exception as e:
-        logger.error(f"[ERROR] 获取币种交易明细失败: {str(e)}")
+        logger.error(f"❌ 获取币种交易明细失败: {str(e)}")
         logger.error(f"异常详情: {type(e).__name__}: {str(e)}")
         import traceback
         logger.error(f"堆栈跟踪: {traceback.format_exc()}")

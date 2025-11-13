@@ -1,4 +1,4 @@
-// Auto-generated runtime config - 2025-11-06 13:25:04
+// Auto-generated runtime config - 2025-11-13 16:53:47
 window.ENV_CONFIG = {
   API_BASE_URL: 'http://192.168.0.6:5001',
   CURRENT_IP: '192.168.0.6',

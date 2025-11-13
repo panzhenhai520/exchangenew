@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 try:
     from .amlo_csv_field_loader import get_csv_field_loader
-    from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay  # 使用覆盖层方式
+    from .amlo_pdf_filler_overlay import AMLOPDFFillerOverlay  # ReportLab PDF生成器，支持多语言
     from .amlo_data_mapper import AMLODataMapper
 except ImportError:
     import sys
@@ -29,14 +29,21 @@ except ImportError:
 
 
 class AMLOPDFService:
-    """AMLO PDF生成服务"""
+    """AMLO PDF生成服务 - 使用ReportLab Overlay方式生成PDF
+
+    特点：
+    - 完美支持中文、泰文、英文等多语言字符显示
+    - 报告编号精确对齐到PDF模板的框格中
+    - 所有字段（包括checkbox）正确渲染
+    - 生成的PDF不可编辑（确保数据完整性和合规性）
+    """
 
     def __init__(self):
         """初始化服务"""
         self.csv_loader = get_csv_field_loader()
-        self.pdf_filler = AMLOPDFFillerOverlay()  # 使用覆盖层方式
+        self.pdf_filler = AMLOPDFFillerOverlay()  # ReportLab PDF生成器
         self.data_mapper = AMLODataMapper()
-        print("[AMLOPDFService] Initialized successfully (using Overlay method)")
+        print("[AMLOPDFService] Initialized successfully (ReportLab overlay mode)")
 
     def generate_pdf_from_reservation(
         self,
@@ -116,20 +123,18 @@ class AMLOPDFService:
                 print(f"[AMLOPDFService] Auditor signature length: {len(sig_data) if sig_data else 0}")
                 signatures['auditor_signature'] = sig_data
 
-            if signatures:
-                print(f"[AMLOPDFService] Embedding {len(signatures)} signature(s)")
-            else:
-                print(f"[AMLOPDFService] No signatures to embed")
-
-            # 2. 填充PDF表单（使用覆盖层方式，包含签名）
+            # 2. 填充PDF表单
+            # 使用ReportLab Overlay方式生成PDF，确保：
+            # - 中文、泰文、英文正确显示（SimHei + Sarabun字体）
+            # - 报告编号精确对齐到PDF模板的框格中
+            # - checkbox和所有字段正确渲染
+            print(f"[AMLOPDFService] Generating PDF with ReportLab overlay filler")
             result_path = self.pdf_filler.fill_form(
                 report_type,
                 pdf_fields,
                 output_path,
                 signatures=signatures if signatures else None
             )
-
-            # 确认签名已嵌入
             if signatures:
                 print(f"[AMLOPDFService] Embedded {len(signatures)} signature(s)")
 

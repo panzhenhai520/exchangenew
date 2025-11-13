@@ -31,14 +31,14 @@ def decode_token(token):
         payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         return payload['sub']
     except jwt.ExpiredSignatureError as e:
-        print(f"[decode_token] [ERROR] Token已过期: {e}", flush=True)
+        print(f"[decode_token] ❌ Token已过期: {e}", flush=True)
         try:
             logger.error(f"Token已过期: {e}")
         except:
             pass
         return None
     except jwt.InvalidTokenError as e:
-        print(f"[decode_token] [ERROR] Token无效: {e}", flush=True)
+        print(f"[decode_token] ❌ Token无效: {e}", flush=True)
         try:
             logger.error(f"Token无效: {e}")
         except:
@@ -46,7 +46,7 @@ def decode_token(token):
         print(f"[decode_token] 使用的SECRET_KEY: {SECRET_KEY[:20]}...", flush=True)
         return None
     except Exception as e:
-        print(f"[decode_token] [ERROR] 未知错误: {e}", flush=True)
+        print(f"[decode_token] ❌ 未知错误: {e}", flush=True)
         try:
             logger.error(f"Token解码未知错误: {e}")
         except:
@@ -72,7 +72,7 @@ def token_required(f):
                 token = auth_header.split(" ")[1]  # Bearer <token>
                 print(f"[token_required] 从Authorization头提取token", flush=True)
             except IndexError:
-                print(f"[token_required] [ERROR] Token格式错误", flush=True)
+                print(f"[token_required] ❌ Token格式错误", flush=True)
                 try:
                     logger.error("Token格式错误")
                 except:
@@ -85,7 +85,7 @@ def token_required(f):
             print(f"[token_required] 从URL参数提取token", flush=True)
 
         if not token:
-            print(f"[token_required] [ERROR] 缺少访问令牌，返回401", flush=True)
+            print(f"[token_required] ❌ 缺少访问令牌，返回401", flush=True)
             try:
                 logger.error("缺少访问令牌")
             except:
@@ -97,7 +97,7 @@ def token_required(f):
             user_id = decode_token(token)
 
             if user_id is None:
-                print(f"[token_required] [ERROR] Token解码失败或已过期", flush=True)
+                print(f"[token_required] ❌ Token解码失败或已过期", flush=True)
                 try:
                     logger.error("Token解码失败或已过期")
                 except:
@@ -197,7 +197,7 @@ def token_required(f):
             try:
                 logger.error(f"Token验证失败: {str(e)}")
             except:
-                print(f"[token_required] [WARNING] logger.error也失败了", flush=True)
+                print(f"[token_required] ⚠️ logger.error也失败了", flush=True)
             return jsonify({'message': '令牌验证失败'}), 401
     
     return decorated

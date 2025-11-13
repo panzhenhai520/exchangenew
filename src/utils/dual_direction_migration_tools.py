@@ -260,9 +260,9 @@ class DualDirectionMigrationTools:
 
             for field in required_transaction_fields:
                 if field in transaction_columns:
-                    validation_results.append(f"[OK] exchange_transactions.{field} 字段存在")
+                    validation_results.append(f"✅ exchange_transactions.{field} 字段存在")
                 else:
-                    validation_results.append(f"[ERROR] exchange_transactions.{field} 字段缺失")
+                    validation_results.append(f"❌ exchange_transactions.{field} 字段缺失")
 
             # 验证branches表字段 (MySQL版本)
             result = session.execute(text("""
@@ -279,9 +279,9 @@ class DualDirectionMigrationTools:
 
             for field in required_branch_fields:
                 if field in branch_columns:
-                    validation_results.append(f"[OK] branches.{field} 字段存在")
+                    validation_results.append(f"✅ branches.{field} 字段存在")
                 else:
-                    validation_results.append(f"[ERROR] branches.{field} 字段缺失")
+                    validation_results.append(f"❌ branches.{field} 字段缺失")
 
             # 检查交易方向数据补填情况 (只在字段存在时检查)
             if 'transaction_direction' in transaction_columns:
@@ -294,9 +294,9 @@ class DualDirectionMigrationTools:
 
                 if result:
                     total, filled = result
-                    validation_results.append(f"[OK] 交易方向字段补填: {filled}/{total} 条记录")
+                    validation_results.append(f"✅ 交易方向字段补填: {filled}/{total} 条记录")
             else:
-                validation_results.append("[ERROR] transaction_direction字段不存在，无法检查数据补填情况")
+                validation_results.append("❌ transaction_direction字段不存在，无法检查数据补填情况")
 
             return {
                 'success': True,

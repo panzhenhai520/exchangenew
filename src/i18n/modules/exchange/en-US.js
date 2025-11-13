@@ -262,9 +262,6 @@ export default {
     // Reservation history translations
     "reservation_history": "Reservation History",
     "search_customer_id": "Search by Customer ID",
-    "no_reservations": "No reservations found",
-
-    // Transactor
-    "transactor": "Transactor"
+    "no_reservations": "No reservations found"
   }
 }

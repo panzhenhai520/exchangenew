@@ -1,0 +1,5013 @@
+{
+  "AMLO-1-01": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "field_en_name": "Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "header_information",
+      "existing_fillpos": "fill_52",
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.7
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.7
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.462
+        }
+      ]
+    },
+    {
+      "field_name": "total_amount",
+      "field_th_name": "จำนวนเงินธุรกรรม",
+      "field_en_name": "Transaction Amount",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_info",
+      "existing_fillpos": "fill_45",
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.485
+        },
+        {
+          "pdf_field": "left_amount",
+          "label": "左จํานวนเงินเปนตัวอักษร",
+          "score": 0.474
+        },
+        {
+          "pdf_field": "right_amount",
+          "label": "右จํานวนเงินเปนตัวอักษร",
+          "score": 0.474
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.435
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "field_en_name": "Report Date - Day",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.745
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "ลงวันท",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_5、fill_5_2",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.421
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Report Date - Month",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box17",
+          "label": "อื่นๆ",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Report Date - Year",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_39",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "field_en_name": "Origin Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.564
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.564
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.516
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.516
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "field_en_name": "Is First Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box3",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.857
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "Check Box26",
+          "label": "右ขายตราสารการเงิน",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "Check Box19",
+          "label": "左ซื้อตราสารการเงิน",
+          "score": 0.323
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "โทรสาร",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "field_en_name": "Is Amendment Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box3",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.933
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.759
+        },
+        {
+          "pdf_field": "fill_2",
+          "label": "รวมเอกสารจํ านวนทั้งส้ิน",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_21、fill_22",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.303
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "ที่อ้างถึงรายงานฉบับแรก เลขที่",
+      "field_en_name": "Reference Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box3",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.591
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.512
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.442
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.442
+        },
+        {
+          "pdf_field": "fill_21、fill_22",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.426
+        }
+      ]
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "field_en_name": "Maker Type - Person",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_48_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_49_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box24",
+          "label": "左อื่นๆ(ระบุ)",
+          "score": 0.381
+        }
+      ]
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_th_name": "ทำธุรกรรมด้วยตนเอง",
+      "field_en_name": "Maker Type - Juristic",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.471
+        },
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.457
+        },
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม",
+          "score": 0.356
+        },
+        {
+          "pdf_field": "Check Box4",
+          "label": "ทํ าธุรกรรมดวยตนเอง (หากมีผูรวมทํ าธุรกรรม ใหระบุรายละเอียดของผูรวมทํ าธุรกรรมในสวนที่ ๒ ดวย)",
+          "score": 0.294
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "๓.๒  ชื่อผูรับประโยชนในการทํ าธุรกรรม (ถามี)",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "maker_name_title",
+      "field_th_name": "ชื่อ (ข้างหน้านามสกุล)",
+      "field_en_name": "Maker Name Title",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.548
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.312
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.312
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.303
+        }
+      ]
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ",
+      "field_en_name": "Maker First Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "Check Box33",
+          "label": "ลูกคาไมลงลายมือชื่อ",
+          "score": 0.52
+        }
+      ]
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Maker Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "comb_4",
+          "label": "右จากบัญชีเลขท",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.273
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.273
+        },
+        {
+          "pdf_field": "Check Box23",
+          "label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.267
+        }
+      ]
+    },
+    {
+      "field_name": "maker_company_name",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "field_en_name": "Maker Company Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.583
+        },
+        {
+          "pdf_field": "fill_48_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.455
+        },
+        {
+          "pdf_field": "fill_49_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.455
+        },
+        {
+          "pdf_field": "fill_48_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.444
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_type_national",
+      "field_th_name": "เลขประจำตัวประชาชน",
+      "field_en_name": "ID Type - National ID",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box6",
+          "label": "บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิสา",
+          "score": 0.459
+        },
+        {
+          "pdf_field": "Check Box13",
+          "label": "บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิสาห",
+          "score": 0.452
+        },
+        {
+          "pdf_field": "Check Box8",
+          "label": "ใบสํ าคัญประจํ าตัวคนตาง",
+          "score": 0.39
+        },
+        {
+          "pdf_field": "Check Box15",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.356
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โปรดระบุ",
+          "score": 0.308
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_type_passport",
+      "field_th_name": "หนังสือเดินทาง เลขที่",
+      "field_en_name": "ID Type - Passport",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box14",
+          "label": "หนังสือเดินทาง",
+          "score": 1.024
+        },
+        {
+          "pdf_field": "Check Box7",
+          "label": "หนังสือเดิน",
+          "score": 0.91
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.439
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_type_company",
+      "field_th_name": "เลขทะเบียนนิติบุคคล",
+      "field_en_name": "ID Type - Company Registration",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.548
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.548
+        },
+        {
+          "pdf_field": "fill_28",
+          "label": "ในกรณีเปนนิติบุคคลใหระบุประเภทการประกอบการ",
+          "score": 0.349
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "เพิ่มเติม ครั้งท",
+          "score": 0.294
+        },
+        {
+          "pdf_field": "comb_3",
+          "label": "左เขาบัญชีเลขที",
+          "score": 0.294
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "ID Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": "comb_1",
+      "candidates": [
+        {
+          "pdf_field": "Check Box8",
+          "label": "ใบสํ าคัญประจํ าตัวคนตาง",
+          "score": 0.412
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box15",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.368
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โปรดระบุ",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_number",
+      "field_th_name": "ที่อยู่ เลขที่",
+      "field_en_name": "Address Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "fill_5、fill_5_2",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_21、fill_22",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.581
+        },
+        {
+          "pdf_field": "comb_3",
+          "label": "左เขาบัญชีเลขที",
+          "score": 0.429
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_village",
+      "field_th_name": "หมู่บ้าน/อาคาร",
+      "field_en_name": "Address Village/Building",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_19",
+          "label": "หมดอาย",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "หมดอาย",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.308
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_lane",
+      "field_th_name": "ซอย",
+      "field_en_name": "Address Lane",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_19",
+          "label": "หมดอาย",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "หมดอาย",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_5、fill_5_2",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_17",
+          "label": "ออกใหโดย",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_34",
+          "label": "ออกใหโดย",
+          "score": 0.333
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_road",
+      "field_th_name": "ถนน",
+      "field_en_name": "Address Road",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "Check Box25",
+          "label": "右ถอนเงิน",
+          "score": 0.545
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.375
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.375
+        },
+        {
+          "pdf_field": "fill_48",
+          "label": "左จํ านวน (บาท)",
+          "score": 0.308
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_subdistrict",
+      "field_th_name": "ตำบล/แขวง",
+      "field_en_name": "Address Subdistrict",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "ลงวันท",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "comb_4",
+          "label": "右จากบัญชีเลขท",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "Check Box3",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.261
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_district",
+      "field_th_name": "อำเภอ/เขต",
+      "field_en_name": "Address District",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_49_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.267
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_province",
+      "field_th_name": "จังหวัด",
+      "field_en_name": "Address Province",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_1",
+          "label": "ลงวันท",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "Check Box7",
+          "label": "หนังสือเดิน",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_19",
+          "label": "หมดอาย",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "หมดอาย",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address_postalcode",
+      "field_th_name": "รหัสไปรษณีย์",
+      "field_en_name": "Address Postal Code",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_8",
+          "label": "โทรสาร",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_15",
+          "label": "โทรสาร",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "โทรสาร",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_32",
+          "label": "โทรสาร",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "Check Box7",
+          "label": "หนังสือเดิน",
+          "score": 0.261
+        }
+      ]
+    },
+    {
+      "field_name": "maker_phone",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "field_en_name": "Phone Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": "fill_7",
+      "candidates": [
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_27",
+          "label": "โทรศัพท",
+          "score": 0.836
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthplace_province",
+      "field_th_name": "สถานที่เกิดหรือที่จดทะเบียน จังหวัด",
+      "field_en_name": "Birthplace Province",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_12",
+          "label": "๑.๔ สถานที่สะดวกในการติดตอ",
+          "score": 0.386
+        },
+        {
+          "pdf_field": "fill_13",
+          "label": "๑.๔ สถานที่สะดวกในการติดตอ",
+          "score": 0.386
+        },
+        {
+          "pdf_field": "fill_29、fill_30",
+          "label": "๒.๔ สถานที่สะดวกในการติดตอ",
+          "score": 0.386
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.383
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.383
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthplace_country",
+      "field_th_name": "ประเทศ",
+      "field_en_name": "Birthplace Country",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.662
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.644
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.479
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.479
+        },
+        {
+          "pdf_field": "Check Box23",
+          "label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.473
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthdate_day",
+      "field_th_name": "วันเกิด วันที่",
+      "field_en_name": "Birth Date - Day",
+      "field_type": "INT",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_1",
+          "label": "ลงวันท",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.414
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box25",
+          "label": "右ถอนเงิน",
+          "score": 0.381
+        },
+        {
+          "pdf_field": "Check Box14",
+          "label": "หนังสือเดินทาง",
+          "score": 0.37
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthdate_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Birth Date - Month",
+      "field_type": "INT",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box17",
+          "label": "อื่นๆ",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthdate_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Birth Date - Year",
+      "field_type": "INT",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_39",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "maker_occupation_type",
+      "field_th_name": "อาชีพ",
+      "field_en_name": "Occupation Type",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": "fill_9",
+      "candidates": [
+        {
+          "pdf_field": "fill_9",
+          "label": "๑.๓ อาชีพ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "๒.๓ อาชีพ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_19",
+          "label": "หมดอาย",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "หมดอาย",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "comb_4",
+          "label": "右จากบัญชีเลขท",
+          "score": 0.333
+        }
+      ]
+    },
+    {
+      "field_name": "maker_occupation_business_type",
+      "field_th_name": "ประเภทธุรกิจหรือประเภทงาน",
+      "field_en_name": "Business Type",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": "fill_28",
+      "candidates": [
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม",
+          "score": 0.385
+        },
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.381
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.355
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.355
+        },
+        {
+          "pdf_field": "Check Box23",
+          "label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.349
+        }
+      ]
+    },
+    {
+      "field_name": "maker_occupation_employer",
+      "field_th_name": "ชื่อนายจ้าง/สถานประกอบการ",
+      "field_en_name": "Employer Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": "fill_10",
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.486
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.457
+        },
+        {
+          "pdf_field": "Check Box26",
+          "label": "右ขายตราสารการเงิน",
+          "score": 0.439
+        },
+        {
+          "pdf_field": "fill_49_2",
+          "label": "ขายตราสารการเงิน (เช็ค)",
+          "score": 0.409
+        },
+        {
+          "pdf_field": "fill_49_4",
+          "label": "ขายตราสารการเงิน (อื่นๆ)",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_exists",
+      "field_th_name": "มีผู้ร่วมทำธุรกรรม",
+      "field_en_name": "Has Joint Party",
+      "field_type": "BOOLEAN",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.743
+        },
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.588
+        },
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "๓.๒  ชื่อผูรับประโยชนในการทํ าธุรกรรม (ถามี)",
+          "score": 0.393
+        },
+        {
+          "pdf_field": "Check Box12",
+          "label": "ผู้มอบอำ นาจ",
+          "score": 0.345
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_type",
+      "field_th_name": "ประเภท",
+      "field_en_name": "Joint Party Type",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_28",
+          "label": "ในกรณีเปนนิติบุคคลใหระบุประเภทการประกอบการ",
+          "score": 0.44
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โปรดระบุ",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "fill_56",
+          "label": "โปรดระบุ",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อ",
+      "field_en_name": "Joint Party First Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": "fill_20",
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "Check Box33",
+          "label": "ลูกคาไมลงลายมือชื่อ",
+          "score": 0.52
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Joint Party Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": "fill_20",
+      "candidates": [
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "comb_4",
+          "label": "右จากบัญชีเลขท",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.273
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.273
+        },
+        {
+          "pdf_field": "Check Box23",
+          "label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.267
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_company_name",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "field_en_name": "Joint Party Company Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.583
+        },
+        {
+          "pdf_field": "fill_48_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.455
+        },
+        {
+          "pdf_field": "fill_49_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.455
+        },
+        {
+          "pdf_field": "fill_48_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.444
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "Joint Party ID Number",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box8",
+          "label": "ใบสํ าคัญประจํ าตัวคนตาง",
+          "score": 0.412
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เลขท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เลขท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box15",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.368
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โปรดระบุ",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "field_en_name": "Joint Party Address",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": "fill_21",
+      "candidates": [
+        {
+          "pdf_field": "fill_5、fill_5_2",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.857
+        },
+        {
+          "pdf_field": "fill_21、fill_22",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.333
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_phone",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "field_en_name": "Joint Party Phone",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": "fill_22",
+      "candidates": [
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "โทรศัพท",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "fill_27",
+          "label": "โทรศัพท",
+          "score": 0.836
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "field_en_name": "Transaction Date - Day",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_37",
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.757
+        },
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.474
+        },
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม",
+          "score": 0.458
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "๓.๒  ชื่อผูรับประโยชนในการทํ าธุรกรรม (ถามี)",
+          "score": 0.373
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.353
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Transaction Date - Month",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_38",
+      "candidates": [
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box17",
+          "label": "อื่นๆ",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Transaction Date - Year",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_39",
+      "candidates": [
+        {
+          "pdf_field": "fill_39",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_cash",
+      "field_th_name": "เงินฝาก เงินสด",
+      "field_en_name": "Deposit Cash",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_1",
+          "label": "ฝากเงิน",
+          "score": 0.9
+        },
+        {
+          "pdf_field": "Check Box18",
+          "label": "左ฝากเงิน",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_travelers_check",
+      "field_th_name": "เช็คเดินทาง",
+      "field_en_name": "Deposit Travelers Check",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box14",
+          "label": "หนังสือเดินทาง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "Check Box20",
+          "label": "左เช็ค",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box27",
+          "label": "右เช็ค",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 0.375
+        },
+        {
+          "pdf_field": "Check Box7",
+          "label": "หนังสือเดิน",
+          "score": 0.364
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_draft",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "field_en_name": "Deposit Draft",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_1",
+          "label": "ฝากเงิน",
+          "score": 0.556
+        },
+        {
+          "pdf_field": "Check Box18",
+          "label": "左ฝากเงิน",
+          "score": 0.526
+        },
+        {
+          "pdf_field": "fill_50",
+          "label": "左รวมเงิน",
+          "score": 0.526
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box26",
+          "label": "右ขายตราสารการเงิน",
+          "score": 0.429
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_cashiers_check",
+      "field_th_name": "เช็คธนาคาร",
+      "field_en_name": "Deposit Cashiers Check",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box20",
+          "label": "左เช็ค",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "Check Box27",
+          "label": "右เช็ค",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.323
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_currency_code",
+      "field_th_name": "สกุลเงินต่างประเทศ (เงินฝาก)",
+      "field_en_name": "Deposit Currency Code",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.622
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.609
+        },
+        {
+          "pdf_field": "fill_49_4",
+          "label": "ขายตราสารการเงิน (อื่นๆ)",
+          "score": 0.348
+        },
+        {
+          "pdf_field": "fill_48_4",
+          "label": "ซื้อตราสารการเงิน (อื่นๆ)",
+          "score": 0.34
+        },
+        {
+          "pdf_field": "Check Box32",
+          "label": "สถาบันการเงินเปนผูบันทึกขอเท็จจริง",
+          "score": 0.323
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_currency_amount",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "field_en_name": "Deposit Currency Amount",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.651
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.636
+        },
+        {
+          "pdf_field": "left_amount",
+          "label": "左จํานวนเงินเปนตัวอักษร",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "right_amount",
+          "label": "右จํานวนเงินเปนตัวอักษร",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.433
+        }
+      ]
+    },
+    {
+      "field_name": "deposit_thb_amount",
+      "field_th_name": "จำนวน (บาท) เงินฝาก",
+      "field_en_name": "Deposit THB Amount",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48",
+          "label": "左จํ านวน (บาท)",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_49",
+          "label": "右จํ านวน (บาท)",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_51",
+          "label": "右จํ านวน (บาท)",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "left_amount",
+          "label": "左จํานวนเงินเปนตัวอักษร",
+          "score": 0.486
+        },
+        {
+          "pdf_field": "right_amount",
+          "label": "右จํานวนเงินเปนตัวอักษร",
+          "score": 0.486
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_cash",
+      "field_th_name": "ถอนเงิน เงินสด",
+      "field_en_name": "Withdrawal Cash",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.9
+        },
+        {
+          "pdf_field": "Check Box25",
+          "label": "右ถอนเงิน",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_48_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_49_7",
+          "label": "อื่นๆ เพิ่มเติม",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "left_amount",
+          "label": "左จํานวนเงินเปนตัวอักษร",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_travelers_check",
+      "field_th_name": "เช็คเดินทาง",
+      "field_en_name": "Withdrawal Travelers Check",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box14",
+          "label": "หนังสือเดินทาง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "Check Box20",
+          "label": "左เช็ค",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box27",
+          "label": "右เช็ค",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 0.375
+        },
+        {
+          "pdf_field": "Check Box7",
+          "label": "หนังสือเดิน",
+          "score": 0.364
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_draft",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "field_en_name": "Withdrawal Draft",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_1",
+          "label": "ฝากเงิน",
+          "score": 0.556
+        },
+        {
+          "pdf_field": "Check Box18",
+          "label": "左ฝากเงิน",
+          "score": 0.526
+        },
+        {
+          "pdf_field": "fill_50",
+          "label": "左รวมเงิน",
+          "score": 0.526
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box26",
+          "label": "右ขายตราสารการเงิน",
+          "score": 0.429
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_cashiers_check",
+      "field_th_name": "เช็คธนาคาร",
+      "field_en_name": "Withdrawal Cashiers Check",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box20",
+          "label": "左เช็ค",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "Check Box27",
+          "label": "右เช็ค",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.323
+        },
+        {
+          "pdf_field": "fill_4",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_currency_code",
+      "field_th_name": "สกุลเงินต่างประเทศ (ถอนเงิน)",
+      "field_en_name": "Withdrawal Currency Code",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.637
+        },
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.622
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.609
+        },
+        {
+          "pdf_field": "Check Box25",
+          "label": "右ถอนเงิน",
+          "score": 0.424
+        },
+        {
+          "pdf_field": "fill_49_4",
+          "label": "ขายตราสารการเงิน (อื่นๆ)",
+          "score": 0.348
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_currency_amount",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "field_en_name": "Withdrawal Currency Amount",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.651
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.636
+        },
+        {
+          "pdf_field": "left_amount",
+          "label": "左จํานวนเงินเปนตัวอักษร",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "right_amount",
+          "label": "右จํานวนเงินเปนตัวอักษร",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.433
+        }
+      ]
+    },
+    {
+      "field_name": "withdrawal_thb_amount",
+      "field_th_name": "จำนวน (บาท) ถอนเงิน",
+      "field_en_name": "Withdrawal THB Amount",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.836
+        },
+        {
+          "pdf_field": "Check Box25",
+          "label": "右ถอนเงิน",
+          "score": 0.609
+        },
+        {
+          "pdf_field": "fill_48",
+          "label": "左จํ านวน (บาท)",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_49",
+          "label": "右จํ านวน (บาท)",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_51",
+          "label": "右จํ านวน (บาท)",
+          "score": 0.56
+        }
+      ]
+    },
+    {
+      "field_name": "exchange_currency_exists",
+      "field_th_name": "แลกเปลี่ยนเงินตราต่างประเทศ",
+      "field_en_name": "Has Currency Exchange",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_49_5",
+          "label": "ขายเงินตราต่างประเทศ",
+          "score": 0.766
+        },
+        {
+          "pdf_field": "fill_48_5",
+          "label": "ซื้อเงินตราต่างประเทศ",
+          "score": 0.708
+        },
+        {
+          "pdf_field": "Check Box30",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.531
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.531
+        },
+        {
+          "pdf_field": "Check Box23",
+          "label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)",
+          "score": 0.492
+        }
+      ]
+    },
+    {
+      "field_name": "exchange_other_transaction",
+      "field_th_name": "อื่น ๆ (ระบุ)",
+      "field_en_name": "Other Transaction",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_49_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "Check Box24",
+          "label": "左อื่นๆ(ระบุ)",
+          "score": 1.147
+        },
+        {
+          "pdf_field": "fill42_2",
+          "label": "左อื่นๆ(ระบุ)",
+          "score": 1.147
+        },
+        {
+          "pdf_field": "fill_45",
+          "label": "右อื่นๆ(ระบุ)",
+          "score": 1.147
+        }
+      ]
+    },
+    {
+      "field_name": "exchange_other_description",
+      "field_th_name": "ระบุ",
+      "field_en_name": "Other Transaction Description",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_6",
+          "label": "โปรดระบุ",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_56",
+          "label": "โปรดระบุ",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_48_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "fill_49_6",
+          "label": "อื่นๆ (ระบุ)",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "Check Box24",
+          "label": "左อื่นๆ(ระบุ)",
+          "score": 0.771
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_purpose",
+      "field_th_name": "วัตถุประสงค์ในการทำธุรกรรม (ถ้ามี)",
+      "field_en_name": "Transaction Purpose",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_47",
+      "candidates": [
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม",
+          "score": 0.828
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "๓.๒  ชื่อผูรับประโยชนในการทํ าธุรกรรม (ถามี)",
+          "score": 0.609
+        },
+        {
+          "pdf_field": "fill_37",
+          "label": "วันที่ทํ าธุรกรรม",
+          "score": 0.468
+        },
+        {
+          "pdf_field": "Check Box10",
+          "label": "ผูรวมทํ าธุรกรรม",
+          "score": 0.375
+        },
+        {
+          "pdf_field": "fill_49_3",
+          "label": "ขายตราสารการเงิน (ดราฟต์)",
+          "score": 0.302
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_source",
+      "field_th_name": "ที่มาของเงิน (ถ้ามี)",
+      "field_en_name": "Source of Funds",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_48_1",
+          "label": "ฝากเงิน",
+          "score": 0.417
+        },
+        {
+          "pdf_field": "fill_49_1",
+          "label": "ถอนเงิน",
+          "score": 0.417
+        },
+        {
+          "pdf_field": "fill_10",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_26",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box18",
+          "label": "左ฝากเงิน",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_institution_type",
+      "field_th_name": "ประเภทสถาบันการเงิน",
+      "field_en_name": "Reporter Institution Type",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box26",
+          "label": "右ขายตราสารการเงิน",
+          "score": 0.556
+        },
+        {
+          "pdf_field": "Check Box19",
+          "label": "左ซื้อตราสารการเงิน",
+          "score": 0.541
+        },
+        {
+          "pdf_field": "fill_49_2",
+          "label": "ขายตราสารการเงิน (เช็ค)",
+          "score": 0.513
+        },
+        {
+          "pdf_field": "fill_48_2",
+          "label": "ซื้อตราสารการเงิน (เช็ค)",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_49_4",
+          "label": "ขายตราสารการเงิน (อื่นๆ)",
+          "score": 0.5
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อสถาบันการเงิน",
+      "field_en_name": "Reporter Institution Name",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box19",
+          "label": "左ซื้อตราสารการเงิน",
+          "score": 0.629
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.581
+        },
+        {
+          "pdf_field": "fill_48_2",
+          "label": "ซื้อตราสารการเงิน (เช็ค)",
+          "score": 0.579
+        },
+        {
+          "pdf_field": "fill_48_4",
+          "label": "ซื้อตราสารการเงิน (อื่นๆ)",
+          "score": 0.564
+        },
+        {
+          "pdf_field": "fill_48_3",
+          "label": "ซื้อตราสารการเงิน (ดราฟต์)",
+          "score": 0.55
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_th_name": "สาขา",
+      "field_en_name": "Reporter Branch Name",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_8",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_15",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_32",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_52",
+          "label": "สถาบันการเงิน-สาขา-ใช้ ๒ หลักสุด. ท ้า ย -เลขลำ ดับรายงาน",
+          "score": 0.363
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "ลายมือชื่อผู้รายงาน วันที่",
+      "field_en_name": "Signature Date - Day",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.476
+        },
+        {
+          "pdf_field": "Check Box33",
+          "label": "ลูกคาไมลงลายมือชื่อ",
+          "score": 0.435
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "ลงวันท",
+          "score": 0.387
+        },
+        {
+          "pdf_field": "fill_21、fill_22",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.372
+        },
+        {
+          "pdf_field": "Check Box2",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.359
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Signature Date - Month",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_38",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_20",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box17",
+          "label": "อื่นๆ",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Signature Date - Year",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_39",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_11",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    }
+  ],
+  "AMLO-1-02": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "field_en_name": "Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "header_information",
+      "existing_fillpos": "fill_52",
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "Check Box34",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "Check Box35",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.444
+        }
+      ]
+    },
+    {
+      "field_name": "asset_value",
+      "field_th_name": "มูลค่าสินทรัพย์",
+      "field_en_name": "Asset Value",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_info",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_25",
+          "label": "โทรศัพท์",
+          "score": 0.435
+        },
+        {
+          "pdf_field": "fill_41",
+          "label": "๓.๓  มูลคาทรัพยสินที่ทํ าธุรกรรมรวมทั้งสิ้น",
+          "score": 0.37
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โทรศัพท",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 0.364
+        },
+        {
+          "pdf_field": "fill_21",
+          "label": "โทรศัพท",
+          "score": 0.364
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "field_en_name": "Report Date - Day",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_2",
+          "label": "ลงวันท",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.614
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.614
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.5
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Report Date - Month",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Report Date - Year",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "field_en_name": "Origin Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.7
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.516
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.516
+        },
+        {
+          "pdf_field": "comb_1",
+          "label": "๓.๔ เลขที่บัญชีที่ทํ าธุรกรรม",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "Check Box34",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "field_en_name": "Is First Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box35",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.857
+        },
+        {
+          "pdf_field": "Check Box34",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรสาร",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_13",
+          "label": "โทรสาร",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "field_en_name": "Is Amendment Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box35",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.933
+        },
+        {
+          "pdf_field": "Check Box34",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.759
+        },
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.381
+        },
+        {
+          "pdf_field": "fill_19、fill_20",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.303
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "เลขที่อ้างถึง",
+      "field_en_name": "Reference Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.832
+        },
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_32",
+          "label": "เลขที่ ออกใหโดย เมื่อ หมดอายุ",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_19、fill_20",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.387
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.385
+        }
+      ]
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "field_en_name": "Maker Type - Person",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_44",
+          "label": "ชื่อบัญช",
+          "score": 0.421
+        },
+        {
+          "pdf_field": "fill_49",
+          "label": "ชื่อบัญชี",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.385
+        }
+      ]
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_th_name": "นิติบุคคล",
+      "field_en_name": "Maker Type - Juristic",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_26",
+          "label": "ในกรณีที่เป็นนิติบุคคล ให้ระบุประเภทการประกอบการ",
+          "score": 0.521
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "เพิ่มเติม ครั้งท",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "Check Box41",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.273
+        },
+        {
+          "pdf_field": "fill_50",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.273
+        }
+      ]
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ",
+      "field_en_name": "Maker First Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_44",
+          "label": "ชื่อบัญช",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_49",
+          "label": "ชื่อบัญชี",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.667
+        }
+      ]
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Maker Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "Check Box59",
+          "label": "ลูกคาไมลงลายมือชื่อ",
+          "score": 0.214
+        },
+        {
+          "pdf_field": "Check Box44",
+          "label": "ผูมอบอํ านาจ",
+          "score": 0.211
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.2
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "ID Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box40",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.389
+        },
+        {
+          "pdf_field": "Check Box47",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.368
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_66",
+          "label": "(จํ านวนเงินที่เปนตัวอักษร)",
+          "score": 0.278
+        },
+        {
+          "pdf_field": "Check Box38",
+          "label": "บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิส",
+          "score": 0.264
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address",
+      "field_th_name": "ที่อยู่",
+      "field_en_name": "Address",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_19、fill_20",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "เกี่ยวของโดย",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "maker_phone",
+      "field_th_name": "โทรศัพท์",
+      "field_en_name": "Phone",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_25",
+          "label": "โทรศัพท์",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โทรศัพท",
+          "score": 1.133
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 1.133
+        },
+        {
+          "pdf_field": "fill_21",
+          "label": "โทรศัพท",
+          "score": 1.133
+        },
+        {
+          "pdf_field": "fill_29",
+          "label": "โทรศัพท",
+          "score": 1.133
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อ",
+      "field_en_name": "Joint Party First Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_44",
+          "label": "ชื่อบัญช",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_49",
+          "label": "ชื่อบัญชี",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.667
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Joint Party Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "Check Box59",
+          "label": "ลูกคาไมลงลายมือชื่อ",
+          "score": 0.214
+        },
+        {
+          "pdf_field": "Check Box44",
+          "label": "ผูมอบอํ านาจ",
+          "score": 0.211
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.2
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "Joint Party ID",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box40",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.389
+        },
+        {
+          "pdf_field": "Check Box47",
+          "label": "ใบสํ าคัญประจํ าตัวคนตางดาว",
+          "score": 0.368
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_66",
+          "label": "(จํ านวนเงินที่เปนตัวอักษร)",
+          "score": 0.278
+        },
+        {
+          "pdf_field": "Check Box38",
+          "label": "บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิส",
+          "score": 0.264
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "field_en_name": "Joint Party Address",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_19、fill_20",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "เกี่ยวของโดย",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "field_en_name": "Transaction Date - Day",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.682
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.682
+        },
+        {
+          "pdf_field": "Check Box36",
+          "label": "ทำ ธุรกรรมด้วยตนเอง",
+          "score": 0.564
+        },
+        {
+          "pdf_field": "Check Box37",
+          "label": "ทำ ธุรกรรมแทนผู้อื่น",
+          "score": 0.55
+        },
+        {
+          "pdf_field": "fill_41",
+          "label": "๓.๓  มูลคาทรัพยสินที่ทํ าธุรกรรมรวมทั้งสิ้น",
+          "score": 0.533
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Transaction Date - Month",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Transaction Date - Year",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_type_mortgage",
+      "field_th_name": "จำนอง",
+      "field_en_name": "Transaction Type - Mortgage",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box50",
+          "label": "จํ านอง",
+          "score": 0.727
+        },
+        {
+          "pdf_field": "Check Box36",
+          "label": "ทำ ธุรกรรมด้วยตนเอง",
+          "score": 0.348
+        },
+        {
+          "pdf_field": "Check Box52",
+          "label": "โอนเงิน",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "Check Box39",
+          "label": "หนังสือเดินทาง",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "Check Box46",
+          "label": "หนังสือเดินทาง",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_type_sale",
+      "field_th_name": "ขาย",
+      "field_en_name": "Transaction Type - Sale",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_17",
+          "label": "หมดอาย",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_34",
+          "label": "หมดอาย",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box43",
+          "label": "ผูมอบหมาย",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.25
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_type_transfer",
+      "field_th_name": "โอนกรรมสิทธิ์",
+      "field_en_name": "Transaction Type - Transfer",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box52",
+          "label": "โอนเงิน",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "โทรศัพท์",
+          "score": 0.381
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรสาร",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_13",
+          "label": "โทรสาร",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_type_lease",
+      "field_th_name": "เช่า",
+      "field_en_name": "Transaction Type - Lease",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_44",
+          "label": "ชื่อบัญช",
+          "score": 0.333
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_type_other",
+      "field_th_name": "อื่น ๆ",
+      "field_en_name": "Transaction Type - Other",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box41",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "fill_50",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "Check Box49",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "Check Box53",
+          "label": "อื่นๆ(โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "fill_53",
+          "label": "อื่นๆ(โปรดระบุ)",
+          "score": 0.756
+        }
+      ]
+    },
+    {
+      "field_name": "asset_type_land",
+      "field_th_name": "ที่ดิน",
+      "field_en_name": "Asset Type - Land",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "Check Box55",
+          "label": "ที่ดินและสิ่งปลูกสราง",
+          "score": 0.629
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.421
+        }
+      ]
+    },
+    {
+      "field_name": "asset_type_building",
+      "field_th_name": "สิ่งปลูกสร้าง",
+      "field_en_name": "Asset Type - Building",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box56",
+          "label": "สิ่งปลูกสราง",
+          "score": 0.923
+        },
+        {
+          "pdf_field": "Check Box55",
+          "label": "ที่ดินและสิ่งปลูกสราง",
+          "score": 0.686
+        },
+        {
+          "pdf_field": "fill_52",
+          "label": "สถาบันการเงิน-ใช๒ปหลีพักส.ศุด.ท้าย-เลขลําดับรายงาน",
+          "score": 0.31
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.308
+        }
+      ]
+    },
+    {
+      "field_name": "asset_type_condominium",
+      "field_th_name": "ห้องชุด",
+      "field_en_name": "Asset Type - Condominium",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_5",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_17",
+          "label": "หมดอาย",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "fill_34",
+          "label": "หมดอาย",
+          "score": 0.308
+        },
+        {
+          "pdf_field": "Check Box50",
+          "label": "จํ านอง",
+          "score": 0.308
+        }
+      ]
+    },
+    {
+      "field_name": "asset_type_other",
+      "field_th_name": "อื่น ๆ",
+      "field_en_name": "Asset Type - Other",
+      "field_type": "BOOLEAN",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box41",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "fill_50",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "Check Box49",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "Check Box53",
+          "label": "อื่นๆ(โปรดระบุ)",
+          "score": 0.756
+        },
+        {
+          "pdf_field": "fill_53",
+          "label": "อื่นๆ(โปรดระบุ)",
+          "score": 0.756
+        }
+      ]
+    },
+    {
+      "field_name": "asset_value_thb",
+      "field_th_name": "มูลค่าทรัพย์สิน (บาท)",
+      "field_en_name": "Asset Value (THB)",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_41",
+          "label": "๓.๓  มูลคาทรัพยสินที่ทํ าธุรกรรมรวมทั้งสิ้น",
+          "score": 0.526
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โทรศัพท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_21",
+          "label": "โทรศัพท",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_29",
+          "label": "โทรศัพท",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "asset_location",
+      "field_th_name": "ที่ตั้งทรัพย์สิน",
+      "field_en_name": "Asset Location",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.455
+        },
+        {
+          "pdf_field": "fill_38、fill_38_1、fill_38_2",
+          "label": "โปรดระบุรายละเอียดของทรัพยสิน",
+          "score": 0.435
+        },
+        {
+          "pdf_field": "fill_25",
+          "label": "โทรศัพท์",
+          "score": 0.417
+        },
+        {
+          "pdf_field": "fill_19、fill_20",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.412
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "เพิ่มเติม ครั้งท",
+          "score": 0.387
+        }
+      ]
+    },
+    {
+      "field_name": "asset_deed_number",
+      "field_th_name": "เลขที่โฉนด",
+      "field_en_name": "Deed Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.95
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "เกี่ยวของโดย",
+          "score": 0.435
+        },
+        {
+          "pdf_field": "fill_32",
+          "label": "เลขที่ ออกใหโดย เมื่อ หมดอายุ",
+          "score": 0.432
+        },
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 0.353
+        }
+      ]
+    },
+    {
+      "field_name": "asset_area",
+      "field_th_name": "เนื้อที่",
+      "field_en_name": "Asset Area",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.571
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "fill_4、fill_4_2",
+          "label": "๑.๒ ที่อยู่",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํ างาน",
+          "score": 0.381
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "field_en_name": "Reporter Institution Name",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "Check Box34",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "Check Box35",
+          "label": "รายงานฉบับแกไข",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "fill_43",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.429
+        },
+        {
+          "pdf_field": "fill_45",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.429
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_th_name": "สาขา",
+      "field_en_name": "Reporter Branch Name",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_7",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_13",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_22",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_30",
+          "label": "โทรสาร",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box51",
+          "label": "ขายฝาก",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "วันที่",
+      "field_en_name": "Signature Date - Day",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_2",
+          "label": "ลงวันท",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.614
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.614
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box54",
+          "label": "ที่ดิน",
+          "score": 0.5
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Signature Date - Month",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.557
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_3",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Signature Date - Year",
+      "field_type": "INT",
+      "field_group": "reporter_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_36",
+          "label": "วันที่ทํ าธุรกรรม เดือน พ.ศ.",
+          "score": 0.36
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        }
+      ]
+    }
+  ],
+  "AMLO-1-03": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "field_en_name": "Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.867
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํางาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_59",
+          "label": "สถานที่ทํางาน",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํางาน",
+          "score": 0.538
+        }
+      ]
+    },
+    {
+      "field_name": "cumulative_amount_1month",
+      "field_th_name": "จำนวนเงินสะสม (1 เดือน)",
+      "field_en_name": "Cumulative Amount (1 Month)",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_info",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 0.635
+        },
+        {
+          "pdf_field": "fill_53",
+          "label": "จํานวนเงินที่เปนตัวอักษร",
+          "score": 0.476
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.348
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เมื่อ",
+          "score": 0.348
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "รวมเอกสารจํานวนทั้งสิ้น",
+          "score": 0.341
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_count_1month",
+      "field_th_name": "จำนวนธุรกรรม (1 เดือน)",
+      "field_en_name": "Transaction Count (1 Month)",
+      "field_type": "INT",
+      "field_group": "transaction_info",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 0.655
+        },
+        {
+          "pdf_field": "Check Box69",
+          "label": "ผูรวมทําธุรกรรม",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box64",
+          "label": "ทําธุรกรรมแทนผูอื่น",
+          "score": 0.486
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.485
+        },
+        {
+          "pdf_field": "fill_38",
+          "label": "๓.๑ มูลคาของธุรกรรม",
+          "score": 0.438
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "field_en_name": "Report Date - Day",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.745
+        },
+        {
+          "pdf_field": "fill_56",
+          "label": "ลงวันท",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_3、fill_3_1",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.462
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Report Date - Month",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Report Date - Year",
+      "field_type": "INT",
+      "field_group": "header_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "field_en_name": "Is First Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box61",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.815
+        },
+        {
+          "pdf_field": "Check Box62",
+          "label": "รายงานแกไข",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_6",
+          "label": "โทรสาร",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_13",
+          "label": "โทรสาร",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_22",
+          "label": "โทรสาร",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "field_en_name": "Is Amendment Report",
+      "field_type": "BOOLEAN",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box62",
+          "label": "รายงานแกไข",
+          "score": 0.769
+        },
+        {
+          "pdf_field": "Check Box61",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.759
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "รวมเอกสารจํานวนทั้งสิ้น",
+          "score": 0.316
+        },
+        {
+          "pdf_field": "fill_19、file_19_1",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.303
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํางาน",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "เลขที่อ้างถึง",
+      "field_en_name": "Reference Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "report_type_selection",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.832
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.832
+        },
+        {
+          "pdf_field": "fill_3、fill_3_1",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_44、fill_45",
+          "label": "เกี่ยวของโดย",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_19、file_19_1",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.387
+        }
+      ]
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "field_en_name": "Maker First Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.733
+        },
+        {
+          "pdf_field": "fill_40",
+          "label": "ชื่อบัญชี",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "t1",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_42",
+          "label": "ชื่อบัญชี",
+          "score": 0.4
+        }
+      ]
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Maker Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "fill_34",
+          "label": "หมดอายุ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.261
+        },
+        {
+          "pdf_field": "Check Box62",
+          "label": "รายงานแกไข",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "Check Box71",
+          "label": "ผูมอบอํานาจ",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "ID Number",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box74",
+          "label": "ใบสําคัญประจําตัวคนตางด",
+          "score": 0.412
+        },
+        {
+          "pdf_field": "Check Box67",
+          "label": "ใบสําคัญประจําตัวคนตางด",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_53",
+          "label": "จํานวนเงินที่เปนตัวอักษร",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "maker_address",
+      "field_th_name": "ที่อยู่",
+      "field_en_name": "Address",
+      "field_type": "VARCHAR",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_3、fill_3_1",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.857
+        },
+        {
+          "pdf_field": "fill_19、file_19_1",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_44、fill_45",
+          "label": "เกี่ยวของโดย",
+          "score": 0.421
+        }
+      ]
+    },
+    {
+      "field_name": "maker_birthdate",
+      "field_th_name": "วันเกิด",
+      "field_en_name": "Birth Date",
+      "field_type": "DATE",
+      "field_group": "transaction_maker_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_56",
+          "label": "ลงวันท",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.348
+        },
+        {
+          "pdf_field": "fill_10、fill_11",
+          "label": "๑.๔ สถานที่สะดวกในการติดตอ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_27、fill_27_1",
+          "label": "๒.๔ สถานที่สะดวกในการติดตอ",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_44、fill_45",
+          "label": "เกี่ยวของโดย",
+          "score": 0.316
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อผู้ร่วมทำธุรกรรม",
+      "field_en_name": "Joint Party First Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box69",
+          "label": "ผูรวมทําธุรกรรม",
+          "score": 0.743
+        },
+        {
+          "pdf_field": "fill_46",
+          "label": "๓.๕ ชื่อผูรับประโยชนในการทําธุรกรรม",
+          "score": 0.588
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.533
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_38",
+          "label": "๓.๑ มูลคาของธุรกรรม",
+          "score": 0.457
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "field_en_name": "Joint Party Last Name",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.978
+        },
+        {
+          "pdf_field": "fill_34",
+          "label": "หมดอายุ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.261
+        },
+        {
+          "pdf_field": "Check Box62",
+          "label": "รายงานแกไข",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "Check Box71",
+          "label": "ผูมอบอํานาจ",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "field_en_name": "Joint Party ID",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box74",
+          "label": "ใบสําคัญประจําตัวคนตางด",
+          "score": 0.412
+        },
+        {
+          "pdf_field": "Check Box67",
+          "label": "ใบสําคัญประจําตัวคนตางด",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.353
+        },
+        {
+          "pdf_field": "fill_53",
+          "label": "จํานวนเงินที่เปนตัวอักษร",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "field_en_name": "Joint Party Address",
+      "field_type": "VARCHAR",
+      "field_group": "co_transactor_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_3、fill_3_1",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.857
+        },
+        {
+          "pdf_field": "fill_19、file_19_1",
+          "label": "๒.๒ ที่อยู/สถานที่ตั้ง",
+          "score": 0.56
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.462
+        },
+        {
+          "pdf_field": "fill_44、fill_45",
+          "label": "เกี่ยวของโดย",
+          "score": 0.421
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม",
+      "field_en_name": "Transaction Date - Day",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_37",
+      "candidates": [
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.903
+        },
+        {
+          "pdf_field": "comb_3",
+          "label": "๓.๓ เลขที่บัญชีที่ทําธุรกรรม",
+          "score": 0.615
+        },
+        {
+          "pdf_field": "Check Box69",
+          "label": "ผูรวมทําธุรกรรม",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_47",
+          "label": "๓.๖ วัตถุประสงคในการทําธุรกรรม",
+          "score": 0.537
+        },
+        {
+          "pdf_field": "fill_38",
+          "label": "๓.๑ มูลคาของธุรกรรม",
+          "score": 0.467
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Transaction Date - Month",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_38",
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Transaction Date - Year",
+      "field_type": "INT",
+      "field_group": "transaction_information",
+      "existing_fillpos": "fill_39",
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    },
+    {
+      "field_name": "transaction_amount_thb",
+      "field_th_name": "จำนวนเงิน (บาท)",
+      "field_en_name": "Transaction Amount (THB)",
+      "field_type": "DECIMAL",
+      "field_group": "transaction_information",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_53",
+          "label": "จํานวนเงินที่เปนตัวอักษร",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_1",
+          "label": "รวมเอกสารจํานวนทั้งสิ้น",
+          "score": 0.4
+        },
+        {
+          "pdf_field": "Check Box66",
+          "label": "หนังสือเดินทาง",
+          "score": 0.385
+        },
+        {
+          "pdf_field": "Check Box73",
+          "label": "หนังสือเดินทาง",
+          "score": 0.385
+        },
+        {
+          "pdf_field": "fill_39",
+          "label": "หากเปนเงินตราตางประเทศ โปรดระบุจํานวนและสกุลเง",
+          "score": 0.237
+        }
+      ]
+    },
+    {
+      "field_name": "has_filed_ctr_atr",
+      "field_th_name": "ได้ยื่นแบบ ปปง.๑-๐๑ หรือ ปปง.๑-๐๒",
+      "field_en_name": "Has Filed CTR/ATR",
+      "field_type": "BOOLEAN",
+      "field_group": "suspicious_reasons",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "Check Box61",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.294
+        },
+        {
+          "pdf_field": "Check Box66",
+          "label": "หนังสือเดินทาง",
+          "score": 0.294
+        },
+        {
+          "pdf_field": "Check Box73",
+          "label": "หนังสือเดินทาง",
+          "score": 0.294
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.25
+        },
+        {
+          "pdf_field": "Check Box68",
+          "label": "อื่นๆ (โปรดระบุ)",
+          "score": 0.242
+        }
+      ]
+    },
+    {
+      "field_name": "previous_report_number",
+      "field_th_name": "เลขที่รายงาน ปปง.๑-๐๑/๑-๐๒",
+      "field_en_name": "Previous Report Number",
+      "field_type": "VARCHAR",
+      "field_group": "suspicious_reasons",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.771
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.771
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํางาน",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_59",
+          "label": "สถานที่ทํางาน",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํางาน",
+          "score": 0.483
+        }
+      ]
+    },
+    {
+      "field_name": "suspicion_reasons",
+      "field_th_name": "เหตุอันควรสงสัย",
+      "field_en_name": "Suspicion Reasons",
+      "field_type": "TEXT",
+      "field_group": "suspicious_reasons",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "fill_44、fill_45",
+          "label": "เกี่ยวของโดย",
+          "score": 0.296
+        },
+        {
+          "pdf_field": "fill_17",
+          "label": "หมดอาย",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "Check Box66",
+          "label": "หนังสือเดินทาง",
+          "score": 0.276
+        },
+        {
+          "pdf_field": "Check Box73",
+          "label": "หนังสือเดินทาง",
+          "score": 0.276
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "field_en_name": "Reporter Institution Name",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information_part5",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.671
+        },
+        {
+          "pdf_field": "Check Box62",
+          "label": "รายงานแกไข",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "Check Box61",
+          "label": "รายงานฉบับหลัก",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "t1",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "t2",
+          "label": "ชื่อเจาของบัญช",
+          "score": 0.444
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_position",
+      "field_th_name": "ตำแหน่ง",
+      "field_en_name": "Reporter Position",
+      "field_type": "VARCHAR",
+      "field_group": "reporter_information_part5",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_14_2",
+          "label": "แผน”",
+          "score": 0.333
+        },
+        {
+          "pdf_field": "fill_24",
+          "label": "สถานที่ทํางาน",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "fill_59",
+          "label": "สถานที่ทํางาน",
+          "score": 0.3
+        },
+        {
+          "pdf_field": "fill_8",
+          "label": "สถานที่ทํางาน",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "Check Box66",
+          "label": "หนังสือเดินทาง",
+          "score": 0.286
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "วันที่",
+      "field_en_name": "Signature Date - Day",
+      "field_type": "INT",
+      "field_group": "reporter_information_part5",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_35",
+          "label": "วันที่ทําธุรกรรม",
+          "score": 0.745
+        },
+        {
+          "pdf_field": "fill_56",
+          "label": "ลงวันท",
+          "score": 0.667
+        },
+        {
+          "pdf_field": "fill_14",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_31",
+          "label": "เลขที่",
+          "score": 0.5
+        },
+        {
+          "pdf_field": "fill_3、fill_3_1",
+          "label": "๑.๒ ที่อยู",
+          "score": 0.462
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "field_en_name": "Signature Date - Month",
+      "field_type": "INT",
+      "field_group": "reporter_information_part5",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_36",
+          "label": "เดือน",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_16",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_33",
+          "label": "เมื่อ",
+          "score": 0.6
+        },
+        {
+          "pdf_field": "fill_18",
+          "label": "๒.๑ ชื่อ",
+          "score": 0.444
+        },
+        {
+          "pdf_field": "fill_2",
+          "label": "๑.๑ ชื่อ-นามสกุล",
+          "score": 0.375
+        }
+      ]
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "field_en_name": "Signature Date - Year",
+      "field_type": "INT",
+      "field_group": "reporter_information_part5",
+      "existing_fillpos": null,
+      "candidates": [
+        {
+          "pdf_field": "fill_37",
+          "label": "พ.ศ.",
+          "score": 1.2
+        },
+        {
+          "pdf_field": "fill_7",
+          "label": "๑.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_23",
+          "label": "๒.๓ อาชีพ",
+          "score": 0.286
+        },
+        {
+          "pdf_field": "fill_5",
+          "label": "โทรศัพท",
+          "score": 0.222
+        },
+        {
+          "pdf_field": "fill_9",
+          "label": "โทรศัพท",
+          "score": 0.222
+        }
+      ]
+    }
+  ]
+}

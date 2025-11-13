@@ -110,7 +110,7 @@ class CurrencyTranslationService:
                 with open(CurrencyTranslationService.CONFIG_FILE_PATH, 'r', encoding='utf-8') as f:
                     CurrencyTranslationService._translations_cache = json.load(f)
                     CurrencyTranslationService._cache_loaded = True
-                    logger.info(f"[OK] 成功加载币种翻译配置文件: {CurrencyTranslationService.CONFIG_FILE_PATH}")
+                    logger.info(f"✅ 成功加载币种翻译配置文件: {CurrencyTranslationService.CONFIG_FILE_PATH}")
                     return CurrencyTranslationService._translations_cache
             else:
                 logger.info(f"📝 币种翻译配置文件不存在，将创建: {CurrencyTranslationService.CONFIG_FILE_PATH}")
@@ -167,7 +167,7 @@ class CurrencyTranslationService:
             
             CurrencyTranslationService._translations_cache = default_translations
             CurrencyTranslationService._cache_loaded = True
-            logger.info(f"[OK] 成功创建默认币种翻译配置文件")
+            logger.info(f"✅ 成功创建默认币种翻译配置文件")
             
         except Exception as e:
             logger.error(f"创建默认配置文件失败: {e}")
@@ -194,7 +194,7 @@ class CurrencyTranslationService:
             # 更新缓存
             CurrencyTranslationService._translations_cache = current_translations
             
-            logger.info(f"[OK] 成功添加币种翻译: {currency_code}")
+            logger.info(f"✅ 成功添加币种翻译: {currency_code}")
             return True
             
         except Exception as e:

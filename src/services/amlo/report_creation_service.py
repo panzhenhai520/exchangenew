@@ -26,6 +26,7 @@ class ReportCreationService:
     ) -> Dict[str, Any]:
         """
         Create AMLO report and generate PDF for a reservation
+        If report already exists for this reservation, return existing report info
 
         Args:
             session: SQLAlchemy session
@@ -35,6 +36,25 @@ class ReportCreationService:
             Dict with success, report_id, report_no, pdf_path, error
         """
         try:
+            # 0. 检查是否已经为该预约创建过报告（防止重复创建导致跳号）
+            existing_report = session.execute(text("""
+                SELECT id, report_no, pdf_filename, pdf_path
+                FROM AMLOReport
+                WHERE reserved_id = :reservation_id
+                LIMIT 1
+            """), {'reservation_id': reservation_id}).fetchone()
+
+            if existing_report:
+                logger.info(f"[ReportCreationService] Report already exists for reservation {reservation_id}: {existing_report[1]}")
+                return {
+                    'success': True,
+                    'report_id': existing_report[0],
+                    'report_no': existing_report[1],
+                    'pdf_path': existing_report[3],
+                    'pdf_generated': True,
+                    'already_existed': True  # 标记为已存在的报告
+                }
+
             # 1. 查询预约信息
             reservation = session.execute(text("""
                 SELECT
@@ -118,38 +138,11 @@ class ReportCreationService:
                     session, reservation_id, report_no
                 )
                 if pdf_result['success']:
-                    logger.info(
-                        f"[ReportCreationService] Generated PDF: {pdf_result['pdf_path']}",
-                        extra={
-                            'reservation_id': reservation_id,
-                            'report_id': report_id,
-                            'report_no': report_no,
-                            'pdf_path': pdf_result['pdf_path']
-                        }
-                    )
+                    logger.info(f"[ReportCreationService] Generated PDF: {pdf_result['pdf_path']}")
                 else:
-                    logger.warning(
-                        f"[ReportCreationService] PDF generation failed: {pdf_result.get('error')}",
-                        extra={
-                            'reservation_id': reservation_id,
-                            'report_id': report_id,
-                            'report_no': report_no,
-                            'error': pdf_result.get('error'),
-                            'error_type': 'pdf_generation_failed'
-                        }
-                    )
+                    logger.warning(f"[ReportCreationService] PDF generation failed: {pdf_result.get('error')}")
             except Exception as pdf_error:
-                logger.error(
-                    f"[ReportCreationService] PDF generation exception: {pdf_error}",
-                    exc_info=True,
-                    extra={
-                        'reservation_id': reservation_id,
-                        'report_id': report_id,
-                        'report_no': report_no,
-                        'error': str(pdf_error),
-                        'error_type': 'pdf_generation_exception'
-                    }
-                )
+                logger.error(f"[ReportCreationService] PDF generation exception: {pdf_error}", exc_info=True)
                 pdf_result = {'success': False, 'error': str(pdf_error)}
 
             return {
@@ -162,16 +155,7 @@ class ReportCreationService:
 
         except Exception as e:
             session.rollback()
-            logger.error(
-                f"[ReportCreationService] Error creating report for reservation {reservation_id}: {e}",
-                exc_info=True,
-                extra={
-                    'reservation_id': reservation_id,
-                    'error': str(e),
-                    'error_type': type(e).__name__,
-                    'operation': 'create_report_for_reservation'
-                }
-            )
+            logger.error(f"[ReportCreationService] Error creating report for reservation {reservation_id}: {e}", exc_info=True)
             return {
                 'success': False,
                 'error': f'Failed to create report: {str(e)}'
@@ -260,17 +244,7 @@ class ReportCreationService:
                 }
 
         except Exception as e:
-            logger.error(
-                f"[ReportCreationService] PDF generation error: {e}",
-                exc_info=True,
-                extra={
-                    'reservation_id': reservation_id,
-                    'report_no': report_no,
-                    'error': str(e),
-                    'error_type': type(e).__name__,
-                    'operation': '_generate_pdf'
-                }
-            )
+            logger.error(f"[ReportCreationService] PDF generation error: {e}", exc_info=True)
             return {
                 'success': False,
                 'error': str(e)

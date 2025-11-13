@@ -488,8 +488,6 @@ def save_reservation(current_user):
         report_id = None
         report_no = None
         pdf_path = None
-        report_creation_failed = False
-        report_error_details = None
 
         try:
             print(f"[DEBUG] 开始为预约 {reservation_id} 创建AMLO报告和PDF")
@@ -506,28 +504,13 @@ def save_reservation(current_user):
                 pdf_path = report_result.get('pdf_path')
                 print(f"[DEBUG] 成功创建报告: ID={report_id}, NO={report_no}, PDF={pdf_path}")
             else:
-                report_creation_failed = True
-                report_error_details = report_result.get('error', '未知错误')
-                print(f"[WARNING] 创建报告失败: {report_error_details}")
-                # 不中断流程，预约已创建成功，但需通知前端
+                print(f"[DEBUG] 创建报告失败: {report_result.get('error')}")
+                # 不中断流程，预约已创建成功
 
         except Exception as e:
-            report_creation_failed = True
-            report_error_details = str(e)
-            print(f"[ERROR] 创建报告和PDF时发生异常: {report_error_details}")
+            print(f"[ERROR] 创建报告和PDF时发生异常: {str(e)}")
             traceback.print_exc()
-            # 不中断流程，预约已创建成功，但需通知前端
-
-        # 构建响应消息
-        if report_id:
-            message = '预约兑换记录已创建，报告已生成'
-            warning = None
-        elif report_creation_failed:
-            message = '预约兑换记录已创建，但报告生成失败'
-            warning = f'报告生成失败: {report_error_details}。编号已被占用，请联系技术支持。'
-        else:
-            message = '预约兑换记录已创建，等待审核'
-            warning = None
+            # 不中断流程，预约已创建成功
 
         return jsonify({
             'success': True,
@@ -536,9 +519,7 @@ def save_reservation(current_user):
             'report_id': report_id,
             'report_no': report_no,
             'pdf_path': pdf_path,
-            'message': message,
-            'warning': warning,
-            'report_creation_failed': report_creation_failed
+            'message': '预约兑换记录已创建，报告已生成' if report_id else '预约兑换记录已创建，等待审核'
         })
 
     except Exception as e:

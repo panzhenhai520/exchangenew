@@ -1,0 +1,896 @@
+{
+  "AMLO-1-01": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "total_amount",
+      "field_th_name": "จำนวนเงินธุรกรรม",
+      "fill_order": 1
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "fill_order": 2
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 3
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 4
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "fill_order": 5
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "fill_order": 10
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fill_order": 11
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "ที่อ้างถึงรายงานฉบับแรก เลขที่",
+      "fill_order": 12
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fill_order": 20
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_th_name": "ทำธุรกรรมด้วยตนเอง",
+      "fill_order": 21
+    },
+    {
+      "field_name": "maker_name_title",
+      "field_th_name": "ชื่อ (ข้างหน้านามสกุล)",
+      "fill_order": 22
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ",
+      "fill_order": 23
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 24
+    },
+    {
+      "field_name": "maker_company_name",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "fill_order": 25
+    },
+    {
+      "field_name": "maker_id_type_national",
+      "field_th_name": "เลขประจำตัวประชาชน",
+      "fill_order": 30
+    },
+    {
+      "field_name": "maker_id_type_passport",
+      "field_th_name": "หนังสือเดินทาง เลขที่",
+      "fill_order": 31
+    },
+    {
+      "field_name": "maker_id_type_company",
+      "field_th_name": "เลขทะเบียนนิติบุคคล",
+      "fill_order": 32
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 33
+    },
+    {
+      "field_name": "maker_address_number",
+      "field_th_name": "ที่อยู่ เลขที่",
+      "fill_order": 40
+    },
+    {
+      "field_name": "maker_address_village",
+      "field_th_name": "หมู่บ้าน/อาคาร",
+      "fill_order": 41
+    },
+    {
+      "field_name": "maker_address_lane",
+      "field_th_name": "ซอย",
+      "fill_order": 42
+    },
+    {
+      "field_name": "maker_address_road",
+      "field_th_name": "ถนน",
+      "fill_order": 43
+    },
+    {
+      "field_name": "maker_address_subdistrict",
+      "field_th_name": "ตำบล/แขวง",
+      "fill_order": 44
+    },
+    {
+      "field_name": "maker_address_district",
+      "field_th_name": "อำเภอ/เขต",
+      "fill_order": 45
+    },
+    {
+      "field_name": "maker_address_province",
+      "field_th_name": "จังหวัด",
+      "fill_order": 46
+    },
+    {
+      "field_name": "maker_address_postalcode",
+      "field_th_name": "รหัสไปรษณีย์",
+      "fill_order": 47
+    },
+    {
+      "field_name": "maker_phone",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "fill_order": 48
+    },
+    {
+      "field_name": "maker_birthplace_province",
+      "field_th_name": "สถานที่เกิดหรือที่จดทะเบียน จังหวัด",
+      "fill_order": 50
+    },
+    {
+      "field_name": "maker_birthplace_country",
+      "field_th_name": "ประเทศ",
+      "fill_order": 51
+    },
+    {
+      "field_name": "maker_birthdate_day",
+      "field_th_name": "วันเกิด วันที่",
+      "fill_order": 52
+    },
+    {
+      "field_name": "maker_birthdate_month",
+      "field_th_name": "เดือน",
+      "fill_order": 53
+    },
+    {
+      "field_name": "maker_birthdate_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 54
+    },
+    {
+      "field_name": "maker_occupation_type",
+      "field_th_name": "อาชีพ",
+      "fill_order": 60
+    },
+    {
+      "field_name": "maker_occupation_business_type",
+      "field_th_name": "ประเภทธุรกิจหรือประเภทงาน",
+      "fill_order": 61
+    },
+    {
+      "field_name": "maker_occupation_employer",
+      "field_th_name": "ชื่อนายจ้าง/สถานประกอบการ",
+      "fill_order": 62
+    },
+    {
+      "field_name": "joint_party_exists",
+      "field_th_name": "มีผู้ร่วมทำธุรกรรม",
+      "fill_order": 100
+    },
+    {
+      "field_name": "joint_party_type",
+      "field_th_name": "ประเภท",
+      "fill_order": 101
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อ",
+      "fill_order": 102
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 103
+    },
+    {
+      "field_name": "joint_party_company_name",
+      "field_th_name": "ชื่อนิติบุคคล",
+      "fill_order": 104
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 105
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "fill_order": 106
+    },
+    {
+      "field_name": "joint_party_phone",
+      "field_th_name": "หมายเลขโทรศัพท์",
+      "fill_order": 107
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "fill_order": 200
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 201
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 202
+    },
+    {
+      "field_name": "deposit_cash",
+      "field_th_name": "เงินฝาก เงินสด",
+      "fill_order": 210
+    },
+    {
+      "field_name": "deposit_travelers_check",
+      "field_th_name": "เช็คเดินทาง",
+      "fill_order": 211
+    },
+    {
+      "field_name": "deposit_draft",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "fill_order": 212
+    },
+    {
+      "field_name": "deposit_cashiers_check",
+      "field_th_name": "เช็คธนาคาร",
+      "fill_order": 213
+    },
+    {
+      "field_name": "deposit_currency_code",
+      "field_th_name": "สกุลเงินต่างประเทศ (เงินฝาก)",
+      "fill_order": 214
+    },
+    {
+      "field_name": "deposit_currency_amount",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "fill_order": 215
+    },
+    {
+      "field_name": "deposit_thb_amount",
+      "field_th_name": "จำนวน (บาท) เงินฝาก",
+      "fill_order": 216
+    },
+    {
+      "field_name": "withdrawal_cash",
+      "field_th_name": "ถอนเงิน เงินสด",
+      "fill_order": 220
+    },
+    {
+      "field_name": "withdrawal_travelers_check",
+      "field_th_name": "เช็คเดินทาง",
+      "fill_order": 221
+    },
+    {
+      "field_name": "withdrawal_draft",
+      "field_th_name": "ตั๋วแลกเงิน",
+      "fill_order": 222
+    },
+    {
+      "field_name": "withdrawal_cashiers_check",
+      "field_th_name": "เช็คธนาคาร",
+      "fill_order": 223
+    },
+    {
+      "field_name": "withdrawal_currency_code",
+      "field_th_name": "สกุลเงินต่างประเทศ (ถอนเงิน)",
+      "fill_order": 224
+    },
+    {
+      "field_name": "withdrawal_currency_amount",
+      "field_th_name": "จำนวนเงินสกุลต่างประเทศ",
+      "fill_order": 225
+    },
+    {
+      "field_name": "withdrawal_thb_amount",
+      "field_th_name": "จำนวน (บาท) ถอนเงิน",
+      "fill_order": 226
+    },
+    {
+      "field_name": "exchange_currency_exists",
+      "field_th_name": "แลกเปลี่ยนเงินตราต่างประเทศ",
+      "fill_order": 230
+    },
+    {
+      "field_name": "exchange_other_transaction",
+      "field_th_name": "อื่น ๆ (ระบุ)",
+      "fill_order": 231
+    },
+    {
+      "field_name": "exchange_other_description",
+      "field_th_name": "ระบุ",
+      "fill_order": 232
+    },
+    {
+      "field_name": "transaction_purpose",
+      "field_th_name": "วัตถุประสงค์ในการทำธุรกรรม (ถ้ามี)",
+      "fill_order": 240
+    },
+    {
+      "field_name": "transaction_source",
+      "field_th_name": "ที่มาของเงิน (ถ้ามี)",
+      "fill_order": 241
+    },
+    {
+      "field_name": "reporter_institution_type",
+      "field_th_name": "ประเภทสถาบันการเงิน",
+      "fill_order": 300
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อสถาบันการเงิน",
+      "fill_order": 301
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_th_name": "สาขา",
+      "fill_order": 302
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "ลายมือชื่อผู้รายงาน วันที่",
+      "fill_order": 303
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 304
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 305
+    }
+  ],
+  "AMLO-1-02": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "asset_value",
+      "field_th_name": "มูลค่าสินทรัพย์",
+      "fill_order": 1
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "fill_order": 2
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 3
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 4
+    },
+    {
+      "field_name": "origin_report_number",
+      "field_th_name": "เลขที่ต้นทางรายงาน",
+      "fill_order": 5
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "fill_order": 10
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fill_order": 11
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "เลขที่อ้างถึง",
+      "fill_order": 12
+    },
+    {
+      "field_name": "maker_type_person",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fill_order": 20
+    },
+    {
+      "field_name": "maker_type_juristic",
+      "field_th_name": "นิติบุคคล",
+      "fill_order": 21
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ",
+      "fill_order": 22
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 23
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 24
+    },
+    {
+      "field_name": "maker_address",
+      "field_th_name": "ที่อยู่",
+      "fill_order": 25
+    },
+    {
+      "field_name": "maker_phone",
+      "field_th_name": "โทรศัพท์",
+      "fill_order": 26
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อ",
+      "fill_order": 30
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 31
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 32
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "fill_order": 33
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม วันที่",
+      "fill_order": 40
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 41
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 42
+    },
+    {
+      "field_name": "transaction_type_mortgage",
+      "field_th_name": "จำนอง",
+      "fill_order": 50
+    },
+    {
+      "field_name": "transaction_type_sale",
+      "field_th_name": "ขาย",
+      "fill_order": 51
+    },
+    {
+      "field_name": "transaction_type_transfer",
+      "field_th_name": "โอนกรรมสิทธิ์",
+      "fill_order": 52
+    },
+    {
+      "field_name": "transaction_type_lease",
+      "field_th_name": "เช่า",
+      "fill_order": 53
+    },
+    {
+      "field_name": "transaction_type_other",
+      "field_th_name": "อื่น ๆ",
+      "fill_order": 54
+    },
+    {
+      "field_name": "asset_type_land",
+      "field_th_name": "ที่ดิน",
+      "fill_order": 60
+    },
+    {
+      "field_name": "asset_type_building",
+      "field_th_name": "สิ่งปลูกสร้าง",
+      "fill_order": 61
+    },
+    {
+      "field_name": "asset_type_condominium",
+      "field_th_name": "ห้องชุด",
+      "fill_order": 62
+    },
+    {
+      "field_name": "asset_type_other",
+      "field_th_name": "อื่น ๆ",
+      "fill_order": 63
+    },
+    {
+      "field_name": "asset_value_thb",
+      "field_th_name": "มูลค่าทรัพย์สิน (บาท)",
+      "fill_order": 70
+    },
+    {
+      "field_name": "asset_location",
+      "field_th_name": "ที่ตั้งทรัพย์สิน",
+      "fill_order": 71
+    },
+    {
+      "field_name": "asset_deed_number",
+      "field_th_name": "เลขที่โฉนด",
+      "fill_order": 72
+    },
+    {
+      "field_name": "asset_area",
+      "field_th_name": "เนื้อที่",
+      "fill_order": 73
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "fill_order": 80
+    },
+    {
+      "field_name": "reporter_branch_name",
+      "field_th_name": "สาขา",
+      "fill_order": 81
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "วันที่",
+      "fill_order": 82
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 83
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 84
+    }
+  ],
+  "AMLO-1-03": [
+    {
+      "field_name": "report_number",
+      "field_th_name": "เลขที่รายงาน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "cumulative_amount_1month",
+      "field_th_name": "จำนวนเงินสะสม (1 เดือน)",
+      "fill_order": 1
+    },
+    {
+      "field_name": "transaction_count_1month",
+      "field_th_name": "จำนวนธุรกรรม (1 เดือน)",
+      "fill_order": 1
+    },
+    {
+      "field_name": "report_date_day",
+      "field_th_name": "วันที่",
+      "fill_order": 2
+    },
+    {
+      "field_name": "report_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 3
+    },
+    {
+      "field_name": "report_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 4
+    },
+    {
+      "field_name": "is_first_report",
+      "field_th_name": "รายงานฉบับแรก",
+      "fill_order": 10
+    },
+    {
+      "field_name": "is_amendment_report",
+      "field_th_name": "รายงานฉบับแก้ไข",
+      "fill_order": 11
+    },
+    {
+      "field_name": "reference_report_number",
+      "field_th_name": "เลขที่อ้างถึง",
+      "fill_order": 12
+    },
+    {
+      "field_name": "maker_firstname",
+      "field_th_name": "ชื่อ-นามสกุล",
+      "fill_order": 20
+    },
+    {
+      "field_name": "maker_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 21
+    },
+    {
+      "field_name": "maker_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 22
+    },
+    {
+      "field_name": "maker_address",
+      "field_th_name": "ที่อยู่",
+      "fill_order": 23
+    },
+    {
+      "field_name": "maker_birthdate",
+      "field_th_name": "วันเกิด",
+      "fill_order": 24
+    },
+    {
+      "field_name": "joint_party_firstname",
+      "field_th_name": "ชื่อผู้ร่วมทำธุรกรรม",
+      "fill_order": 30
+    },
+    {
+      "field_name": "joint_party_lastname",
+      "field_th_name": "นามสกุล",
+      "fill_order": 31
+    },
+    {
+      "field_name": "joint_party_id_number",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 32
+    },
+    {
+      "field_name": "joint_party_address",
+      "field_th_name": "ที่อยู่",
+      "fill_order": 33
+    },
+    {
+      "field_name": "transaction_date_day",
+      "field_th_name": "วันที่ทำธุรกรรม",
+      "fill_order": 40
+    },
+    {
+      "field_name": "transaction_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 41
+    },
+    {
+      "field_name": "transaction_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 42
+    },
+    {
+      "field_name": "transaction_amount_thb",
+      "field_th_name": "จำนวนเงิน (บาท)",
+      "fill_order": 43
+    },
+    {
+      "field_name": "has_filed_ctr_atr",
+      "field_th_name": "ได้ยื่นแบบ ปปง.๑-๐๑ หรือ ปปง.๑-๐๒",
+      "fill_order": 50
+    },
+    {
+      "field_name": "previous_report_number",
+      "field_th_name": "เลขที่รายงาน ปปง.๑-๐๑/๑-๐๒",
+      "fill_order": 51
+    },
+    {
+      "field_name": "suspicion_reasons",
+      "field_th_name": "เหตุอันควรสงสัย",
+      "fill_order": 52
+    },
+    {
+      "field_name": "reporter_institution_name",
+      "field_th_name": "ชื่อผู้รายงาน",
+      "fill_order": 60
+    },
+    {
+      "field_name": "reporter_position",
+      "field_th_name": "ตำแหน่ง",
+      "fill_order": 61
+    },
+    {
+      "field_name": "reporter_signature_date_day",
+      "field_th_name": "วันที่",
+      "fill_order": 62
+    },
+    {
+      "field_name": "reporter_signature_date_month",
+      "field_th_name": "เดือน",
+      "fill_order": 63
+    },
+    {
+      "field_name": "reporter_signature_date_year",
+      "field_th_name": "พ.ศ.",
+      "fill_order": 64
+    }
+  ],
+  "BOT_BuyFX": [
+    {
+      "field_name": "report_date",
+      "field_th_name": "วันที่รายงาน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "usd_equivalent",
+      "field_th_name": "มูลค่าเทียบเท่า USD",
+      "fill_order": 1
+    },
+    {
+      "field_name": "transaction_no",
+      "field_th_name": "เลขที่ธุรกรรม",
+      "fill_order": 10
+    },
+    {
+      "field_name": "transaction_date",
+      "field_th_name": "วันที่ทำธุรกรรม",
+      "fill_order": 11
+    },
+    {
+      "field_name": "customer_id",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 20
+    },
+    {
+      "field_name": "customer_name",
+      "field_th_name": "ชื่อลูกค้า",
+      "fill_order": 21
+    },
+    {
+      "field_name": "currency_code",
+      "field_th_name": "สกุลเงิน",
+      "fill_order": 30
+    },
+    {
+      "field_name": "foreign_amount",
+      "field_th_name": "จำนวนเงินต่างประเทศ",
+      "fill_order": 31
+    },
+    {
+      "field_name": "exchange_rate",
+      "field_th_name": "อัตราแลกเปลี่ยน",
+      "fill_order": 32
+    },
+    {
+      "field_name": "thb_amount",
+      "field_th_name": "จำนวนเงินบาท",
+      "fill_order": 33
+    },
+    {
+      "field_name": "funding_source",
+      "field_th_name": "ที่มาของเงิน",
+      "fill_order": 40
+    }
+  ],
+  "BOT_SellFX": [
+    {
+      "field_name": "report_date",
+      "field_th_name": "วันที่รายงาน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "transaction_no",
+      "field_th_name": "เลขที่ธุรกรรม",
+      "fill_order": 10
+    },
+    {
+      "field_name": "transaction_date",
+      "field_th_name": "วันที่ทำธุรกรรม",
+      "fill_order": 11
+    },
+    {
+      "field_name": "customer_id",
+      "field_th_name": "เลขประจำตัว",
+      "fill_order": 20
+    },
+    {
+      "field_name": "customer_name",
+      "field_th_name": "ชื่อลูกค้า",
+      "fill_order": 21
+    },
+    {
+      "field_name": "currency_code",
+      "field_th_name": "สกุลเงิน",
+      "fill_order": 30
+    },
+    {
+      "field_name": "foreign_amount",
+      "field_th_name": "จำนวนเงินต่างประเทศ",
+      "fill_order": 31
+    },
+    {
+      "field_name": "exchange_rate",
+      "field_th_name": "อัตราแลกเปลี่ยน",
+      "fill_order": 32
+    },
+    {
+      "field_name": "thb_amount",
+      "field_th_name": "จำนวนเงินบาท",
+      "fill_order": 33
+    },
+    {
+      "field_name": "payment_purpose",
+      "field_th_name": "จุดหมายปลายทาง",
+      "fill_order": 40
+    }
+  ],
+  "BOT_Provider": [
+    {
+      "field_name": "institution_code",
+      "field_th_name": "รหัสสถาบัน",
+      "fill_order": 1
+    },
+    {
+      "field_name": "licensee_name",
+      "field_th_name": "ชื่อบุคคลรับอนุญาต",
+      "fill_order": 2
+    },
+    {
+      "field_name": "license_no",
+      "field_th_name": "License No",
+      "fill_order": 3
+    },
+    {
+      "field_name": "business_name",
+      "field_th_name": "ชื่อสถานประกอบการ",
+      "fill_order": 4
+    },
+    {
+      "field_name": "business_code",
+      "field_th_name": "รหัสพื้นที่ของสถานประกอบการ",
+      "fill_order": 5
+    },
+    {
+      "field_name": "report_month",
+      "field_th_name": "ประจำงวด (เดือน)",
+      "fill_order": 6
+    },
+    {
+      "field_name": "report_year",
+      "field_th_name": "ประจำงวด (ปี)",
+      "fill_order": 7
+    },
+    {
+      "field_name": "data_date",
+      "field_th_name": "วันที่ชุดข้อมูล",
+      "fill_order": 8
+    },
+    {
+      "field_name": "adjustment_currency",
+      "field_th_name": "สกุลเงินที่ปรับ",
+      "fill_order": 9
+    },
+    {
+      "field_name": "adjustment_amount",
+      "field_th_name": "จำนวนเงินที่ปรับ",
+      "fill_order": 10
+    },
+    {
+      "field_name": "adjustment_reason",
+      "field_th_name": "เหตุผลการปรับยอด",
+      "fill_order": 11
+    }
+  ],
+  "BOT_FCD": [
+    {
+      "field_name": "use_fcd",
+      "field_th_name": "ใช้ FCD",
+      "fill_order": 1
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+﻿  1 report_number                       喙€喔ム競喔椸傅喙堗福喔侧涪喔囙覆喔?
+  1 total_amount                        喔堗赋喔權抚喔權箑喔囙复喔權笜喔膏福喔佮福喔｀浮
+  2 report_date_day                     喔о副喔權笚喔掂箞
+  3 report_date_month                   喙€喔斷阜喔笝
+  4 report_date_year                    喔?喔?
+  5 origin_report_number                喙€喔ム競喔椸傅喙堗笗喙夃笝喔椸覆喔囙福喔侧涪喔囙覆喔?
+ 10 is_first_report                     喔｀覆喔⑧竾喔侧笝喔夃笟喔编笟喙佮福喔?
+ 11 is_amendment_report                 喔｀覆喔⑧竾喔侧笝喔夃笟喔编笟喙佮竵喙夃箘喔?
+ 12 reference_report_number             喔椸傅喙堗腑喙夃覆喔囙笘喔多竾喔｀覆喔⑧竾喔侧笝喔夃笟喔编笟喙佮福喔?喙€喔ム競喔椸傅喙?
+ 20 maker_type_person                   喔娻阜喙堗腑-喔權覆喔∴釜喔佮父喔?
+ 21 maker_type_juristic                 喔椸赋喔樴父喔｀竵喔｀福喔∴笖喙夃抚喔⑧笗喔權箑喔竾
+ 22 maker_name_title                    喔娻阜喙堗腑 (喔傕箟喔侧竾喔笝喙夃覆喔權覆喔∴釜喔佮父喔?
+ 23 maker_firstname                     喔娻阜喙堗腑
+ 24 maker_lastname                      喔權覆喔∴釜喔佮父喔?
+ 25 maker_company_name                  喔娻阜喙堗腑喔權复喔曕复喔氞父喔勦竸喔?
+ 30 maker_id_type_national              喙€喔ム競喔涏福喔班笀喔赤笗喔编抚喔涏福喔班笂喔侧笂喔?
+ 31 maker_id_type_passport              喔笝喔编竾喔阜喔箑喔斷复喔權笚喔侧竾 喙€喔ム競喔椸傅喙?
+ 32 maker_id_type_company               喙€喔ム競喔椸赴喙€喔氞傅喔⑧笝喔權复喔曕复喔氞父喔勦竸喔?
+ 33 maker_id_number                     喙€喔ム競喔涏福喔班笀喔赤笗喔编抚
+ 40 maker_address_number                喔椸傅喙堗腑喔⑧腹喙?喙€喔ム競喔椸傅喙?
+ 41 maker_address_village               喔浮喔灌箞喔氞箟喔侧笝/喔覆喔勦覆喔?
+ 42 maker_address_lane                  喔嬥腑喔?
+ 43 maker_address_road                  喔栢笝喔?
+ 44 maker_address_subdistrict           喔曕赋喔氞弗/喙佮競喔о竾
+ 45 maker_address_district              喔赋喙€喔犩腑/喙€喔傕笗
+ 46 maker_address_province              喔堗副喔囙斧喔о副喔?
+ 47 maker_address_postalcode            喔｀斧喔编釜喙勦笡喔｀俯喔撪傅喔⑧箤
+ 48 maker_phone                         喔浮喔侧涪喙€喔ム競喙傕笚喔｀辅喔编笧喔椸箤
+ 50 maker_birthplace_province           喔笘喔侧笝喔椸傅喙堗箑喔佮复喔斷斧喔｀阜喔笚喔掂箞喔堗笖喔椸赴喙€喔氞傅喔⑧笝 喔堗副喔囙斧喔о副喔?
+ 51 maker_birthplace_country            喔涏福喔班箑喔椸辅
+ 52 maker_birthdate_day                 喔о副喔權箑喔佮复喔?喔о副喔權笚喔掂箞
+ 53 maker_birthdate_month               喙€喔斷阜喔笝
+ 54 maker_birthdate_year                喔?喔?
+ 60 maker_occupation_type               喔覆喔娻傅喔?
+ 61 maker_occupation_business_type      喔涏福喔班箑喔犩笚喔樴父喔｀竵喔脆笀喔福喔粪腑喔涏福喔班箑喔犩笚喔囙覆喔?
+ 62 maker_occupation_employer           喔娻阜喙堗腑喔權覆喔⑧笀喙夃覆喔?喔笘喔侧笝喔涏福喔班竵喔笟喔佮覆喔?
+100 joint_party_exists                  喔∴傅喔溹腹喙夃福喙堗抚喔∴笚喔赤笜喔膏福喔佮福喔｀浮
+101 joint_party_type                    喔涏福喔班箑喔犩笚
+102 joint_party_firstname               喔娻阜喙堗腑
+103 joint_party_lastname                喔權覆喔∴釜喔佮父喔?
+104 joint_party_company_name            喔娻阜喙堗腑喔權复喔曕复喔氞父喔勦竸喔?
+105 joint_party_id_number               喙€喔ム競喔涏福喔班笀喔赤笗喔编抚
+106 joint_party_address                 喔椸傅喙堗腑喔⑧腹喙?
+107 joint_party_phone                   喔浮喔侧涪喙€喔ム競喙傕笚喔｀辅喔编笧喔椸箤
+200 transaction_date_day                喔о副喔權笚喔掂箞喔椸赋喔樴父喔｀竵喔｀福喔?喔о副喔權笚喔掂箞
+201 transaction_date_month              喙€喔斷阜喔笝
+202 transaction_date_year               喔?喔?
+210 deposit_cash                        喙€喔囙复喔權笣喔侧竵 喙€喔囙复喔權釜喔?
+211 deposit_travelers_check             喙€喔娻箛喔勦箑喔斷复喔權笚喔侧竾
+212 deposit_draft                       喔曕副喙嬥抚喙佮弗喔佮箑喔囙复喔?
+213 deposit_cashiers_check              喙€喔娻箛喔勦笜喔權覆喔勦覆喔?
+214 deposit_currency_code               喔竵喔膏弗喙€喔囙复喔權笗喙堗覆喔囙笡喔｀赴喙€喔椸辅 (喙€喔囙复喔權笣喔侧竵)
+215 deposit_currency_amount             喔堗赋喔權抚喔權箑喔囙复喔權釜喔佮父喔ム笗喙堗覆喔囙笡喔｀赴喙€喔椸辅
+216 deposit_thb_amount                  喔堗赋喔權抚喔?(喔氞覆喔? 喙€喔囙复喔權笣喔侧竵
+220 withdrawal_cash                     喔栢腑喔權箑喔囙复喔?喙€喔囙复喔權釜喔?
+221 withdrawal_travelers_check          喙€喔娻箛喔勦箑喔斷复喔權笚喔侧竾
+222 withdrawal_draft                    喔曕副喙嬥抚喙佮弗喔佮箑喔囙复喔?
+223 withdrawal_cashiers_check           喙€喔娻箛喔勦笜喔權覆喔勦覆喔?
+224 withdrawal_currency_code            喔竵喔膏弗喙€喔囙复喔權笗喙堗覆喔囙笡喔｀赴喙€喔椸辅 (喔栢腑喔權箑喔囙复喔?
+225 withdrawal_currency_amount          喔堗赋喔權抚喔權箑喔囙复喔權釜喔佮父喔ム笗喙堗覆喔囙笡喔｀赴喙€喔椸辅
+226 withdrawal_thb_amount               喔堗赋喔權抚喔?(喔氞覆喔? 喔栢腑喔權箑喔囙复喔?
+230 exchange_currency_exists            喙佮弗喔佮箑喔涏弗喔掂箞喔⑧笝喙€喔囙复喔權笗喔｀覆喔曕箞喔侧竾喔涏福喔班箑喔椸辅
+231 exchange_other_transaction          喔阜喙堗笝 喙?(喔｀赴喔氞父)
+232 exchange_other_description          喔｀赴喔氞父
+240 transaction_purpose                 喔о副喔曕笘喔膏笡喔｀赴喔竾喔勦箤喙冟笝喔佮覆喔｀笚喔赤笜喔膏福喔佮福喔｀浮 (喔栢箟喔侧浮喔?
+241 transaction_source                  喔椸傅喙堗浮喔侧競喔竾喙€喔囙复喔?(喔栢箟喔侧浮喔?
+300 reporter_institution_type           喔涏福喔班箑喔犩笚喔笘喔侧笟喔编笝喔佮覆喔｀箑喔囙复喔?
+301 reporter_institution_name           喔娻阜喙堗腑喔笘喔侧笟喔编笝喔佮覆喔｀箑喔囙复喔?
+302 reporter_branch_name                喔覆喔傕覆
+303 reporter_signature_date_day         喔ム覆喔⑧浮喔粪腑喔娻阜喙堗腑喔溹腹喙夃福喔侧涪喔囙覆喔?喔о副喔權笚喔掂箞
+304 reporter_signature_date_month       喙€喔斷阜喔笝
+305 reporter_signature_date_year        喔?喔?

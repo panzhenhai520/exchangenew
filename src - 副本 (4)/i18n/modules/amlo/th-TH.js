@@ -11,6 +11,18 @@ export default {
       "pdfNotFound": "ไม่พบเทมเพลต PDF",
       "formFields": "ฟิลด์แบบฟอร์ม"
     },
+    "uploadReport": "อัปโหลดรายงาน",
+    "userSignature": "ลายเซ็นลูกค้า",
+    "pleaseSubmitFirst": "กรุณาส่งการจองก่อน",
+    "pleaseDownloadFirst": "กรุณาคลิกปุ่ม [กรอกรายงาน] เพื่อส่งการจองและดาวน์โหลด PDF ก่อน",
+    "downloadSuccess": "ดาวน์โหลด PDF สำเร็จ! กรุณากรอกข้อมูลแล้วอัปโหลด",
+    "downloadFailed": "ดาวน์โหลดล้มเหลว",
+    "pleaseSelectPDF": "กรุณาเลือกไฟล์ PDF",
+    "uploadSuccess": "อัปโหลดสำเร็จ! กรุณาคลิกปุ่ม [ลายเซ็นลูกค้า] เพื่อเซ็นชื่อ",
+    "uploadFailed": "อัปโหลดล้มเหลว",
+    "pleaseUploadFirst": "กรุณาอัปโหลดรายงานที่กรอกแล้วก่อน",
+    "signaturePageOpened": "เปิดหน้าลายเซ็นแล้ว!\n\nคำแนะนำ: กด Win + Shift + → เพื่อย้ายหน้าต่างไปยังหน้าจอเสริมสำหรับลายเซ็นลูกค้า",
+    "openSignatureFailed": "เปิดหน้าลายเซ็นล้มเหลว",
     "reservation": {
       "title": "ค้นหาการจอง AMLO",
       "id": "รหัสรายงาน",

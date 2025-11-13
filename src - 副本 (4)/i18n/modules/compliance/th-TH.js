@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   compliance: {
     // การจัดการฟิลด์
     fieldManagement: 'การจัดการฟิลด์',
@@ -81,7 +81,7 @@ export default {
     // การดำเนินการ
     createRule: 'สร้างกฎ',
     editRule: 'แก้ไขกฎ',
-    confirmDeleteRule: 'ยืนยันการลบกฎนี้หรือไม่?',
+    confirmDeleteRule: 'ยืนยันการเปิด/ปิดใช้งานกฎนี้หรือไม่?',
     confirmToggleStatus: 'ยืนยันการสลับสถานะนี้หรือไม่?',
     createField: 'สร้างฟิลด์',
     editField: 'แก้ไขฟิลด์',

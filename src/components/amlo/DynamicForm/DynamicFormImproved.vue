@@ -8,13 +8,9 @@
     </div>
 
     <div v-else>
-      <!-- 打印按钮 -->
+      <!-- 表单标题（移除打印按钮，统一使用底部的按钮） -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="mb-0">{{ $t('amlo.form.fillReport') }}</h5>
-        <button type="button" class="btn btn-outline-primary btn-sm" @click="printBlankPDF">
-          <font-awesome-icon :icon="['fas', 'print']" class="me-1" />
-          {{ printButtonText }}
-        </button>
       </div>
 
       <!-- 字段分组（可折叠） -->
@@ -90,7 +86,7 @@
       </div>
 
       <!-- 提交按钮 -->
-      <div class="mt-4 d-flex justify-content-end gap-2">
+      <div v-if="showActionButtons" class="mt-4 d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-secondary" @click="handleReset">
           <font-awesome-icon :icon="['fas', 'undo']" class="me-1" />
           {{ $t('common.reset') }}
@@ -139,6 +135,10 @@ export default {
     submitButtonText: {
       type: String,
       default: ''
+    },
+    showActionButtons: {
+      type: Boolean,
+      default: true
     },
     showCheckTrigger: {
       type: Boolean,

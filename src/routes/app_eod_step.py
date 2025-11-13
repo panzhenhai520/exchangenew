@@ -321,7 +321,7 @@ def rollback_step(current_user, eod_id, step_number):
             
             # 验证回退方向：只能回退到当前步骤之前的步骤
             if step_number >= eod_status.step:
-                logging.error(f"[ERROR] 回退验证失败: 请求回退到步骤{step_number}，当前步骤为{eod_status.step}")
+                logging.error(f"❌ 回退验证失败: 请求回退到步骤{step_number}，当前步骤为{eod_status.step}")
                 return jsonify({
                     'success': False, 
                     'message': f'无法回退到步骤 {step_number}，当前步骤为 {eod_status.step}。只能回退到更早的步骤（1-{eod_status.step-1}）。'

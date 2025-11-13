@@ -209,14 +209,26 @@ class AMLOPDFFillerPyMuPDF:
                             font_name, font_path = self._select_font_for_text(str_value)
                             self._ensure_font_registered(doc, font_name, font_path)
 
-                            if font_name:
+                            # 🔧 修复中文显示：需要正确设置字体和外观
+                            if font_name and font_path:
                                 widget.text_font = font_name
+                                widget.text_fontsize = widget.text_fontsize if widget.text_fontsize and widget.text_fontsize > 0 else 10
 
-                            if widget.text_fontsize is None or widget.text_fontsize <= 0:
-                                widget.text_fontsize = 10
+                                # 设置字段值
+                                widget.field_value = str_value
 
-                            widget.field_value = str_value
-                            widget.update()
+                                # 🔧 关键：使用fontfile参数确保字体被嵌入到字段的外观中
+                                try:
+                                    widget.update(fontfile=font_path, fontsize=widget.text_fontsize)
+                                except:
+                                    # 如果fontfile参数不支持，使用普通update
+                                    widget.update()
+                            else:
+                                # 没有自定义字体，使用默认更新
+                                if widget.text_fontsize is None or widget.text_fontsize <= 0:
+                                    widget.text_fontsize = 10
+                                widget.field_value = str_value
+                                widget.update()
 
                             if flatten and str_value:
                                 # Flatten模式：记录overlay绘制任务

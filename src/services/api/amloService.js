@@ -84,6 +84,20 @@ export default {
   },
 
   /**
+   * 鏇存柊棰勭害琛ㄥ崟鏁版嵁
+   * @param {number} reservationId
+   * @param {Object} formData
+   * @param {Object|null} denominationData
+   * @returns {Promise}
+   */
+  updateReservationFormData(reservationId, formData, denominationData = null) {
+    return api.put(`/amlo/reservations/${reservationId}`, {
+      form_data: formData,
+      denomination_data: denominationData
+    });
+  },
+
+  /**
    * 生成AMLO报告PDF文件
    * @param {number} reportId 报告ID
    * @returns {Promise} 返回PDF文件流
@@ -91,6 +105,43 @@ export default {
   generateReportPDF(reportId) {
     return api.get(`/amlo/reports/${reportId}/generate-pdf`, {
       responseType: 'blob'
+    });
+  },
+
+  /**
+   * 鑾峰彇棰勭害璇︽儏
+   * @param {number} reservationId
+   * @returns {Promise}
+   */
+  getReservationDetail(reservationId) {
+    return api.get(`/amlo/reservations/${reservationId}`);
+  },
+
+  /**
+   * 鑾峰彇鍙紪杈戣〃鍗曞舰寮?
+   * @param {number} reservationId
+   * @param {boolean} download 鏄惁寮€鍙戦€佹嫿
+   * @returns {Promise<Blob>}
+   */
+  downloadEditablePdf(reservationId, download = false) {
+    const params = download ? { download: 1 } : {};
+    return api.get(`/amlo/reservations/${reservationId}/editable-pdf`, {
+      params,
+      responseType: 'blob'
+    });
+  },
+
+  /**
+   * 涓婁紶宸茬紪杈戣繛鏂囨。鐨刾df
+   * @param {number} reservationId
+   * @param {File} file
+   * @returns {Promise}
+   */
+  uploadFilledPdf(reservationId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/amlo/reservations/${reservationId}/upload-filled-pdf`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
 
@@ -105,50 +156,5 @@ export default {
     }, {
       responseType: 'blob'
     });
-  },
-
-  /**
-   * 提交修改后的报告内容（不包含签名）
-   * @param {Object} data 提交数据
-   * @param {number} data.reservation_id 预约ID
-   * @param {Object} data.modified_data 修改后的数据
-   * @param {Array<string>} data.modified_fields 修改的字段列表
-   * @param {Array<Object>} data.modifications_summary 修改摘要
-   * @returns {Promise} 包含提交结果的Promise
-   */
-  submitModifiedReport(data) {
-    return api.post('/amlo/submit-modified-report', data);
-  },
-
-  /**
-   * 提交修改后的报告内容和签名
-   * @param {Object} data 提交数据
-   * @param {number} data.reservation_id 预约ID
-   * @param {Object} data.modified_data 修改后的数据
-   * @param {Array<string>} data.modified_fields 修改的字段列表
-   * @param {Object} data.signature 签名数据
-   * @param {Array<Object>} data.modifications_summary 修改摘要
-   * @returns {Promise} 包含提交结果的Promise
-   */
-  submitModifiedReportWithSignature(data) {
-    return api.post('/amlo/submit-modified-report', data);
-  },
-
-  /**
-   * 获取指定报告类型的字段配置
-   * @param {string} reportType 报告类型 (AMLO-1-01, AMLO-1-02, AMLO-1-03)
-   * @returns {Promise} 包含字段配置列表的Promise
-   */
-  getReportFields(reportType) {
-    return api.get(`/amlo/report-fields/${reportType}`);
-  },
-
-  /**
-   * 获取预约详细信息
-   * @param {number} reservationId 预约ID
-   * @returns {Promise} 包含预约详情的Promise
-   */
-  getReservationDetail(reservationId) {
-    return api.get(`/amlo/reservation/${reservationId}`);
   }
 };

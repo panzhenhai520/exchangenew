@@ -180,10 +180,11 @@ class ReportNumberGenerator:
                 operator_id=operator_id
             )
             session.add(log_record)
-            
-            session.commit()
-            
-            print(f"[AMLO编号生成] 成功生成报告编号: {report_number}")
+
+            # 🔧 注意：不在这里commit，由调用方统一commit，避免序列号消耗但报告创建失败
+            session.flush()  # 只刷新到数据库，但不提交事务
+
+            print(f"[AMLO编号生成] 成功生成报告编号: {report_number} (未提交事务)")
             return report_number
             
         except IntegrityError as e:

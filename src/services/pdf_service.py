@@ -616,11 +616,11 @@ class PDFReceiptService:
             success = cls._generate_pdf_legacy(data, file_path, settings, page_size, margins, font_name, document_type)
             
             if success:
-                logger.info(f"[OK] {generation_method}成功")
+                logger.info(f"✅ {generation_method}成功")
                 logger.info(f"🎯 PDF生成方式: {generation_method}")
                 return True
             else:
-                logger.error(f"[ERROR] {generation_method}失败")
+                logger.error(f"❌ {generation_method}失败")
                 return False
                 
         except Exception as e:

@@ -9,17 +9,23 @@ export default {
       "printBlankForm": "พิมพ์แบบฟอร์มเปล่า",
       "validationFailed": "การตรวจสอบแบบฟอร์มล้มเหลว",
       "pdfNotFound": "ไม่พบเทมเพลต PDF",
-      "formFields": "ฟิลด์แบบฟอร์ม",
-      "transactorType": {
-        "label": "ประเภทผู้ทำรายการ",
-        "person": "บุคคลธรรมดา",
-        "juristic": "นิติบุคคล"
-      }
+      "formFields": "ฟิลด์แบบฟอร์ม"
     },
+    "uploadReport": "อัปโหลดรายงาน",
+    "userSignature": "ลายเซ็นลูกค้า",
+    "pleaseSubmitFirst": "กรุณาส่งการจองก่อน",
+    "pleaseDownloadFirst": "กรุณาคลิกปุ่ม [กรอกรายงาน] เพื่อส่งการจองและดาวน์โหลด PDF ก่อน",
+    "downloadSuccess": "ดาวน์โหลด PDF สำเร็จ! กรุณากรอกข้อมูลแล้วอัปโหลด",
+    "downloadFailed": "ดาวน์โหลดล้มเหลว",
+    "pleaseSelectPDF": "กรุณาเลือกไฟล์ PDF",
+    "uploadSuccess": "อัปโหลดสำเร็จ! กรุณาคลิกปุ่ม [ลายเซ็นลูกค้า] เพื่อเซ็นชื่อ",
+    "uploadFailed": "อัปโหลดล้มเหลว",
+    "pleaseUploadFirst": "กรุณาอัปโหลดรายงานที่กรอกแล้วก่อน",
+    "signaturePageOpened": "เปิดหน้าลายเซ็นแล้ว!\n\nคำแนะนำ: กด Win + Shift + → เพื่อย้ายหน้าต่างไปยังหน้าจอเสริมสำหรับลายเซ็นลูกค้า",
+    "openSignatureFailed": "เปิดหน้าลายเซ็นล้มเหลว",
     "reservation": {
       "title": "ค้นหาการจอง AMLO",
       "id": "รหัสรายงาน",
-      "reportNo": "หมายเลขรายงาน",
       "reservationNo": "หมายเลขการจอง",
       "status": "สถานะ",
       "reportType": "ประเภทรายงาน",
@@ -98,6 +104,7 @@ export default {
       "noPDFLoaded": "ไม่มีไฟล์ PDF ที่โหลด",
       "loadError": "โหลด PDF ล้มเหลว",
       "loadingPDF": "กำลังโหลด PDF...",
+      "viewMode": "โหมดดูข้อมูล",
       "pdfDocument": "เอกสาร PDF",
       "close": "ปิด",
       "download": "ดาวน์โหลด",
@@ -157,235 +164,6 @@ export default {
       "markFailed": "ทำเครื่องหมายล้มเหลว",
       "pleaseSelect": "กรุณาเลือกรายงานที่ต้องการทำเครื่องหมาย",
       "noData": "ไม่มีข้อมูลรายงาน"
-    },
-    "fields": {
-      // ฟิลด์พื้นฐาน
-      "report_no": "หมายเลขรายงาน",
-      "customer_name": "ชื่อลูกค้า",
-      "customer_id": "เลขประจำตัวลูกค้า",
-      "local_amount": "จำนวนเงินสกุลท้องถิ่น",
-      "amount": "จำนวนเงินตราต่างประเทศ",
-
-      // วันที่ลงนามผู้รายงาน
-      "reporter_signature_date_day": "วันที่รายงาน - วัน",
-      "reporter_signature_date_month": "วันที่รายงาน - เดือน",
-      "reporter_signature_date_year": "วันที่รายงาน - ปี",
-
-      // วันที่ทำรายการ
-      "transaction_date_day": "วันที่ทำรายการ - วัน",
-      "transaction_date_month": "วันที่ทำรายการ - เดือน",
-      "transaction_date_year": "วันที่ทำรายการ - ปี",
-      "transaction_date": "วันที่ทำรายการ",
-
-      // ข้อมูลผู้รายงาน (fill_1-5)
-      "fill_1": "ชื่อผู้รายงาน",
-      "fill_2": "ตำแหน่งผู้รายงาน",
-      "fill_3": "โทรศัพท์ผู้รายงาน",
-      "fill_4": "มือถือผู้รายงาน",
-      "fill_5": "อีเมลผู้รายงาน",
-
-      // วันที่รายงาน (fill_6-8)
-      "fill_6": "วันที่รายงาน - วัน",
-      "fill_7": "วันที่รายงาน - เดือน",
-      "fill_8": "วันที่รายงาน - ปี",
-
-      // ข้อมูลสาขา (fill_9-11)
-      "fill_9": "ชื่อสถาบัน",
-      "fill_10": "ที่อยู่สถาบัน",
-      "fill_11": "โทรศัพท์สถาบัน",
-
-      // ข้อมูลลูกค้า (fill_20-25)
-      "fill_20": "ชื่อลูกค้า",
-      "fill_21": "ประเภทบัตรประจำตัวลูกค้า",
-      "fill_22": "เลขบัตรประจำตัวลูกค้า",
-      "fill_23": "สัญชาติลูกค้า",
-      "fill_24": "ที่อยู่ลูกค้า",
-      "fill_25": "โทรศัพท์ลูกค้า",
-
-      // ข้อมูลรายการ (fill_30-35)
-      "fill_30": "สกุลเงินรายการ",
-      "fill_31": "จำนวนเงินรายการ",
-      "fill_32": "อัตราแลกเปลี่ยน",
-      "fill_33": "จำนวนเงินสกุลท้องถิ่น",
-      "fill_34": "วันที่ทำรายการ",
-      "fill_35": "วัตถุประสงค์รายการ",
-
-      // หมายเลขรายงาน (fill_52)
-      "fill_52": "หมายเลขรายงาน",
-
-      // ช่องทำเครื่องหมายประเภทรายการ (check_1-4)
-      "check_1": "ประเภทรายการ - ซื้อเงินตราต่างประเทศ",
-      "check_2": "ประเภทรายการ - ขายเงินตราต่างประเทศ",
-      "check_3": "ประเภทรายการ - โอนเงิน",
-      "check_4": "ประเภทรายการ - อื่นๆ",
-
-      // ฟิลด์ช่องตัวเลข (comb_1-6)
-      "comb_1": "ช่องเลขบัตรประจำตัว - 1",
-      "comb_2": "ช่องเลขบัตรประจำตัว - 2",
-      "comb_3": "ช่องหมายเลขโทรศัพท์ - 1",
-      "comb_4": "ช่องหมายเลขโทรศัพท์ - 2",
-      "comb_5": "ช่องจำนวนเงิน - 1",
-      "comb_6": "ช่องจำนวนเงิน - 2",
-
-      // ข้อมูลผู้ทำรายการ
-      "transactor_type": "ประเภทผู้ทำรายการ",
-      "transactor_name_th": "ชื่อผู้ทำรายการ (ไทย)",
-      "transactor_name_en": "ชื่อผู้ทำรายการ (อังกฤษ)",
-      "transactor_id_type": "ประเภทบัตรประจำตัวผู้ทำรายการ",
-      "transactor_id_number": "เลขบัตรประจำตัวผู้ทำรายการ",
-      "transactor_nationality": "สัญชาติผู้ทำรายการ",
-      "transactor_birth_date": "วันเกิดผู้ทำรายการ",
-      "transactor_address": "ที่อยู่ผู้ทำรายการ",
-      "transactor_phone": "โทรศัพท์ผู้ทำรายการ",
-      "transactor_occupation": "อาชีพผู้ทำรายการ",
-
-      // วิธีการฝาก/ชำระเงิน
-      "deposit_cash": "วิธีการฝาก - เงินสด",
-      "deposit_cashiers_check": "วิธีการฝาก - แคชเชียร์เช็ค",
-      "deposit_transfer": "วิธีการฝาก - โอนเงิน",
-      "deposit_other": "วิธีการฝาก - อื่นๆ",
-
-      // ข้อมูลการรับเงิน
-      "receipt_country": "ประเทศที่รับเงิน",
-      "receipt_method": "วิธีการรับเงิน",
-      "payment_country": "ประเทศที่จ่ายเงิน",
-      "payment_method": "วิธีการจ่ายเงิน",
-
-      // รายละเอียดรายการ
-      "currency_code": "รหัสสกุลเงิน",
-      "exchange_rate": "อัตราแลกเปลี่ยน",
-      "purpose": "วัตถุประสงค์รายการ",
-      "remarks": "หมายเหตุ",
-
-      // ===== AMLO-1-01 การแม็พฟิลด์แบบครบถ้วน =====
-
-      // ข้อมูลพื้นฐานรายงาน
-      "report_number": "หมายเลขรายงาน",
-      "is_amendment_report": "รายงานแก้ไข",
-      "is_first_report": "รายงานครั้งแรก",
-      "amendment_count": "จำนวนครั้งที่แก้ไข",
-      "amendment_date": "วันที่แก้ไข",
-      "total_pages": "จำนวนหน้าทั้งหมด",
-
-      // ข้อมูลผู้ทำรายการ (Maker)
-      "maker_id_number": "เลขประจำตัวผู้ทำรายการ",
-      "maker_full_name": "ชื่อเต็มผู้ทำรายการ",
-      "maker_name": "ชื่อผู้ทำรายการ",
-      "maker_transaction_by_self": "ทำรายการด้วยตนเอง",
-      "maker_transaction_on_behalf": "ทำรายการแทน",
-      "maker_is_proxy": "เป็นตัวแทน",
-      "maker_address": "ที่อยู่ผู้ทำรายการ",
-      "maker_address_line1": "ที่อยู่ผู้ทำรายการ (บรรทัดที่ 1)",
-      "maker_address_line2": "ที่อยู่ผู้ทำรายการ (บรรทัดที่ 2)",
-      "maker_phone": "โทรศัพท์ผู้ทำรายการ",
-      "maker_fax": "โทรสารผู้ทำรายการ",
-      "maker_occupation": "อาชีพผู้ทำรายการ",
-      "maker_occupation_employer": "นายจ้าง",
-      "maker_work_phone": "โทรศัพท์ที่ทำงาน",
-      "maker_contact_address": "ที่อยู่ติดต่อ",
-      "maker_contact_phone": "โทรศัพท์ติดต่อ",
-      "maker_contact_fax": "โทรสารติดต่อ",
-
-      // ประเภทบัตรประจำตัวผู้ทำรายการ
-      "maker_id_type_id_card": "บัตรประจำตัวประชาชน",
-      "maker_id_type_passport": "หนังสือเดินทาง",
-      "maker_id_type_alien_cert": "ใบสำคัญคนต่างด้าว",
-      "maker_id_type_other": "เอกสารประจำตัวอื่นๆ",
-      "maker_id_type_other_text": "คำอธิบายเอกสารอื่นๆ",
-      "maker_id_issued_by": "ออกโดย",
-      "maker_id_issued_date": "วันที่ออก",
-      "maker_id_expiry_date": "วันที่หมดอายุ",
-
-      // ข้อมูลผู้ทำรายการร่วม/ผู้รับมอบอำนาจ (Joint Party)
-      "has_joint_party": "มีผู้ทำรายการร่วม",
-      "joint_party_type_joint": "ผู้ทำรายการร่วม",
-      "joint_party_type_delegator": "ผู้มอบอำนาจ",
-      "joint_party_type_agent": "ตัวแทน",
-      "joint_party_id_number": "เลขประจำตัวผู้ทำรายการร่วม",
-      "joint_party_name": "ชื่อผู้ทำรายการร่วม",
-      "joint_party_address": "ที่อยู่ผู้ทำรายการร่วม",
-      "joint_party_address_line2": "ที่อยู่ผู้ทำรายการร่วม (บรรทัดที่ 2)",
-      "joint_party_phone": "โทรศัพท์ผู้ทำรายการร่วม",
-      "joint_party_fax": "โทรสารผู้ทำรายการร่วม",
-      "joint_party_occupation": "อาชีพผู้ทำรายการร่วม",
-      "joint_party_employer": "นายจ้างผู้ทำรายการร่วม",
-      "joint_party_work_phone": "โทรศัพท์ที่ทำงานผู้ทำรายการร่วม",
-      "joint_party_business_type": "ประเภทธุรกิจ",
-      "joint_party_contact_address": "ที่อยู่ติดต่อผู้ทำรายการร่วม",
-      "joint_party_contact_phone": "โทรศัพท์ติดต่อผู้ทำรายการร่วม",
-      "joint_party_contact_fax": "โทรสารติดต่อผู้ทำรายการร่วม",
-
-      // ประเภทบัตรประจำตัวผู้ทำรายการร่วม
-      "joint_party_id_type_id_card": "ผู้ทำรายการร่วม - บัตรประจำตัวประชาชน",
-      "joint_party_id_type_passport": "ผู้ทำรายการร่วม - หนังสือเดินทาง",
-      "joint_party_id_type_alien_cert": "ผู้ทำรายการร่วม - ใบสำคัญคนต่างด้าว",
-      "joint_party_id_type_registry": "ผู้ทำรายการร่วม - หนังสือรับรองการจดทะเบียน",
-      "joint_party_id_type_other": "ผู้ทำรายการร่วม - เอกสารอื่นๆ",
-      "joint_party_id_type_other_text": "ผู้ทำรายการร่วม - คำอธิบายเอกสารอื่นๆ",
-      "joint_party_id_issued_by": "ผู้ทำรายการร่วม - ออกโดย",
-      "joint_party_id_issued_date": "ผู้ทำรายการร่วม - วันที่ออก",
-      "joint_party_id_expiry_date": "ผู้ทำรายการร่วม - วันที่หมดอายุ",
-
-      // คอลัมน์ซ้าย - ฝากเงิน/ซื้อเงินตราต่างประเทศ (Deposit)
-      "deposit_account": "บัญชีฝาก",
-      "deposit_related_account": "บัญชีที่เกี่ยวข้อง",
-      "deposit_thb_amount": "จำนวนเงินบาทฝาก",
-      "deposit_check": "เช็ค",
-      "deposit_draft": "ดราฟต์",
-      "deposit_other_instrument": "ตราสารอื่นๆ",
-      "deposit_other_text": "คำอธิบายตราสารอื่นๆ",
-      "deposit_currency_amount": "จำนวนเงินซื้อเงินตราต่างประเทศ",
-      "deposit_total": "รวมคอลัมน์ซ้าย",
-      "left_amount": "จำนวนเงินบาท (ซ้าย)",
-      "foreign_currency_buy": "รหัสและจำนวนเงินตราต่างประเทศที่ซื้อ",
-
-      // คอลัมน์ขวา - ถอนเงิน/ขายเงินตราต่างประเทศ (Withdrawal)
-      "withdrawal_account": "บัญชีถอน",
-      "withdrawal_related_account": "บัญชีที่เกี่ยวข้องถอน",
-      "withdrawal_thb_amount": "จำนวนเงินบาทถอน",
-      "withdrawal_cash": "ถอนเงินสด",
-      "withdrawal_transfer": "โอนเงิน",
-      "withdrawal_check": "เช็คถอน",
-      "withdrawal_draft": "ดราฟต์ถอน",
-      "withdrawal_other": "วิธีถอนอื่นๆ",
-      "withdrawal_other_text": "คำอธิบายวิธีถอนอื่นๆ",
-      "withdrawal_currency_amount": "จำนวนเงินขายเงินตราต่างประเทศ",
-      "withdrawal_total": "รวมคอลัมน์ขวา",
-      "right_amount": "จำนวนเงินบาท (ขวา)",
-      "foreign_currency_sell": "รหัสและจำนวนเงินตราต่างประเทศที่ขาย",
-
-      // ประเภทรายการ
-      "exchange_buy_currency": "ซื้อเงินตราต่างประเทศ",
-      "exchange_sell_currency": "ขายเงินตราต่างประเทศ",
-      "exchange_other_transaction": "รายการอื่นๆ",
-      "exchange_other_description": "คำอธิบายรายการอื่นๆ",
-
-      // ผู้รับผลประโยชน์และวัตถุประสงค์
-      "beneficiary_name": "ชื่อผู้รับผลประโยชน์",
-      "transaction_purpose": "วัตถุประสงค์รายการ",
-      "exchange_purpose": "วัตถุประสงค์การแลกเปลี่ยน",
-
-      // พื้นที่ลายเซ็น
-      "institution_records_fact": "สถาบันบันทึกข้อเท็จจริง",
-      "customer_no_signature": "ลูกค้าไม่มีลายเซ็น",
-      "transactor_signature": "ลายเซ็นผู้ทำรายการ",
-      "transactor_date": "วันที่ลายเซ็นผู้ทำรายการ",
-      "reporter_signature": "ลายเซ็นผู้รายงาน",
-
-      // ฟิลด์อื่นๆ
-      "related_persons": "บุคคลที่เกี่ยวข้อง",
-      "suspicious_activity": "กิจกรรมที่น่าสงสัย",
-      "high_risk_country": "ประเทศเสี่ยงสูง",
-      "cash_intensive": "ใช้เงินสดมาก",
-      "unusual_pattern": "รูปแบบผิดปกติ",
-      "source_of_funds": "แหล่งที่มาของเงิน",
-      "destination_of_funds": "จุดหมายปลายทางของเงิน",
-
-      // ค่าบูลีน
-      "true": "ใช่",
-      "false": "ไม่ใช่",
-      "checked": "เลือกแล้ว",
-      "unchecked": "ยังไม่เลือก"
     }
   }
 }

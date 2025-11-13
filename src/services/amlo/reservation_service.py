@@ -232,31 +232,31 @@ class ReservationService:
 
             # Only filter by branch if branch_id is provided (None means show all for admin)
             if branch_id is not None:
-                where_clauses.append('rt.branch_id = :branch_id')
+                where_clauses.append('branch_id = :branch_id')
                 params['branch_id'] = branch_id
 
             # Status filter
             if filters.get('status'):
-                where_clauses.append('rt.status = :status')
+                where_clauses.append('status = :status')
                 params['status'] = filters['status']
 
             # Customer ID filter
             if filters.get('customer_id'):
-                where_clauses.append('rt.customer_id = :customer_id')
+                where_clauses.append('customer_id = :customer_id')
                 params['customer_id'] = filters['customer_id']
 
             # Report type filter
             if filters.get('report_type'):
-                where_clauses.append('rt.report_type = :report_type')
+                where_clauses.append('report_type = :report_type')
                 params['report_type'] = filters['report_type']
 
-            # Date filters (with rt prefix)
+            # Date filters (no prefix)
             AMLODatabaseHelper.apply_date_filters(
                 where_clauses,
                 params,
                 filters.get('start_date'),
                 filters.get('end_date'),
-                date_field='rt.created_at'
+                date_field='created_at'
             )
 
             # Build WHERE clause (handle empty case)
@@ -264,7 +264,7 @@ class ReservationService:
 
             # Count total
             count_sql = text(f"""
-                SELECT COUNT(*) FROM Reserved_Transaction rt
+                SELECT COUNT(*) FROM Reserved_Transaction
                 WHERE {where_sql}
             """)
             total = session.execute(count_sql, params).scalar() or 0
@@ -276,18 +276,16 @@ class ReservationService:
 
             data_sql = text(f"""
                 SELECT
-                    rt.id, rt.reservation_no, rt.customer_id, rt.customer_name,
-                    rt.customer_country_code, rt.currency_id, rt.direction,
-                    rt.amount, rt.local_amount, rt.rate, rt.trigger_type,
-                    rt.report_type, rt.status, rt.branch_id, rt.operator_id,
-                    rt.auditor_id, rt.created_at, rt.audit_time,
-                    rt.rejection_reason, rt.exchange_type, rt.funding_source,
-                    rt.form_data, rt.denomination_data,
-                    ar.report_no
-                FROM Reserved_Transaction rt
-                LEFT JOIN amloreport ar ON rt.id = ar.reserved_id
+                    id, reservation_no, customer_id, customer_name,
+                    customer_country_code, currency_id, direction,
+                    amount, local_amount, rate, trigger_type,
+                    report_type, status, branch_id, operator_id,
+                    auditor_id, created_at, audit_time,
+                    rejection_reason, exchange_type, funding_source,
+                    form_data, denomination_data
+                FROM Reserved_Transaction
                 WHERE {where_sql}
-                ORDER BY rt.created_at DESC
+                ORDER BY created_at DESC
                 LIMIT :limit OFFSET :offset
             """)
 

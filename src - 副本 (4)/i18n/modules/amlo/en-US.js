@@ -11,6 +11,18 @@ export default {
       "pdfNotFound": "PDF template not found",
       "formFields": "Form Fields"
     },
+    "uploadReport": "Upload Report",
+    "userSignature": "Customer Signature",
+    "pleaseSubmitFirst": "Please submit reservation first",
+    "pleaseDownloadFirst": "Please click [Fill Report] button to submit reservation and download PDF first",
+    "downloadSuccess": "PDF downloaded successfully! Please fill it out and upload.",
+    "downloadFailed": "Download failed",
+    "pleaseSelectPDF": "Please select a PDF file",
+    "uploadSuccess": "Uploaded successfully! Please click [Customer Signature] button to sign.",
+    "uploadFailed": "Upload failed",
+    "pleaseUploadFirst": "Please upload the filled report first",
+    "signaturePageOpened": "Signature page opened!\n\nTip: Press Win + Shift + → to move window to extended screen for customer signature",
+    "openSignatureFailed": "Failed to open signature page",
     "reservation": {
       "title": "AMLO Reservation Search",
       "id": "Report ID",

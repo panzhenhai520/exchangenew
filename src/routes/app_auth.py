@@ -91,7 +91,7 @@ def login():
             logger.debug(f"找到用户: ID={user.id}, login_code={user.login_code}, is_active={user.is_active}")
 
         if not user:
-            logger.warning(f"[ERROR] 用户验证失败: login_code={login_code}, password_md5={password_md5}")
+            logger.warning(f"❌ 用户验证失败: login_code={login_code}, password_md5={password_md5}")
             # 记录登录失败日志 - 使用请求头中的语言设置
             current_language = get_current_language()
             multilingual_logger.log_system_operation(
@@ -103,7 +103,7 @@ def login():
             return jsonify({'success': False, 'message': '用户名或密码错误'}), 401
 
         if not user.is_active:
-            logger.warning(f"[ERROR] 用户已停用: {user.login_code}")
+            logger.warning(f"❌ 用户已停用: {user.login_code}")
             return jsonify({'success': False, 'message': '用户已停用'}), 403
 
         # 获取网点信息，包括本币信息

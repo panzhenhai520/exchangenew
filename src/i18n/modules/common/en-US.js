@@ -46,8 +46,6 @@ export default {
     "previous": "Previous",
     "submit": "Submit",
     "close": "Close",
-    "readonly": "Read-only",
-    "modified": "Modified",
     "fullscreen": "Fullscreen",
     "no_data": "No Data",
     "system_maintenance": "System",
@@ -158,17 +156,7 @@ export default {
     "system_log_query": "System Log Query",
     "app_user": "App User",
     "app_role": "App Role",
-
-    // Information categories
-    "basicInfo": "Basic Information",
-    "branchInfo": "Branch Information",
-    "transactionInfo": "Transaction Information",
-    "customerInfo": "Customer Information",
-    "infoSuffix": "Information",
-    "checkboxes": "Checkboxes",
-    "combFields": "Comb Fields",
-    "otherFields": "Other Fields",
-
+    
     // Time related translations
     "just_now": "Just now",
     "minutes_ago": "{minutes} minutes ago",

@@ -178,9 +178,9 @@ def test_database_connection():
                 # 执行简单查询测试连接
                 result = test_session.execute("SELECT 1")
                 result.fetchone()
-                logger.info("[OK] MySQL数据库连接测试成功")
+                logger.info("✅ MySQL数据库连接测试成功")
             except Exception as e:
-                logger.error(f"[ERROR] MySQL数据库连接测试失败: {e}")
+                logger.error(f"❌ MySQL数据库连接测试失败: {e}")
                 raise
             finally:
                 test_session.close()
@@ -188,7 +188,7 @@ def test_database_connection():
             logger.info("🔍 测试SQLite数据库连接...")
             # SQLite连接测试逻辑可以在这里添加
     except Exception as e:
-        logger.error(f"[ERROR] 数据库连接测试失败: {e}")
+        logger.error(f"❌ 数据库连接测试失败: {e}")
         raise
 
 # 在模块加载时测试连接

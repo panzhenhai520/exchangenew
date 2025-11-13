@@ -160,6 +160,14 @@ import zhCN_Transaction from './modules/transaction/zh-CN.js'
 import enUS_Transaction from './modules/transaction/en-US.js'
 import thTH_Transaction from './modules/transaction/th-TH.js'
 
+import zhCN_Reservation from './modules/reservation/zh-CN.js'
+import enUS_Reservation from './modules/reservation/en-US.js'
+import thTH_Reservation from './modules/reservation/th-TH.js'
+
+import zhCN_CustomerHistory from './modules/customer_history/zh-CN.js'
+import enUS_CustomerHistory from './modules/customer_history/en-US.js'
+import thTH_CustomerHistory from './modules/customer_history/th-TH.js'
+
 // 改进的深度合并函数
 function deepMerge(...sources) {
   if (sources.length === 0) return {}
@@ -201,7 +209,7 @@ function debugMerge(moduleName, moduleData, result) {
 }
 
 // 合并翻译文件
-const zhCN_merged = deepMerge(zhCN_Common, zhCN_Dashboard, zhCN_EOD_processed, zhCN_Exchange, zhCN_Rates, zhCN_UserMenu, zhCN_Footer, zhCN_Login, zhCN_Balance, zhCN_Menu, zhCN_BalanceAdjust, zhCN_CurrencyManagement, zhCN_Currencies, zhCN_Countries, zhCN_Logs, zhCN_Reports, zhCN_SystemMaintenance, zhCN_Queries, zhCN_Standards, zhCN_Transactions, zhCN_Reversals, zhCN_ReversalQuery, zhCN_LocalStockQuery, zhCN_BalanceAdjustQuery, zhCN_LogManagement, zhCN_Auth, zhCN_DataClear, zhCN_App, zhCN_Profile, zhCN_AMLO, zhCN_BOT, zhCN_Compliance, zhCN_Transaction)
+const zhCN_merged = deepMerge(zhCN_Common, zhCN_Dashboard, zhCN_EOD_processed, zhCN_Exchange, zhCN_Rates, zhCN_UserMenu, zhCN_Footer, zhCN_Login, zhCN_Balance, zhCN_Menu, zhCN_BalanceAdjust, zhCN_CurrencyManagement, zhCN_Currencies, zhCN_Countries, zhCN_Logs, zhCN_Reports, zhCN_SystemMaintenance, zhCN_Queries, zhCN_Standards, zhCN_Transactions, zhCN_Reversals, zhCN_ReversalQuery, zhCN_LocalStockQuery, zhCN_BalanceAdjustQuery, zhCN_LogManagement, zhCN_Auth, zhCN_DataClear, zhCN_App, zhCN_Profile, zhCN_AMLO, zhCN_BOT, zhCN_Compliance, zhCN_Transaction, zhCN_Reservation, zhCN_CustomerHistory)
 
 // 调试合并过程
 if (process.env.NODE_ENV === 'development') {
@@ -216,11 +224,11 @@ if (process.env.NODE_ENV === 'development') {
 
 const messages = {
   'zh-CN': zhCN_merged,
-  'zh': deepMerge(zhCN_Common, zhCN_Dashboard, { ...zhCN_EOD_processed }, zhCN_Exchange, zhCN_Rates, zhCN_UserMenu, zhCN_Footer, zhCN_Login, zhCN_Balance, zhCN_Menu, zhCN_BalanceAdjust, zhCN_CurrencyManagement, zhCN_Currencies, zhCN_Countries, zhCN_Logs, zhCN_Reports, zhCN_SystemMaintenance, zhCN_Queries, zhCN_Standards, zhCN_Transactions, zhCN_Denominations, zhCN_Reversals, zhCN_ReversalQuery, zhCN_LocalStockQuery, zhCN_BalanceAdjustQuery, zhCN_LogManagement, zhCN_Auth, zhCN_DataClear, zhCN_App, zhCN_Profile, zhCN_AMLO, zhCN_BOT, zhCN_Compliance, zhCN_Transaction),
-  'en-US': deepMerge(enUS_Common, enUS_Dashboard, { ...enUS_EOD_processed }, enUS_Exchange, enUS_Rates, enUS_UserMenu, enUS_Footer, enUS_Login, enUS_Balance, enUS_Menu, enUS_BalanceAdjust, enUS_CurrencyManagement, enUS_Currencies, enUS_Countries, enUS_Logs, enUS_Reports, enUS_SystemMaintenance, enUS_Queries, enUS_Standards, enUS_Transactions, enUS_Denominations, enUS_Reversals, enUS_ReversalQuery, enUS_LocalStockQuery, enUS_BalanceAdjustQuery, enUS_LogManagement, enUS_Auth, enUS_DataClear, enUS_App, enUS_Profile, enUS_AMLO, enUS_BOT, enUS_Compliance, enUS_Transaction),
-  'en': deepMerge(enUS_Common, enUS_Dashboard, { ...enUS_EOD_processed }, enUS_Exchange, enUS_Rates, enUS_UserMenu, enUS_Footer, enUS_Login, enUS_Balance, enUS_Menu, enUS_BalanceAdjust, enUS_CurrencyManagement, enUS_Currencies, enUS_Countries, enUS_Logs, enUS_Reports, enUS_SystemMaintenance, enUS_Queries, enUS_Standards, enUS_Transactions, enUS_Denominations, enUS_Reversals, enUS_ReversalQuery, enUS_LocalStockQuery, enUS_BalanceAdjustQuery, enUS_LogManagement, enUS_Auth, enUS_DataClear, enUS_App, enUS_Profile, enUS_AMLO, enUS_BOT, enUS_Compliance, enUS_Transaction),
-  'th-TH': deepMerge(thTH_Common, thTH_Dashboard, thTH_EOD_processed, thTH_Exchange, thTH_Rates, thTH_UserMenu, thTH_Footer, thTH_Login, thTH_Balance, thTH_Menu, thTH_BalanceAdjust, thTH_CurrencyManagement, thTH_Currencies, thTH_Countries, thTH_Logs, thTH_Reports, thTH_SystemMaintenance, thTH_Queries, thTH_Standards, thTH_Transactions, thTH_Denominations, thTH_Reversals, thTH_ReversalQuery, thTH_LocalStockQuery, thTH_BalanceAdjustQuery, thTH_LogManagement, thTH_Auth, thTH_DataClear, thTH_App, thTH_Profile, thTH_AMLO, thTH_BOT, thTH_Compliance, thTH_Transaction),
-  'th': deepMerge(thTH_Common, thTH_Dashboard, thTH_EOD_processed, thTH_Exchange, thTH_Rates, thTH_UserMenu, thTH_Footer, thTH_Login, thTH_Balance, thTH_Menu, thTH_BalanceAdjust, thTH_CurrencyManagement, thTH_Currencies, thTH_Countries, thTH_Logs, thTH_Reports, thTH_SystemMaintenance, thTH_Queries, thTH_Standards, thTH_Transactions, thTH_Denominations, thTH_Reversals, thTH_ReversalQuery, thTH_LocalStockQuery, thTH_BalanceAdjustQuery, thTH_LogManagement, thTH_Auth, thTH_DataClear, thTH_App, thTH_Profile, thTH_AMLO, thTH_BOT, thTH_Compliance, thTH_Transaction)
+  'zh': deepMerge(zhCN_Common, zhCN_Dashboard, { ...zhCN_EOD_processed }, zhCN_Exchange, zhCN_Rates, zhCN_UserMenu, zhCN_Footer, zhCN_Login, zhCN_Balance, zhCN_Menu, zhCN_BalanceAdjust, zhCN_CurrencyManagement, zhCN_Currencies, zhCN_Countries, zhCN_Logs, zhCN_Reports, zhCN_SystemMaintenance, zhCN_Queries, zhCN_Standards, zhCN_Transactions, zhCN_Denominations, zhCN_Reversals, zhCN_ReversalQuery, zhCN_LocalStockQuery, zhCN_BalanceAdjustQuery, zhCN_LogManagement, zhCN_Auth, zhCN_DataClear, zhCN_App, zhCN_Profile, zhCN_AMLO, zhCN_BOT, zhCN_Compliance, zhCN_Transaction, zhCN_Reservation, zhCN_CustomerHistory),
+  'en-US': deepMerge(enUS_Common, enUS_Dashboard, { ...enUS_EOD_processed }, enUS_Exchange, enUS_Rates, enUS_UserMenu, enUS_Footer, enUS_Login, enUS_Balance, enUS_Menu, enUS_BalanceAdjust, enUS_CurrencyManagement, enUS_Currencies, enUS_Countries, enUS_Logs, enUS_Reports, enUS_SystemMaintenance, enUS_Queries, enUS_Standards, enUS_Transactions, enUS_Denominations, enUS_Reversals, enUS_ReversalQuery, enUS_LocalStockQuery, enUS_BalanceAdjustQuery, enUS_LogManagement, enUS_Auth, enUS_DataClear, enUS_App, enUS_Profile, enUS_AMLO, enUS_BOT, enUS_Compliance, enUS_Transaction, enUS_Reservation, enUS_CustomerHistory),
+  'en': deepMerge(enUS_Common, enUS_Dashboard, { ...enUS_EOD_processed }, enUS_Exchange, enUS_Rates, enUS_UserMenu, enUS_Footer, enUS_Login, enUS_Balance, enUS_Menu, enUS_BalanceAdjust, enUS_CurrencyManagement, enUS_Currencies, enUS_Countries, enUS_Logs, enUS_Reports, enUS_SystemMaintenance, enUS_Queries, enUS_Standards, enUS_Transactions, enUS_Denominations, enUS_Reversals, enUS_ReversalQuery, enUS_LocalStockQuery, enUS_BalanceAdjustQuery, enUS_LogManagement, enUS_Auth, enUS_DataClear, enUS_App, enUS_Profile, enUS_AMLO, enUS_BOT, enUS_Compliance, enUS_Transaction, enUS_Reservation, enUS_CustomerHistory),
+  'th-TH': deepMerge(thTH_Common, thTH_Dashboard, thTH_EOD_processed, thTH_Exchange, thTH_Rates, thTH_UserMenu, thTH_Footer, thTH_Login, thTH_Balance, thTH_Menu, thTH_BalanceAdjust, thTH_CurrencyManagement, thTH_Currencies, thTH_Countries, thTH_Logs, thTH_Reports, thTH_SystemMaintenance, thTH_Queries, thTH_Standards, thTH_Transactions, thTH_Denominations, thTH_Reversals, thTH_ReversalQuery, thTH_LocalStockQuery, thTH_BalanceAdjustQuery, thTH_LogManagement, thTH_Auth, thTH_DataClear, thTH_App, thTH_Profile, thTH_AMLO, thTH_BOT, thTH_Compliance, thTH_Transaction, thTH_Reservation, thTH_CustomerHistory),
+  'th': deepMerge(thTH_Common, thTH_Dashboard, thTH_EOD_processed, thTH_Exchange, thTH_Rates, thTH_UserMenu, thTH_Footer, thTH_Login, thTH_Balance, thTH_Menu, thTH_BalanceAdjust, thTH_CurrencyManagement, thTH_Currencies, thTH_Countries, thTH_Logs, thTH_Reports, thTH_SystemMaintenance, thTH_Queries, thTH_Standards, thTH_Transactions, thTH_Denominations, thTH_Reversals, thTH_ReversalQuery, thTH_LocalStockQuery, thTH_BalanceAdjustQuery, thTH_LogManagement, thTH_Auth, thTH_DataClear, thTH_App, thTH_Profile, thTH_AMLO, thTH_BOT, thTH_Compliance, thTH_Transaction, thTH_Reservation, thTH_CustomerHistory)
 }
 
 // 调试th-TH语言包合并结果

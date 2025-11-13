@@ -22,13 +22,13 @@ def get_base_currency_id_from_branch(branch_id):
         session = DatabaseService.get_session()
         branch = session.query(Branch).filter_by(id=branch_id).first()
         if branch and branch.base_currency_id:
-            logging.info(f"[OK] 网点 {branch_id} 的本币ID: {branch.base_currency_id}")
+            logging.info(f"✅ 网点 {branch_id} 的本币ID: {branch.base_currency_id}")
             return branch.base_currency_id
         else:
-            logging.error(f"[ERROR] 无法获取网点 {branch_id} 的本币ID")
+            logging.error(f"❌ 无法获取网点 {branch_id} 的本币ID")
             return None
     except Exception as e:
-        logging.error(f"[ERROR] 获取网点本币ID失败: {str(e)}")
+        logging.error(f"❌ 获取网点本币ID失败: {str(e)}")
         return None
     finally:
         DatabaseService.close_session(session)
@@ -68,13 +68,13 @@ def get_base_currency_info_from_branch(branch_id):
                 'code': branch.base_currency.currency_code,
                 'name': branch.base_currency.currency_name
             }
-            logging.info(f"[OK] 网点 {branch_id} 的本币信息: {base_currency_info}")
+            logging.info(f"✅ 网点 {branch_id} 的本币信息: {base_currency_info}")
             return base_currency_info
         else:
-            logging.error(f"[ERROR] 无法获取网点 {branch_id} 的本币信息")
+            logging.error(f"❌ 无法获取网点 {branch_id} 的本币信息")
             return None
     except Exception as e:
-        logging.error(f"[ERROR] 获取网点本币信息失败: {str(e)}")
+        logging.error(f"❌ 获取网点本币信息失败: {str(e)}")
         return None
     finally:
         DatabaseService.close_session(session) 

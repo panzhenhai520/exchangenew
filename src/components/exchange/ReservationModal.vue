@@ -91,19 +91,111 @@
           </div>
         </div>
         <div class="modal-footer">
+          <!-- 【填写报告】按钮 - 下载PDF（会自动提交预约） -->
+          <button
+            type="button"
+            class="btn btn-info"
+            @click="downloadPDFReport"
+            :disabled="downloading"
+          >
+            <span v-if="downloading" class="spinner-border spinner-border-sm me-2"></span>
+            <font-awesome-icon v-else :icon="['fas', 'download']" class="me-1" />
+            {{ downloading ? $t('common.downloading') || '下载中...' : $t('amlo.form.fillReport') || '填写报告' }}
+          </button>
+
+          <!-- 【上传报告】按钮 - 上传填写好的PDF -->
+          <button
+            type="button"
+            class="btn btn-success"
+            @click="triggerUploadPDF"
+            :disabled="!currentReservationId || uploading"
+          >
+            <span v-if="uploading" class="spinner-border spinner-border-sm me-2"></span>
+            <font-awesome-icon v-else :icon="['fas', 'upload']" class="me-1" />
+            {{ uploading ? $t('common.uploading') || '上传中...' : ($t('amlo.uploadReport') || '上传报告') }}
+          </button>
+          <input
+            type="file"
+            ref="pdfFileInput"
+            accept="application/pdf"
+            style="display: none"
+            @change="handlePDFUpload"
+          />
+
+          <!-- 【用户签名】按钮 - 打开签名页面 -->
+          <button
+            type="button"
+            class="btn btn-warning"
+            @click="openSignaturePage"
+            :disabled="!uploadedPDF"
+          >
+            <font-awesome-icon :icon="['fas', 'signature']" class="me-1" />
+            {{ $t('amlo.userSignature') || '用户签名' }}
+          </button>
+
+          <!-- 【取消】按钮 -->
           <button type="button" class="btn btn-secondary" @click="closeModal">
             <font-awesome-icon :icon="['fas', 'times']" class="me-1" />
             {{ $t('common.cancel') }}
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="submitReservation"
-            :disabled="submitting"
-          >
-            <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
-            <font-awesome-icon v-else :icon="['fas', 'check']" class="me-1" />
-            {{ submitting ? $t('compliance.submitting') : $t('compliance.submitReservation') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上传进度Modal -->
+  <div v-if="showUploadProgress" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-cloud-upload-alt me-2"></i>
+            {{ uploadSuccess ? '上传成功' : '上传报告' }}
+          </h5>
+          <button v-if="uploadSuccess" type="button" class="btn-close btn-close-white" @click="closeUploadProgressModal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- 上传进度条 -->
+          <div v-if="!uploadSuccess" class="mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span>上传进度</span>
+              <span>{{ uploadProgress }}%</span>
+            </div>
+            <div class="progress" style="height: 25px;">
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                :style="`width: ${uploadProgress}%`"
+                :aria-valuenow="uploadProgress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                {{ uploadProgress }}%
+              </div>
+            </div>
+          </div>
+
+          <!-- 上传成功提示 -->
+          <div v-if="uploadSuccess" class="text-center py-4">
+            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-success">上传成功！</h4>
+            <p class="mt-3 mb-4 text-muted">
+              您的报告已成功上传，请点击【用户签名】按钮进行签名。
+            </p>
+            <button type="button" class="btn btn-warning btn-lg" @click="closeUploadProgressAndOpenSignature">
+              <i class="fas fa-signature me-2"></i>立即签名
+            </button>
+          </div>
+
+          <!-- 错误提示 -->
+          <div v-if="uploadError" class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ uploadError }}
+          </div>
+        </div>
+        <div v-if="uploadSuccess" class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeUploadProgressModal">
+            <i class="fas fa-times me-1"></i>稍后签名
           </button>
         </div>
       </div>
@@ -112,13 +204,14 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Modal } from 'bootstrap'
 import DynamicFormImproved from '@/components/amlo/DynamicForm/DynamicFormImproved.vue'
 import repformService from '@/services/api/repformService'
 import { splitAddress } from '@/utils/addressParser'
 import { useOpenOnDisplay } from '@/utils/useOpenOnDisplay'
+import api from '@/services/api'
 
 export default {
   name: 'ReservationModal',
@@ -160,6 +253,15 @@ export default {
     const formLoading = ref(false)
     const submitting = ref(false)
     const formData = ref({})
+    const currentReservationId = ref(null) // 当前预约ID
+    const downloading = ref(false) // 下载中状态
+    const uploading = ref(false) // 上传中状态
+    const uploadedPDF = ref(false) // 是否已上传PDF
+    const pdfFileInput = ref(null) // 文件输入框引用
+    const showUploadProgress = ref(false) // 显示上传进度Modal
+    const uploadProgress = ref(0) // 上传进度百分比
+    const uploadSuccess = ref(false) // 上传成功标志
+    const uploadError = ref(null) // 上传错误信息
 
     const getTriggerType = (reportType) => {
       const mapping = {
@@ -583,6 +685,9 @@ export default {
           const response = await repformService.saveReservation(reservationData)
 
           if (response.data.success) {
+            // 保存当前预约ID，供后续上传和签名使用
+            currentReservationId.value = response.data.reservation_id
+
             // 检查是否有报告生成失败的警告
             if (response.data.warning || response.data.report_creation_failed) {
               console.warn('[ReservationModal] ⚠️ 报告生成失败:', response.data.warning)
@@ -593,7 +698,8 @@ export default {
               reservation_id: response.data.reservation_id,
               report_type: props.reportType
             })
-            closeModal()
+            // 不要立即关闭模态框，让用户可以下载、上传和签名
+            // closeModal()
           } else {
             alert(response.data.message || t('compliance.saveFailed'))
           }
@@ -704,6 +810,264 @@ export default {
       emit('cancel')
     }
 
+    // 【填写报告】- 下载PDF报告（如果还没有预约ID，先提交预约）
+    const downloadPDFReport = async () => {
+      downloading.value = true
+      try {
+        // 如果还没有预约ID，先提交预约
+        if (!currentReservationId.value) {
+          console.log('[ReservationModal] 还没有预约ID，先提交预约...')
+
+          // 触发表单验证
+          if (dynamicFormRef.value && dynamicFormRef.value.submitForm) {
+            await dynamicFormRef.value.submitForm()
+          }
+
+          // 构建预约数据
+          let direction = props.transactionData.exchangeMode
+          if (direction === 'buy_foreign') {
+            direction = 'sell'
+          } else if (direction === 'sell_foreign') {
+            direction = 'buy'
+          }
+
+          const reservationData = {
+            report_type: props.reportType,
+            customer_id: props.transactionData.customerId,
+            customer_name: props.transactionData.customerName,
+            customer_country_code: props.transactionData.customerCountryCode,
+            currency_id: props.transactionData.currencyId,
+            direction: direction,
+            amount: Math.abs(parseFloat(props.transactionData.fromAmount)),
+            local_amount: Math.abs(parseFloat(props.transactionData.toAmount)),
+            rate: props.transactionData.rate,
+            trigger_type: getTriggerType(props.reportType),
+            form_data: formData.value,
+            denomination_data: props.transactionData.combinations || [],
+            exchange_type: props.transactionData.exchangeType || formData.value.exchange_type || 'normal',
+            funding_source: props.transactionData.fundingSource || formData.value.funding_source || null,
+            asset_value: props.transactionData.assetValue || formData.value.asset_value || null
+          }
+
+          console.log('[ReservationModal] 提交预约数据:', reservationData)
+
+          const response = await repformService.saveReservation(reservationData)
+
+          if (!response.data.success) {
+            alert(response.data.message || t('compliance.saveFailed'))
+            return
+          }
+
+          currentReservationId.value = response.data.reservation_id
+          console.log('[ReservationModal] ✅ 预约创建成功，ID:', currentReservationId.value)
+
+          // 🔧 注意：不在这里触发submit事件，等签名提交成功后再触发
+        }
+
+        // 现在有预约ID了，开始下载PDF
+        console.log('[ReservationModal] 开始下载PDF报告, reservation_id:', currentReservationId.value)
+
+        const timestamp = Date.now()
+        const pdfResponse = await api.get(`/amlo/reservations/${currentReservationId.value}/generate-pdf?refresh=${timestamp}`, {
+          responseType: 'blob'
+        })
+
+        // 创建下载链接
+        const blob = new Blob([pdfResponse.data], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+
+        // 获取报告编号作为文件名
+        const reportNumber = formData.value.report_number || currentReservationId.value
+        link.download = `${reportNumber}.pdf`
+
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        console.log('[ReservationModal] ✅ PDF下载成功')
+
+        // 显示详细的下载成功信息，包含文件名和保存位置
+        const downloadMessage = `PDF下载成功！\n\n` +
+          `文件名：${reportNumber}.pdf\n` +
+          `保存位置：浏览器默认下载文件夹\n\n` +
+          `请填写完成后，点击【上传报告】按钮上传。`
+        alert(downloadMessage)
+
+      } catch (error) {
+        console.error('[ReservationModal] ❌ 下载PDF失败:', error)
+        const errorMsg = error.response?.data?.message || error.message
+        alert(t('amlo.downloadFailed') || `下载失败: ${errorMsg}`)
+      } finally {
+        downloading.value = false
+      }
+    }
+
+    // 【上传报告】- 触发文件选择（如果没有预约ID，先提示点击【填写报告】）
+    const triggerUploadPDF = () => {
+      if (!currentReservationId.value) {
+        alert(t('amlo.pleaseDownloadFirst') || '请先点击【填写报告】按钮提交预约并下载PDF')
+        return
+      }
+      pdfFileInput.value?.click()
+    }
+
+    // 【上传报告】- 处理文件上传（带进度显示）
+    const handlePDFUpload = async (event) => {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      if (file.type !== 'application/pdf') {
+        alert(t('amlo.pleaseSelectPDF') || '请选择PDF文件')
+        return
+      }
+
+      // 重置上传状态
+      uploading.value = true
+      showUploadProgress.value = true
+      uploadProgress.value = 0
+      uploadSuccess.value = false
+      uploadError.value = null
+
+      try {
+        console.log('[ReservationModal] 开始上传PDF文件, reservation_id:', currentReservationId.value)
+        console.log('[ReservationModal] 文件信息:', {
+          name: file.name,
+          type: file.type,
+          size: file.size
+        })
+
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', file) // 使用'file'作为参数名，匹配后端接口
+
+        console.log('[ReservationModal] FormData内容:', {
+          hasFile: uploadFormData.has('file'),
+          fileFromFormData: uploadFormData.get('file')
+        })
+
+        // 不要手动设置Content-Type，让浏览器自动设置（包含boundary）
+        // 使用空的 transformRequest 避免 axios 默认配置干扰 FormData
+        // 添加 onUploadProgress 回调追踪上传进度
+        const response = await api.post(
+          `/amlo/reservations/${currentReservationId.value}/upload-filled-pdf`,
+          uploadFormData,
+          {
+            transformRequest: [(data) => data], // 直接返回 FormData，不做任何转换
+            headers: {
+              'Content-Type': undefined // 让浏览器自动设置
+            },
+            onUploadProgress: (progressEvent) => {
+              // 计算上传进度百分比
+              if (progressEvent.total) {
+                uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                console.log('[ReservationModal] 上传进度:', uploadProgress.value + '%')
+              }
+            }
+          }
+        )
+
+        console.log('[ReservationModal] 上传响应:', response.data)
+
+        if (response.data.success) {
+          uploadedPDF.value = true
+          uploadSuccess.value = true
+          console.log('[ReservationModal] ✅ PDF上传成功')
+          // 上传成功，显示在Modal中，不需要alert
+        } else {
+          console.error('[ReservationModal] 上传失败:', response.data)
+          uploadError.value = response.data.message || (t('amlo.uploadFailed') || '上传失败')
+        }
+
+      } catch (error) {
+        console.error('[ReservationModal] ❌ 上传PDF失败:', error)
+        console.error('[ReservationModal] 错误详情:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message
+        })
+
+        let errorMsg = error.response?.data?.message || error.message || '未知错误'
+        if (error.response?.status === 401) {
+          errorMsg = '未授权，请重新登录'
+        } else if (error.response?.status === 404) {
+          errorMsg = '未找到预约记录'
+        } else if (error.response?.status === 400) {
+          errorMsg = error.response?.data?.message || '请求参数错误'
+        }
+
+        uploadError.value = (t('amlo.uploadFailed') || '上传失败') + ': ' + errorMsg
+      } finally {
+        uploading.value = false
+        // 清空文件输入框，允许重新上传相同文件
+        if (pdfFileInput.value) {
+          pdfFileInput.value.value = ''
+        }
+      }
+    }
+
+    // 关闭上传进度Modal
+    const closeUploadProgressModal = () => {
+      showUploadProgress.value = false
+      uploadProgress.value = 0
+      uploadSuccess.value = false
+      uploadError.value = null
+    }
+
+    // 关闭上传进度Modal并打开签名页面
+    const closeUploadProgressAndOpenSignature = () => {
+      closeUploadProgressModal()
+      openSignaturePage()
+    }
+
+    // 【用户签名】- 打开签名页面（复用现有的PDFViewerWindow）
+    const openSignaturePage = async () => {
+      if (!uploadedPDF.value || !currentReservationId.value) {
+        alert(t('amlo.pleaseUploadFirst') || '请先上传填写好的报告')
+        return
+      }
+
+      try {
+        console.log('[ReservationModal] 打开签名页面, reservation_id:', currentReservationId.value)
+
+        // 构建PDF查看器URL（复用现有的PDFViewerWindow）
+        const baseUrl = window.location.origin
+        const pdfViewerPath = '/amlo/pdf-viewer'
+        const params = new URLSearchParams({
+          id: currentReservationId.value,
+          title: `${props.reportType} - ${formData.value.report_number || currentReservationId.value}`,
+          reportType: props.reportType
+        })
+        const url = `${baseUrl}${pdfViewerPath}?${params.toString()}`
+
+        console.log('[ReservationModal] PDF Viewer URL:', url)
+
+        // 使用useOpenOnDisplay打开窗口（自动在扩展显示器上，全屏显示）
+        const pdfWindow = await openOnDisplay({
+          url: url,
+          target: 'AMLOSignatureWindow',
+          preferNonPrimary: true,
+          includeTaskbarArea: false, // 使用可用工作区（最大化效果）
+          fallbackGuess: 'right',
+          features: 'width=1920,height=1080,left=0,top=0,fullscreen=yes,toolbar=no,menubar=no,location=no,status=no'
+        })
+
+        if (!pdfWindow) {
+          alert(t('compliance.popupBlocked') || '弹出窗口被阻止，请允许弹出窗口后重试')
+          console.error('[ReservationModal] PDF签名窗口打开失败 - 弹窗被阻止')
+        } else {
+          console.log('[ReservationModal] ✅ PDF签名窗口已在扩展显示器上打开')
+          // 不显示提示，窗口会自动在顶部显示提示条
+        }
+
+      } catch (error) {
+        console.error('[ReservationModal] ❌ 打开签名页面失败:', error)
+        alert(t('amlo.openSignatureFailed') || `打开签名页面失败: ${error.message}`)
+      }
+    }
+
     // 提交预约并自动打开PDF查看器（用于【填写报告】按钮）
     const submitReservationAndViewPDF = async (formDataFromEvent) => {
       console.log('[ReservationModal] ===== submitReservationAndViewPDF 被调用 =====')
@@ -754,6 +1118,7 @@ export default {
 
         if (response.data.success) {
           const reservationId = response.data.reservation_id
+          currentReservationId.value = reservationId // 保存当前预约ID
           console.log('[ReservationModal] ✅ 预约创建成功，ID:', reservationId)
 
           // 检查是否有报告生成失败的警告
@@ -785,14 +1150,14 @@ export default {
 
             console.log('[ReservationModal] PDF Viewer URL:', url)
 
-            // 使用useOpenOnDisplay打开窗口（自动在扩展显示器上）
+            // 使用useOpenOnDisplay打开窗口（自动在扩展显示器上，全屏显示）
             const pdfWindow = await openOnDisplay({
               url: url,                        // PDF查看器URL
               target: 'AMLOPDFViewer',        // 窗口名称（复用同一窗口）
               preferNonPrimary: true,         // 优先选择非主屏（扩展显示器）
               includeTaskbarArea: false,      // 使用可用工作区（避开任务栏），等效最大化
               fallbackGuess: 'right',         // 不支持多屏API时，猜测扩展屏在右侧
-              features: 'noopener=no'         // 不使用noopener，需要窗口句柄
+              features: 'width=1920,height=1080,left=0,top=0,fullscreen=yes,toolbar=no,menubar=no,location=no,status=no'
             })
 
             if (!pdfWindow) {
@@ -841,10 +1206,36 @@ export default {
       }
     })
 
+    // 监听来自PDF窗口的消息
+    const handleMessageFromPDFWindow = (event) => {
+      // 安全检查：确保消息来源可信
+      if (!event.data || !event.data.type) return
+
+      if (event.data.type === 'CLOSE_RESERVATION_MODAL') {
+        console.log('[ReservationModal] 收到PDF窗口的关闭请求，关闭模态框...')
+        closeModal()
+      } else if (event.data.type === 'SIGNATURE_SUBMITTED') {
+        console.log('[ReservationModal] 收到签名提交成功消息，触发submit事件...')
+        // 🔧 签名提交成功后，触发submit事件，通知父组件显示"预约已提交"消息
+        emit('submit', {
+          reservation_id: event.data.reservation_id,
+          report_type: event.data.report_type
+        })
+      }
+    }
+
     onMounted(() => {
       if (props.visible) {
         openModal()
       }
+
+      // 添加消息监听器
+      window.addEventListener('message', handleMessageFromPDFWindow)
+    })
+
+    onUnmounted(() => {
+      // 移除消息监听器
+      window.removeEventListener('message', handleMessageFromPDFWindow)
     })
 
     return {
@@ -865,7 +1256,24 @@ export default {
       handleFormSubmit,
       submitReservation,
       submitReservationAndViewPDF,
-      closeModal
+      closeModal,
+      // 新增的状态和方法
+      currentReservationId,
+      downloading,
+      uploading,
+      uploadedPDF,
+      pdfFileInput,
+      downloadPDFReport,
+      triggerUploadPDF,
+      handlePDFUpload,
+      openSignaturePage,
+      // 上传进度相关
+      showUploadProgress,
+      uploadProgress,
+      uploadSuccess,
+      uploadError,
+      closeUploadProgressModal,
+      closeUploadProgressAndOpenSignature
     }
   }
 }

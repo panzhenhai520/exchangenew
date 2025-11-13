@@ -26,7 +26,7 @@ def validate_exchange(*args):
     logger.info("🔍 当前用户: %s", current_user)
 
     if not data or not all(k in data for k in ['type', 'currency_id', 'amount']):
-        logger.error("[ERROR] 缺少必要参数: %s", data)
+        logger.error("❌ 缺少必要参数: %s", data)
         language = get_request_language(request)
         return jsonify({'success': False, 'message': t('validation.missing_required_params', language)}), 400
 
@@ -92,7 +92,7 @@ def validate_exchange(*args):
                 logger.info("🔍 查询网点信息: %s", branch)
 
                 if not branch or not branch.base_currency_id:
-                    logger.error("[ERROR] 网点信息不完整: branch=%s, base_currency_id=%s", branch, branch.base_currency_id if branch else None)
+                    logger.error("❌ 网点信息不完整: branch=%s, base_currency_id=%s", branch, branch.base_currency_id if branch else None)
                     language = get_request_language(request)
                     return jsonify({
                         'success': False,
@@ -110,7 +110,7 @@ def validate_exchange(*args):
                 logger.info("🔍 本币余额记录: %s", base_currency_balance)
 
                 if not base_currency_balance:
-                    logger.error("[ERROR] 本币余额记录不存在")
+                    logger.error("❌ 本币余额记录不存在")
                     language = get_request_language(request)
                     return jsonify({
                         'success': False,
@@ -143,7 +143,7 @@ def validate_exchange(*args):
                                   current_balance=current_balance,
                                   shortfall=shortfall)
 
-                    logger.info("[ERROR] 本币余额不足: %s", error_msg)
+                    logger.info("❌ 本币余额不足: %s", error_msg)
 
                     return jsonify({
                         'success': False,
@@ -152,10 +152,10 @@ def validate_exchange(*args):
                         'required_amount': local_amount_needed,
                         'shortfall': shortfall
                     }), 400
-                logger.info("[OK] 本币余额充足")
+                logger.info("✅ 本币余额充足")
 
             except Exception as exc:
-                logger.error("[ERROR] 检查本币余额时出错: %s", str(exc))
+                logger.error("❌ 检查本币余额时出错: %s", str(exc))
                 language = get_request_language(request)
                 return jsonify({
                     'success': False,
@@ -174,14 +174,14 @@ def validate_exchange(*args):
                               currency_code=currency.currency_code,
                               current_stock=float(balance.balance),
                               missing_amount=amount - float(balance.balance))
-                logger.info("[ERROR] 外币库存不足: %s", error_msg)
+                logger.info("❌ 外币库存不足: %s", error_msg)
 
                 return jsonify({
                     'success': False,
                     'message': error_msg,
                     'available_amount': float(balance.balance)
                 }), 400
-            logger.info("[OK] 外币库存充足")
+            logger.info("✅ 外币库存充足")
 
         # ⭐ 新增：检查AMLO/BOT触发条件
         amlo_triggered = False
@@ -238,11 +238,11 @@ def validate_exchange(*args):
                         'audited_at': str(reservation_result[7]) if reservation_result[7] else None
                     }
 
-                    logger.info(f"[OK] 找到已审核通过的预约: {reservation_info['reservation_no']}, 审核金额: {approved_amount}")
+                    logger.info(f"✅ 找到已审核通过的预约: {reservation_info['reservation_no']}, 审核金额: {approved_amount}")
 
                     # 检查当前交易金额是否在审核金额范围内
                     if transaction_amount_thb <= approved_amount:
-                        logger.info(f"[OK] 交易金额 {transaction_amount_thb} <= 审核金额 {approved_amount}，允许交易，无需重新触发AMLO")
+                        logger.info(f"✅ 交易金额 {transaction_amount_thb} <= 审核金额 {approved_amount}，允许交易，无需重新触发AMLO")
                         # 直接允许交易，不触发AMLO检查
                         language = get_request_language(request)
                         response_data = {
@@ -259,7 +259,7 @@ def validate_exchange(*args):
                         }
                         return jsonify(response_data)
                     else:
-                        logger.warning(f"[WARNING] 交易金额 {transaction_amount_thb} > 审核金额 {approved_amount}，需要阻止交易")
+                        logger.warning(f"⚠️ 交易金额 {transaction_amount_thb} > 审核金额 {approved_amount}，需要阻止交易")
                         # 金额超过审核额度，阻止交易
                         language = get_request_language(request)
                         return jsonify({
@@ -309,7 +309,7 @@ def validate_exchange(*args):
                     'message_th': amlo_result.get('message_th', ''),
                     'trigger_rules': amlo_result.get('trigger_rules', [])
                 }
-                logger.info("[OK] AMLO-1-01 触发!")
+                logger.info("✅ AMLO-1-01 触发!")
             else:
                 logger.info("ℹ️ AMLO-1-01 未触发")
 
@@ -318,7 +318,7 @@ def validate_exchange(*args):
 
         except Exception as trigger_error:
             # 触发检查失败不应阻止库存验证，只记录警告
-            logger.warning(f"[WARNING] AMLO/BOT触发检查失败: {str(trigger_error)}")
+            logger.warning(f"⚠️ AMLO/BOT触发检查失败: {str(trigger_error)}")
             import traceback
             traceback.print_exc()
 
@@ -338,10 +338,10 @@ def validate_exchange(*args):
 
         if amlo_triggered or bot_triggered:
             response_data['triggered'] = True
-            logger.info("[WARNING] 触发AMLO/BOT规则，返回triggered=True")
+            logger.info("⚠️ 触发AMLO/BOT规则，返回triggered=True")
         else:
             response_data['triggered'] = False
-            logger.info("[OK] 未触发AMLO/BOT规则，返回triggered=False")
+            logger.info("✅ 未触发AMLO/BOT规则，返回triggered=False")
 
         return jsonify(response_data)
 

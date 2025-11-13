@@ -334,8 +334,8 @@ Multiple PDF generation systems exist for different purposes (all in `src/servic
 1. `bot_excel_service.py`: BOT Excel reports
 2. `bot_template_based_generator.py`: Template-driven BOT reports
 3. `bot_template_generator_v3.py`: Latest BOT template generator
-4. `amlo_pdf_filler_pymupdf.py`: AMLO form filling (may use PyMuPDF if available)
-5. Font support: Thai fonts in `src/fonts/Sarabun-*.ttf` for multilingual PDFs
+4. `amlo_pdf_filler_overlay.py`: AMLO form filling using ReportLab overlay (supports Chinese, Thai, English)
+5. Font support: SimHei for Chinese, Sarabun fonts for Thai in `src/fonts/` for multilingual PDFs
 
 **Testing PDFs:**
 - Test scripts in `src/services/pdf/test_pdf_generator.py`

@@ -101,6 +101,21 @@ export default {
     updateSuccess: 'Updated successfully',
     operationFailed: 'Operation failed',
 
+    // AMLO reservation workflow
+    fillReportAction: 'Download report',
+    uploadReportAction: 'Upload report',
+    signReportAction: 'Sign report',
+    formNotReady: 'Form data is still loading',
+    downloadReady: 'Saved as {filename}',
+    downloadFailed: 'Failed to download report',
+    uploadSuccess: 'Report uploaded successfully',
+    uploadSuccessToSign: 'Please click “Sign” to continue on the pen display',
+    uploadFailed: 'Failed to upload report',
+    uploadBeforeSigning: 'Please upload the filled report before signing',
+    onlyPdfSupported: 'Only PDF files are supported',
+    popupBlocked: 'Please allow popups to open the signing window',
+    defaultReportFilename: 'AMLO-report',
+
     // Field Management Specific
     fieldName: 'Field Name',
     fieldNamePlaceholder: 'English field name, e.g. customer_name',

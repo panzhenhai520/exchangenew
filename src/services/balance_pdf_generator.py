@@ -45,7 +45,7 @@ class BalancePDFGenerator(PDFBase):
             dir_path = os.path.dirname(file_path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
-                logger.info(f"[OK] 目录创建成功: {dir_path}")
+                logger.info(f"✅ 目录创建成功: {dir_path}")
             
             logger.info(f"【调试】BalancePDFGenerator.generate_pdf被调用 - 文件: {file_path}, 类型: {balance_type}, 语言: {language}")
             logger.info(f"【调试】交易数据: {transaction_data}")

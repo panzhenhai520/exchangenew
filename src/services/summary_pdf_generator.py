@@ -36,7 +36,7 @@ class SummaryPDFGenerator(PDFBase):
             dir_path = os.path.dirname(file_path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
-                logger.info(f"[OK] 目录创建成功: {dir_path}")
+                logger.info(f"✅ 目录创建成功: {dir_path}")
             
             # 初始化字体和样式
             font_name = SummaryPDFGenerator.init_fonts(language)

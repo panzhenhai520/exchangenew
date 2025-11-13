@@ -1,0 +1,638 @@
+[
+  {
+    "﻿page": "1",
+    "field_name": "fill_52",
+    "type": "text",
+    "nearby_th_label": "สถาบันการเงิน-สาขา-ใช้ ๒ หลักสุด. ท ้า ย -เลขลำ ดับรายงาน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_3",
+    "type": "text",
+    "nearby_th_label": "เพิ่มเติม ครั้งท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_1",
+    "type": "text",
+    "nearby_th_label": "ลงวันท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_2",
+    "type": "text",
+    "nearby_th_label": "รวมเอกสารจํ านวนทั้งส้ิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box2",
+    "type": "checkbox",
+    "nearby_th_label": "รายงานฉบับหลัก"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box3",
+    "type": "checkbox",
+    "nearby_th_label": "รายงานฉบับแกไข"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_1",
+    "type": "text",
+    "nearby_th_label": "交易办理人身份证号码"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_4",
+    "type": "text",
+    "nearby_th_label": "๑.๑ ชื่อ-นามสกุล"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box4",
+    "type": "checkbox",
+    "nearby_th_label": "ทํ าธุรกรรมดวยตนเอง (หากมีผูรวมทํ าธุรกรรม ใหระบุรายละเอียดของผูรวมทํ าธุรกรรมในสวนที่ ๒ ดวย)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box5",
+    "type": "checkbox",
+    "nearby_th_label": "ทํ าธุรกรรมแทนผูอื่น (โปรดระบุรายละเอียดของผูมอบหมาย หรือผูมอบอํ านาจในสวนที่ ๒ ดวย)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_5、fill_5_2",
+    "type": "text",
+    "nearby_th_label": "๑.๒ ที่อยู"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_7",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_8",
+    "type": "text",
+    "nearby_th_label": "โทรสาร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_9",
+    "type": "text",
+    "nearby_th_label": "๑.๓ อาชีพ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_10",
+    "type": "text",
+    "nearby_th_label": "สถานที่ทํ างาน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_11",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_12",
+    "type": "text",
+    "nearby_th_label": "๑.๔ สถานที่สะดวกในการติดตอ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_13",
+    "type": "text",
+    "nearby_th_label": "๑.๔ สถานที่สะดวกในการติดตอ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_14",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_15",
+    "type": "text",
+    "nearby_th_label": "โทรสาร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box6",
+    "type": "checkbox",
+    "nearby_th_label": "บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิสา"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box7",
+    "type": "checkbox",
+    "nearby_th_label": "หนังสือเดิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box8",
+    "type": "checkbox",
+    "nearby_th_label": "ใบสํ าคัญประจํ าตัวคนตาง"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box9",
+    "type": "checkbox",
+    "nearby_th_label": "อื่นๆ (โปรดระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_6",
+    "type": "text",
+    "nearby_th_label": "โปรดระบุ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_16",
+    "type": "text",
+    "nearby_th_label": "เลขท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_17",
+    "type": "text",
+    "nearby_th_label": "ออกใหโดย"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_18",
+    "type": "text",
+    "nearby_th_label": "เมื่อ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_19",
+    "type": "text",
+    "nearby_th_label": "หมดอาย"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box10",
+    "type": "checkbox",
+    "nearby_th_label": "ผูรวมทํ าธุรกรรม"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_2",
+    "type": "text",
+    "nearby_th_label": "共同交易人身份证号码"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box11",
+    "type": "checkbox",
+    "nearby_th_label": "ผูมอบหมาย"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box12",
+    "type": "checkbox",
+    "nearby_th_label": "ผู้มอบอำ นาจ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_20",
+    "type": "text",
+    "nearby_th_label": "๒.๑ ชื่อ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_21、fill_22",
+    "type": "text",
+    "nearby_th_label": "๒.๒ ที่อยู/สถานที่ตั้ง"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_23",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_24",
+    "type": "text",
+    "nearby_th_label": "โทรสาร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_25",
+    "type": "text",
+    "nearby_th_label": "๒.๓ อาชีพ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_26",
+    "type": "text",
+    "nearby_th_label": "สถานที่ทํ างาน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_27",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_28",
+    "type": "text",
+    "nearby_th_label": "ในกรณีเปนนิติบุคคลใหระบุประเภทการประกอบการ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_29、fill_30",
+    "type": "text",
+    "nearby_th_label": "๒.๔ สถานที่สะดวกในการติดตอ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_31",
+    "type": "text",
+    "nearby_th_label": "โทรศัพท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_32",
+    "type": "text",
+    "nearby_th_label": "โทรสาร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box13",
+    "type": "checkbox",
+    "nearby_th_label": " บัตรประจํ าตัวประชาชน/ขาราชการ/พนักงานรัฐวิสาห"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box14",
+    "type": "checkbox",
+    "nearby_th_label": "หนังสือเดินทาง"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box15",
+    "type": "checkbox",
+    "nearby_th_label": "ใบสํ าคัญประจํ าตัวคนตางดาว "
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box16",
+    "type": "checkbox",
+    "nearby_th_label": "หนังสือรับรองขอความในทะเบียนที่นายทะเบียนออกใหไมเกิน ๑ เดือน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box17",
+    "type": "checkbox",
+    "nearby_th_label": "อื่นๆ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_56",
+    "type": "text",
+    "nearby_th_label": "โปรดระบุ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_33",
+    "type": "text",
+    "nearby_th_label": "เลขท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_34",
+    "type": "text",
+    "nearby_th_label": "ออกใหโดย"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_35",
+    "type": "text",
+    "nearby_th_label": "เมื่อ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_36",
+    "type": "text",
+    "nearby_th_label": "หมดอาย"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_37",
+    "type": "text",
+    "nearby_th_label": "วันที่ทํ าธุรกรรม"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_38",
+    "type": "text",
+    "nearby_th_label": "เดือน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_39",
+    "type": "text",
+    "nearby_th_label": "พ.ศ."
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48",
+    "type": "text",
+    "nearby_th_label": "左จํ านวน (บาท)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box18",
+    "type": "checkbox",
+    "nearby_th_label": "左ฝากเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_3",
+    "type": "text",
+    "nearby_th_label": "左เขาบัญชีเลขที"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_5",
+    "type": "text",
+    "nearby_th_label": "左บัญชีที่เกี่ยวของ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box19",
+    "type": "checkbox",
+    "nearby_th_label": "左ซื้อตราสารการเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box20",
+    "type": "checkbox",
+    "nearby_th_label": "左เช็ค"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box21",
+    "type": "checkbox",
+    "nearby_th_label": "左ดราฟต"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box22",
+    "type": "checkbox",
+    "nearby_th_label": "左อื่นๆ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_40",
+    "type": "text",
+    "nearby_th_label": "左อื่นๆ "
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box23",
+    "type": "checkbox",
+    "nearby_th_label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_42",
+    "type": "text",
+    "nearby_th_label": "左ซื้อเงินตราตางประเทศ (โปรดระบุสกุลเงิน)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box24",
+    "type": "checkbox",
+    "nearby_th_label": "左อื่นๆ(ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill42_2",
+    "type": "text",
+    "nearby_th_label": "左อื่นๆ(ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_50",
+    "type": "text",
+    "nearby_th_label": "左รวมเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "left_amount",
+    "type": "text",
+    "nearby_th_label": "左จํานวนเงินเปนตัวอักษร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box25",
+    "type": "checkbox",
+    "nearby_th_label": "右ถอนเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_4",
+    "type": "text",
+    "nearby_th_label": "右จากบัญชีเลขท"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "comb_6",
+    "type": "text",
+    "nearby_th_label": "右บัญชีที่เกี่ยวของ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box26",
+    "type": "checkbox",
+    "nearby_th_label": "右ขายตราสารการเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box27",
+    "type": "checkbox",
+    "nearby_th_label": "右เช็ค"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box28",
+    "type": "checkbox",
+    "nearby_th_label": "右ดราฟต"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_41",
+    "type": "text",
+    "nearby_th_label": "右อื่นๆ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box29",
+    "type": "checkbox",
+    "nearby_th_label": "右อื่นๆ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box30",
+    "type": "checkbox",
+    "nearby_th_label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_43",
+    "type": "text",
+    "nearby_th_label": "右ขายเงินตราตางประเทศ (โปรดระบุสกุลเงิน)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_45",
+    "type": "text",
+    "nearby_th_label": "右อื่นๆ(ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box31",
+    "type": "checkbox",
+    "nearby_th_label": "右อื่นๆ(ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49",
+    "type": "text",
+    "nearby_th_label": "右จํ านวน (บาท)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_51",
+    "type": "text",
+    "nearby_th_label": "右จํ านวน (บาท)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "right_amount",
+    "type": "text",
+    "nearby_th_label": "右จํานวนเงินเปนตัวอักษร"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_46",
+    "type": "text",
+    "nearby_th_label": "๓.๒  ชื่อผูรับประโยชนในการทํ าธุรกรรม (ถามี)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_47",
+    "type": "text",
+    "nearby_th_label": "๓.๓  วัตถุประสงคในการทํ าธุรกรรม"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box32",
+    "type": "checkbox",
+    "nearby_th_label": "สถาบันการเงินเปนผูบันทึกขอเท็จจริง"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "Check Box33",
+    "type": "checkbox",
+    "nearby_th_label": "ลูกคาไมลงลายมือชื่อ"
+  },
+  {
+    "﻿page": "2",
+    "field_name": "fill_1_2",
+    "type": "text",
+    "nearby_th_label": "๑. เมื่อมีการทํ าธุรกรรมที่ใชเงินสด “ตั้งแต ๒ ลานบาทขึ้นไป ” ผูทํ าธุรกรรมตองกรอกแบบรายงานการทํ าธุรกรรม โดยใหเลือกชอง “รายงานฉบับหลัก”"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_1",
+    "type": "text",
+    "nearby_th_label": "ฝากเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_2",
+    "type": "text",
+    "nearby_th_label": "ซื้อตราสารการเงิน (เช็ค)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_3",
+    "type": "text",
+    "nearby_th_label": "ซื้อตราสารการเงิน (ดราฟต์)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_4",
+    "type": "text",
+    "nearby_th_label": "ซื้อตราสารการเงิน (อื่นๆ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_5",
+    "type": "text",
+    "nearby_th_label": "ซื้อเงินตราต่างประเทศ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_6",
+    "type": "text",
+    "nearby_th_label": "อื่นๆ (ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_48_7",
+    "type": "text",
+    "nearby_th_label": "อื่นๆ เพิ่มเติม"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_1",
+    "type": "text",
+    "nearby_th_label": "ถอนเงิน"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_2",
+    "type": "text",
+    "nearby_th_label": "ขายตราสารการเงิน (เช็ค)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_3",
+    "type": "text",
+    "nearby_th_label": "ขายตราสารการเงิน (ดราฟต์)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_4",
+    "type": "text",
+    "nearby_th_label": "ขายตราสารการเงิน (อื่นๆ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_5",
+    "type": "text",
+    "nearby_th_label": "ขายเงินตราต่างประเทศ"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_6",
+    "type": "text",
+    "nearby_th_label": "อื่นๆ (ระบุ)"
+  },
+  {
+    "﻿page": "1",
+    "field_name": "fill_49_7",
+    "type": "text",
+    "nearby_th_label": "อื่นๆ เพิ่มเติม"
+  }
+]

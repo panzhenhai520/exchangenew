@@ -101,6 +101,21 @@ export default {
     updateSuccess: '更新成功',
     operationFailed: '操作失败',
 
+    // AMLO 表单流程
+    fillReportAction: '填写报告',
+    uploadReportAction: '上传报告',
+    signReportAction: '签名',
+    formNotReady: '表单数据尚未准备好',
+    downloadReady: '已生成 {filename}',
+    downloadFailed: '下载报告失败',
+    uploadSuccess: '报告上传成功',
+    uploadSuccessToSign: '请点击“签名”并在扩展屏上签署',
+    uploadFailed: '上传报告失败',
+    uploadBeforeSigning: '请先上传填写完成的报告再签名',
+    onlyPdfSupported: '仅支持上传 PDF 文件',
+    popupBlocked: '浏览器阻止弹窗，请允许打开签名窗口',
+    defaultReportFilename: 'AMLO-报告',
+
     // 字段管理相关
     fieldName: '字段名称',
     fieldNamePlaceholder: '英文字段名，如 customer_name',

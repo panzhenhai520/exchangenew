@@ -295,15 +295,15 @@ def reverse_transaction(current_user, *args):
                 if (completed_eod_status.business_start_time and 
                     completed_eod_status.business_end_time and
                     completed_eod_status.business_start_time <= transaction_datetime <= completed_eod_status.business_end_time):
-                    logger.warning(f"[ERROR] 冲正被拒绝 - 交易在日结业务时间范围内")
+                    logger.warning(f"❌ 冲正被拒绝 - 交易在日结业务时间范围内")
                     return jsonify({
                         'success': False,
                         'message': f'该交易发生在 {transaction_datetime.strftime("%Y-%m-%d %H:%M:%S")}，在日结业务时间范围内（{completed_eod_status.business_start_time.strftime("%Y-%m-%d %H:%M:%S")} - {completed_eod_status.business_end_time.strftime("%Y-%m-%d %H:%M:%S")}），不允许作废'
                     }), 400
                 else:
-                    logger.info(f"[OK] 冲正检查通过 - 交易不在日结业务时间范围内")
+                    logger.info(f"✅ 冲正检查通过 - 交易不在日结业务时间范围内")
             else:
-                logger.info(f"[OK] 冲正检查通过 - 没有找到相关的已完成日结")
+                logger.info(f"✅ 冲正检查通过 - 没有找到相关的已完成日结")
             
             # 获取币种余额
             balance = session.query(CurrencyBalance).filter_by(
@@ -368,11 +368,11 @@ def reverse_transaction(current_user, *args):
                     
                     logger.info(f"🔄 本币余额更新: {base_balance_before} → {base_balance_after}")
                 else:
-                    logger.warning(f"[WARNING] 未找到本币余额记录: branch_id={transaction.branch_id}, currency_id={branch.base_currency_id}")
+                    logger.warning(f"⚠️ 未找到本币余额记录: branch_id={transaction.branch_id}, currency_id={branch.base_currency_id}")
             
             # 【关键修复】将原交易标记为已冲正状态
             transaction.status = 'reversed'
-            logger.info(f"[OK] 原交易 {transaction_no} 已标记为已冲正状态")
+            logger.info(f"✅ 原交易 {transaction_no} 已标记为已冲正状态")
             
             session.add(reversal_tx)
             session.commit()

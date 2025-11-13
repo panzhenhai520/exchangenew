@@ -356,7 +356,7 @@ class EODService:
             for currency in currencies:
                 # 安全检查：确保currency对象和currency_code字段存在
                 if not currency or not currency.currency_code:
-                    logging.warning(f"[WARNING] 跳过无效币种: currency={currency}")
+                    logging.warning(f"⚠️ 跳过无效币种: currency={currency}")
                     continue
                 
                 # 【关键修改】为每个币种分别计算时间范围和期初余额
@@ -386,12 +386,12 @@ class EODService:
                         currency_change_start_time = prev_eod_status.completed_at
                         currency_change_end_time = eod_status.started_at
                         
-                        logging.info(f"[OK] 币种{currency.currency_code}使用上次日结时间:")
+                        logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
                         logging.info(f"  - 变化开始时间: {currency_change_start_time}")
                         logging.info(f"  - 变化结束时间: {currency_change_end_time}")
                     else:
                         # 如果找不到完成时间，fallback到第一笔交易逻辑
-                        logging.warning(f"[WARNING] 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
+                        logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
                         
                         from routes.app_reports import _calculate_opening_balance_from_transactions
                         
@@ -1034,14 +1034,14 @@ class EODService:
                         logging.info(f"  - {adj['currency_code']}: 期望{expected_balance}, 实际{actual_balance}")
                         logging.info(f"  - 余额记录ID: {balance_record.id}, 更新时间: {balance_record.updated_at}")
                         if abs(actual_balance - expected_balance) > 0.01:
-                            logging.error(f"  [ERROR] 余额更新失败 - {adj['currency_code']}: 期望{expected_balance}, 实际{actual_balance}")
+                            logging.error(f"  ❌ 余额更新失败 - {adj['currency_code']}: 期望{expected_balance}, 实际{actual_balance}")
                         else:
-                            logging.info(f"  [OK] 余额更新成功 - {adj['currency_code']}: {actual_balance}")
+                            logging.info(f"  ✅ 余额更新成功 - {adj['currency_code']}: {actual_balance}")
                     else:
-                        logging.error(f"  [ERROR] 找不到余额记录 - {adj['currency_code']}")
+                        logging.error(f"  ❌ 找不到余额记录 - {adj['currency_code']}")
                 
             except Exception as commit_error:
-                logging.error(f"[ERROR] 余额更新提交失败: {str(commit_error)}")
+                logging.error(f"❌ 余额更新提交失败: {str(commit_error)}")
                 session.rollback()
                 return {'success': False, 'message': f'余额更新提交失败: {str(commit_error)}'}
             
@@ -1049,11 +1049,11 @@ class EODService:
             logging.info(f"🔧 开始验证差额调节合理性...")
             validation_result = EODService.validate_difference_adjustment(eod_id, adjust_data)
             if not validation_result['success']:
-                logging.error(f"[ERROR] 差额调节验证失败: {validation_result['message']}")
+                logging.error(f"❌ 差额调节验证失败: {validation_result['message']}")
                 return {'success': False, 'message': f'差额调节验证失败: {validation_result["message"]}'}
             
             if not validation_result['all_valid']:
-                logging.warning(f"[WARNING] 差额调节验证发现问题:")
+                logging.warning(f"⚠️ 差额调节验证发现问题:")
                 for result in validation_result['validation_results']:
                     if not result['is_valid']:
                         logging.warning(f"  - {result['currency_code']}: {result['message']}")
@@ -1076,7 +1076,7 @@ class EODService:
                 if balance_record:
                     logging.info(f"🔧 提交前余额状态 - {adj['currency_code']}: {balance_record.balance}")
                 else:
-                    logging.error(f"[ERROR] 提交前找不到余额记录 - {adj['currency_code']}")
+                    logging.error(f"❌ 提交前找不到余额记录 - {adj['currency_code']}")
             
             # 【修复】余额更新已提交，无需重复提交
             logging.info(f"🔧 余额更新已完成，无需重复提交")
@@ -1086,9 +1086,9 @@ class EODService:
             
             # 记录验证跳过信息
             for adj in adjusted_currencies:
-                logging.info(f"[OK] 余额更新完成 - {adj['currency_code']}: {adj['balance_before']} -> {adj['balance_after']}")
+                logging.info(f"✅ 余额更新完成 - {adj['currency_code']}: {adj['balance_before']} -> {adj['balance_after']}")
             
-            logging.info(f"[OK] 所有余额更新完成")
+            logging.info(f"✅ 所有余额更新完成")
             
             # 生成差额调节报告 - 异步处理，避免阻塞
             try:
@@ -1124,8 +1124,8 @@ class EODService:
             }
             
         except Exception as e:
-            logging.error(f"[ERROR] 差额调节过程中发生异常: {str(e)}")
-            logging.error(f"[ERROR] 执行事务回滚")
+            logging.error(f"❌ 差额调节过程中发生异常: {str(e)}")
+            logging.error(f"❌ 执行事务回滚")
             session.rollback()
             return {'success': False, 'message': f'差额调节失败: {str(e)}'}
         finally:
@@ -3636,7 +3636,7 @@ class EODService:
                 # 【关键修复】确保时间数据正确传递，直接引用CalGain查询参数
                 if start_time is None or end_time is None:
                     LogService.log_system_event(
-                        f"[WARNING] 警告: start_time或end_time为None，这将导致PDF时间显示错误",
+                        f"⚠️ 警告: start_time或end_time为None，这将导致PDF时间显示错误",
                         operator_id=operator_id,
                         branch_id=branch_id
                     )
@@ -3705,20 +3705,20 @@ class EODService:
                             successful_generations += 1
                             pdf_file_paths[lang] = pdf_result.get('file_path')
                             LogService.log_system_event(
-                                f"[OK] {lang}语言PDF生成成功 - 文件: {filename}, 路径: {pdf_result.get('file_path')}",
+                                f"✅ {lang}语言PDF生成成功 - 文件: {filename}, 路径: {pdf_result.get('file_path')}",
                                 operator_id=operator_id,
                                 branch_id=branch_id
                             )
                         else:
                             error_msg = pdf_result.get('message', '未知错误') if pdf_result else '生成器返回空结果'
                             LogService.log_system_event(
-                                f"[ERROR] {lang}语言PDF生成失败 - 错误: {error_msg}, pdf_result: {pdf_result}",
+                                f"❌ {lang}语言PDF生成失败 - 错误: {error_msg}, pdf_result: {pdf_result}",
                                 operator_id=operator_id,
                                 branch_id=branch_id
                             )
                     except Exception as lang_error:
                         LogService.log_system_event(
-                            f"[ERROR] {lang}语言PDF生成异常 - 错误: {str(lang_error)}",
+                            f"❌ {lang}语言PDF生成异常 - 错误: {str(lang_error)}",
                             operator_id=operator_id,
                             branch_id=branch_id
                         )
@@ -3733,13 +3733,13 @@ class EODService:
                 if successful_generations > 0:
                     pdf_generated = True
                     LogService.log_system_event(
-                        f"[OK] 多语言PDF生成完成 - 成功: {successful_generations}/{len(supported_languages)}, 文件: {list(pdf_file_paths.keys())}",
+                        f"✅ 多语言PDF生成完成 - 成功: {successful_generations}/{len(supported_languages)}, 文件: {list(pdf_file_paths.keys())}",
                         operator_id=operator_id,
                         branch_id=branch_id
                     )
                 else:
                     LogService.log_system_event(
-                        f"[ERROR] 多语言PDF生成失败 - 所有语言都生成失败",
+                        f"❌ 多语言PDF生成失败 - 所有语言都生成失败",
                         operator_id=operator_id,
                         branch_id=branch_id
                     )
@@ -4636,7 +4636,7 @@ class EODService:
             for currency in currencies:
                 # 安全检查：确保currency对象和currency_code字段存在
                 if not currency or not currency.currency_code:
-                    logging.warning(f"[WARNING] 跳过无效币种: currency={currency}")
+                    logging.warning(f"⚠️ 跳过无效币种: currency={currency}")
                     continue
                 
                 # 【关键修改】为每个币种分别计算时间范围和期初余额
@@ -4666,12 +4666,12 @@ class EODService:
                         currency_change_start_time = prev_eod_status.completed_at
                         currency_change_end_time = eod_status.started_at
                         
-                        logging.info(f"[OK] 币种{currency.currency_code}使用上次日结时间:")
+                        logging.info(f"✅ 币种{currency.currency_code}使用上次日结时间:")
                         logging.info(f"  - 变化开始时间: {currency_change_start_time}")
                         logging.info(f"  - 变化结束时间: {currency_change_end_time}")
                     else:
                         # 如果找不到完成时间，fallback到第一笔交易逻辑
-                        logging.warning(f"[WARNING] 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
+                        logging.warning(f"⚠️ 币种{currency.currency_code}上次日结记录存在但completed_at为空，fallback到第一笔交易逻辑")
                         
                         from routes.app_reports import _calculate_opening_balance_from_transactions
                         

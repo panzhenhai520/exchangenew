@@ -265,7 +265,7 @@ class AMLODataMapper:
         payment_method = (form_data.get('payment_method') or reservation_data.get('payment_method') or '').lower()
         is_cash_method = payment_method in ('', 'cash')
 
-        # [WARNING] CRITICAL: direction字段已经是【网点视角】，无需转换
+        # ⚠️ CRITICAL: direction字段已经是【网点视角】，无需转换
         # direction='buy'  = 网点买入外币 = 外币流入 = 左栏 (fill_48, fill_50)
         # direction='sell' = 网点卖出外币 = 外币流出 = 右栏 (fill_49, fill_51)
 
@@ -279,11 +279,11 @@ class AMLODataMapper:
         if is_buy:
             local_amount = float(reservation_data.get('local_amount') or reservation_data.get('amount_thb') or 0)
 
-            # [WARNING] 根据AMLO规则：账号行(fill_48)不填金额，只在具体项目行填金额
+            # ⚠️ 根据AMLO规则：账号行(fill_48)不填金额，只在具体项目行填金额
             pdf_fields['fill_48'] = ''  # 账号行不填金额
             pdf_fields['fill_48_5'] = f"{local_amount:.2f}"  # 买入外币金额填在此行
             pdf_fields['fill_50'] = f"{local_amount:.2f}"
-            # [WARNING] 买入时不应填写右栏字段
+            # ⚠️ 买入时不应填写右栏字段
             pdf_fields['fill_45'] = ''  # 右栏"อื่นๆ(ระบุ)"应为空
 
             try:
@@ -345,7 +345,7 @@ class AMLODataMapper:
             foreign_amount = form_data.get('foreign_amount') or reservation_data.get('amount')
             foreign_text = self._format_foreign_amount(foreign_amount)
 
-            # [WARNING] 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
+            # ⚠️ 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
             payment_notation = '(ธนบัตร)' if is_cash_method else '(โอน)'
 
             if currency_code and foreign_text:
@@ -370,7 +370,7 @@ class AMLODataMapper:
         elif is_sell:
             local_amount = float(reservation_data.get('local_amount') or reservation_data.get('amount_thb') or 0)
 
-            # [WARNING] 根据AMLO规则：账号行(fill_49)不填金额，只在具体项目行填金额
+            # ⚠️ 根据AMLO规则：账号行(fill_49)不填金额，只在具体项目行填金额
             pdf_fields['fill_49'] = ''  # 账号行不填金额
             pdf_fields['fill_49_5'] = f"{local_amount:.2f}"  # 卖出外币金额填在此行
             pdf_fields['fill_51'] = f"{local_amount:.2f}"
@@ -453,7 +453,7 @@ class AMLODataMapper:
             foreign_amount = form_data.get('foreign_amount') or reservation_data.get('amount')
             foreign_text = self._format_foreign_amount(foreign_amount)
 
-            # [WARNING] 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
+            # ⚠️ 根据AMLO规则：现金交易标注(ธนบัตร)，转账标注(โอน)
             payment_notation = '(ธนบัตร)' if is_cash_method else '(โอน)'
 
             if currency_code and foreign_text:

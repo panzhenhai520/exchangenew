@@ -211,6 +211,9 @@ export default {
     // 支付方式相关翻译
     "payment_method": "支付方式",
     "payment_cash": "现金",
+    "payment_bank_transfer": "银行转账",
+    "payment_fcd_account": "外币账户",
+    "payment_other": "其他方式",
     "payment_instrument_cheque": "金融票据(支票)",
     "payment_instrument_draft": "金融票据(银行汇票)",
     "payment_instrument_other": "金融票据(其他票据)",

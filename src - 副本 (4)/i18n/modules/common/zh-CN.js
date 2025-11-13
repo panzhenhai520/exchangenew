@@ -26,6 +26,8 @@ export default {
     "welcome": "欢迎使用",
     "loading": "加载中...",
     "saving": "保存中...",
+    "downloading": "下载中...",
+    "uploading": "上传中...",
     "success": "成功",
     "error": "错误",
     "warning": "警告",

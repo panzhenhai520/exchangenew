@@ -172,7 +172,7 @@ def main():
         for key in sorted(report['missing_keys']):
             print(f"  - {key}")
     else:
-        print("\n[OK] 所有翻译key都已找到！")
+        print("\n✅ 所有翻译key都已找到！")
     
     # 保存报告到文件
     report_file = 'i18n_check_report.json'

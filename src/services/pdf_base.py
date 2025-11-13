@@ -306,8 +306,8 @@ class PDFBase:
         # 【修复】确保目录存在
         try:
             os.makedirs(receipts_dir, exist_ok=True)
-            logger.info(f"[OK] 目录创建成功: {receipts_dir}")
+            logger.info(f"✅ 目录创建成功: {receipts_dir}")
         except Exception as e:
-            logger.error(f"[ERROR] 目录创建失败: {receipts_dir}, 错误: {str(e)}")
+            logger.error(f"❌ 目录创建失败: {receipts_dir}, 错误: {str(e)}")
         
         return os.path.join(receipts_dir, filename) 

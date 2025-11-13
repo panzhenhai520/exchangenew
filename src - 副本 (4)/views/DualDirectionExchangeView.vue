@@ -12,71 +12,33 @@
 
         <!-- 主界面区域 -->
         <div class="row">
-          <!-- 左侧：币种和面值选择器 + 历史预约列表 -->
+          <!-- 左侧：币种和面值选择器 + 操作指导 -->
           <div class="col-md-4">
-            <!-- 历史预约列表卡片 -->
-            <div class="card mb-3 reservation-list-card">
+            <!-- 操作指导卡片 -->
+            <div class="card mb-3 guidance-card">
               <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h6 class="mb-0">
-                    <font-awesome-icon :icon="['fas', 'history']" class="me-2" />
-                    {{ $t('exchange.reservation_history') || '历史预约' }}
-                  </h6>
-                  <button class="btn btn-sm btn-outline-primary" @click="loadReservations">
-                    <font-awesome-icon :icon="['fas', 'sync']" :spin="loadingReservations" />
-                  </button>
-                </div>
+                <h6 class="mb-0">
+                  <font-awesome-icon :icon="['fas', 'info-circle']" class="me-2" />
+                  {{ $t('exchange.operation_guidance') }}
+                </h6>
               </div>
-              <div class="card-body p-2">
-                <!-- 快速搜索 -->
-                <div class="mb-2">
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
-                    v-model="reservationSearch"
-                    :placeholder="$t('exchange.search_customer_id') || '搜索客户证件号'"
-                    @input="onSearchReservation"
-                  />
-                </div>
-
-                <!-- 预约列表 -->
-                <div class="reservation-list" style="max-height: 300px; overflow-y: auto;">
-                  <div v-if="loadingReservations" class="text-center py-3">
-                    <div class="spinner-border spinner-border-sm" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
+              <div class="card-body">
+                <div class="operation-steps">
+                  <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-text">{{ $t('exchange.select_currency_and_denomination') }}</span>
                   </div>
-
-                  <div v-else-if="filteredReservations.length === 0" class="text-center text-muted py-3">
-                    <small>{{ $t('exchange.no_reservations') || '暂无预约记录' }}</small>
+                  <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-text">{{ $t('exchange.add_to_combination') }}</span>
                   </div>
-
-                  <div
-                    v-else
-                    v-for="reservation in filteredReservations"
-                    :key="reservation.id"
-                    class="reservation-item p-2 mb-1 border rounded"
-                    :class="{ 'bg-light': selectedReservation?.id === reservation.id }"
-                    @click="selectReservation(reservation)"
-                    style="cursor: pointer;"
-                  >
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div class="flex-grow-1">
-                        <div class="fw-bold small">{{ reservation.customer_name }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">{{ reservation.customer_id }}</div>
-                      </div>
-                      <span class="badge" :class="{
-                        'bg-warning': reservation.status === 'pending',
-                        'bg-success': reservation.status === 'approved',
-                        'bg-danger': reservation.status === 'rejected'
-                      }">
-                        {{ getReservationStatusText(reservation.status) }}
-                      </span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-1">
-                      <small class="text-muted">{{ formatAmount(reservation.local_amount) }} THB</small>
-                      <small class="text-muted">{{ reservation.report_type }}</small>
-                    </div>
+                  <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-text">{{ $t('exchange.fill_customer_info') }}</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">4</span>
+                    <span class="step-text">{{ $t('exchange.validate_and_execute') }}</span>
                   </div>
                 </div>
               </div>
@@ -295,12 +257,12 @@
                           class="form-check-input"
                           type="radio"
                           name="paymentMethod"
-                          id="paymentInstrumentCheque"
-                          value="instrument_cheque"
+                          id="paymentBankTransfer"
+                          value="bank_transfer"
                           v-model="customerInfo.payment_method"
                         >
-                        <label class="form-check-label" for="paymentInstrumentCheque">
-                          {{ $t('exchange.payment_instrument_cheque') }}
+                        <label class="form-check-label" for="paymentBankTransfer">
+                          {{ $t('exchange.payment_bank_transfer') }}
                         </label>
                       </div>
                       <div class="form-check">
@@ -308,25 +270,12 @@
                           class="form-check-input"
                           type="radio"
                           name="paymentMethod"
-                          id="paymentInstrumentDraft"
-                          value="instrument_draft"
+                          id="paymentFcdAccount"
+                          value="fcd_account"
                           v-model="customerInfo.payment_method"
                         >
-                        <label class="form-check-label" for="paymentInstrumentDraft">
-                          {{ $t('exchange.payment_instrument_draft') }}
-                        </label>
-                      </div>
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="paymentMethod"
-                          id="paymentInstrumentOther"
-                          value="instrument_other"
-                          v-model="customerInfo.payment_method"
-                        >
-                        <label class="form-check-label" for="paymentInstrumentOther">
-                          {{ $t('exchange.payment_instrument_other') }}
+                        <label class="form-check-label" for="paymentFcdAccount">
+                          {{ $t('exchange.payment_fcd_account') }}
                         </label>
                       </div>
                       <div class="form-check">
@@ -339,20 +288,9 @@
                           v-model="customerInfo.payment_method"
                         >
                         <label class="form-check-label" for="paymentOther">
-                          {{ $t('exchange.payment_other_method') }}
+                          {{ $t('exchange.payment_other') }}
                         </label>
                       </div>
-                    </div>
-                    <div class="form-check mt-2" v-if="isInstrumentPayment(customerInfo.payment_method)">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="paymentInstrumentForeignAccount"
-                        v-model="customerInfo.payment_is_foreign_account"
-                      >
-                      <label class="form-check-label" for="paymentInstrumentForeignAccount">
-                        {{ $t('exchange.payment_is_foreign_account') }}
-                      </label>
                     </div>
                   </div>
                 </div>
@@ -600,6 +538,7 @@ export default {
       availableCurrencies: [],
       denominationCombinations: [],
       countries: [], // 国家列表
+      currentCountryLanguage: 'zh',
 
       // 客户信息
       customerInfo: {
@@ -610,8 +549,6 @@ export default {
         address: '',
         remarks: '',
         payment_method: 'cash', // 默认现金支付
-        payment_is_foreign_account: false, // 是否使用外币账户
-        use_fcd: false, // 与是否外币账户保持同步
         payment_method_note: '' // 其他付款方式备注
       },
 
@@ -634,13 +571,7 @@ export default {
       exchangeType: 'normal', // 'normal' | 'asset_backed'
       selectedFundingSource: '', // 资金来源代码
       fundingSourceOptions: [], // 资金来源选项列表
-      LARGE_AMOUNT_THRESHOLD: 2000000, // 200万本币阈值
-
-      // 历史预约列表相关
-      reservations: [], // 所有预约记录
-      loadingReservations: false, // 加载状态
-      reservationSearch: '', // 搜索关键词
-      selectedReservation: null // 当前选中的预约
+      LARGE_AMOUNT_THRESHOLD: 2000000 // 200万本币阈值
     }
   },
   computed: {
@@ -650,19 +581,6 @@ export default {
         this.customerInfo.name.trim() !== '' &&
         this.validationResult?.success
       )
-    },
-
-    // 过滤后的预约列表
-    filteredReservations() {
-      if (!this.reservationSearch.trim()) {
-        return this.reservations.slice(0, 10) // 只显示最近10条
-      }
-
-      const searchLower = this.reservationSearch.toLowerCase()
-      return this.reservations.filter(r =>
-        r.customer_id?.toLowerCase().includes(searchLower) ||
-        r.customer_name?.toLowerCase().includes(searchLower)
-      ).slice(0, 10)
     },
 
     involvedCurrencies() {
@@ -775,13 +693,18 @@ export default {
     await this.loadUserBaseCurrency()
     await this.loadCountries()
     await this.loadFundingSources() // 加载资金来源选项
-    await this.loadReservations() // 加载历史预约列表
 
     // 监听语言变化，重新加载国家列表
-    this.$watch('$i18n.locale', async (newLocale) => {
-      console.log('[DualDirectionExchangeView] 语言变化，重新加载国家列表:', newLocale)
-      await this.loadCountries()
-    })
+    this.$watch(
+      () => this.$i18n?.locale,
+      async (newLocale, oldLocale) => {
+        if (!newLocale || newLocale === oldLocale) {
+          return
+        }
+        console.log('[DualDirectionExchangeView] 语言变化，重新加载国家列表:', newLocale)
+        await this.loadCountries(newLocale)
+      }
+    )
 
     // 监听客户ID变化，当用户填写客户ID时自动检查AMLO触发
     this.$watch('customerInfo.id_number', async (newValue, oldValue) => {
@@ -799,39 +722,40 @@ export default {
       }
     })
 
-    this.$watch('customerInfo.payment_method', (newValue) => {
-      if (!this.isInstrumentPayment(newValue)) {
-        this.customerInfo.payment_is_foreign_account = false
-        this.customerInfo.use_fcd = false
-      }
-      if (newValue !== 'other') {
-        this.customerInfo.payment_method_note = ''
-      }
-    })
-
-    this.$watch('customerInfo.payment_is_foreign_account', (newValue) => {
-      this.customerInfo.use_fcd = !!newValue
-    })
+    // 监听来自PDF窗口的消息（签名提交成功）
+    window.addEventListener('message', this.handlePDFWindowMessage)
+  },
+  beforeUnmount() {
+    // 移除消息监听器
+    window.removeEventListener('message', this.handlePDFWindowMessage)
   },
   methods: {
-    isInstrumentPayment(method) {
-      return ['instrument_cheque', 'instrument_draft', 'instrument_other'].includes(method)
-    },
-
-    async loadCountries() {
+    async loadCountries(localeOverride) {
       try {
         console.log('[DualDirectionExchangeView] 开始加载国家列表...')
-        const language = this.$i18n.locale || 'zh' // 获取当前语言
+        const locale = localeOverride || this.$i18n?.locale || 'zh-CN'
+        const language = this.resolveCountryLanguage(locale)
         console.log('[DualDirectionExchangeView] 当前语言:', language)
-        const response = await this.$api.get(`/system/countries?language=${language}&active_only=true`)
+
+        if (this.currentCountryLanguage === language && this.countries.length) {
+          console.log('[DualDirectionExchangeView] 国家列表已是最新语言，跳过重新加载')
+          return
+        }
+
+        const response = await this.$api.get('/system/countries?language=' + language + '&active_only=true')
         console.log('[DualDirectionExchangeView] 国家API响应:', response.data)
         if (response.data.success) {
-          this.countries = response.data.countries || []
+          const countries = response.data.countries || []
+          this.countries = countries.map(country => ({
+            ...country,
+            country_name: country.country_name || this.getCountryNameByLanguage(country, language)
+          }))
+          this.currentCountryLanguage = language
           console.log('[DualDirectionExchangeView] 加载到的国家数量:', this.countries.length)
           // 打印前几个国家的名称，验证语言是否正确
           if (this.countries.length > 0) {
             console.log('[DualDirectionExchangeView] 前3个国家名称:',
-              this.countries.slice(0, 3).map(c => `${c.country_code}: ${c.country_name}`))
+              this.countries.slice(0, 3).map(c => c.country_code + ': ' + c.country_name))
           }
         }
       } catch (error) {
@@ -839,6 +763,30 @@ export default {
         // 失败时不显示错误提示，使用空列表
         this.countries = []
       }
+    },
+
+    resolveCountryLanguage(locale) {
+      const normalized = (locale || 'zh').toLowerCase()
+      if (normalized.startsWith('en')) {
+        return 'en'
+      }
+      if (normalized.startsWith('th')) {
+        return 'th'
+      }
+      return 'zh'
+    },
+
+    getCountryNameByLanguage(country, language) {
+      if (!country) {
+        return ''
+      }
+      if (language === 'en') {
+        return country.country_name_en || country.country_name_th || country.country_name_zh || country.country_name
+      }
+      if (language === 'th') {
+        return country.country_name_th || country.country_name_en || country.country_name_zh || country.country_name
+      }
+      return country.country_name_zh || country.country_name_en || country.country_name_th || country.country_name
     },
 
     async loadFundingSources() {
@@ -994,9 +942,11 @@ export default {
       this.validationError = null
 
       // ===== 新增: 自动检查AMLO触发条件 =====
-      // 无论是否填写客户证件号，都检查AMLO触发（提前警告用户）
-      console.log('[组合变化] 面值组合已变化，自动检查AMLO触发')
-      await this.checkAMLOTriggersAfterChange()
+      // 如果已填写客户证件号，自动检查是否触发AMLO报告
+      if (this.customerInfo.id_number && this.customerInfo.id_number.trim()) {
+        console.log('[组合变化] 检测到客户ID，自动检查AMLO触发')
+        await this.checkAMLOTriggersAfterChange()
+      }
     },
 
     /**
@@ -1006,39 +956,10 @@ export default {
      */
     async checkAMLOTriggersAfterChange() {
       try {
-        console.log('[AMLO触发检查] ========== 开始检查 ==========')
-        console.log('[AMLO触发检查] 原始面值组合数据:', JSON.stringify(this.denominationCombinations, null, 2))
-        console.log('[AMLO触发检查] 组合数量:', this.denominationCombinations.length)
-
-        // 计算交易总金额（转换为THB）和统计买卖方向
+        // 计算交易总金额（转换为THB）
         let totalAmountThb = 0
-        let totalBuyAmountThb = 0
-        let totalSellAmountThb = 0
-        let totalForeignAmount = 0
-        let currency_code = ''
-        let has_buy = false
-        let has_sell = false
-
         for (const combination of this.denominationCombinations) {
-          const localAmount = Math.abs(combination.local_amount || 0)
-          const foreignAmount = Math.abs(combination.subtotal || combination.foreign_amount || 0)
-
-          totalAmountThb += localAmount
-          totalForeignAmount += foreignAmount
-
-          // 获取币种代码（取第一个非空的）
-          if (!currency_code && combination.currency_code) {
-            currency_code = combination.currency_code
-          }
-
-          // 统计买卖方向
-          if (combination.direction === 'buy') {
-            has_buy = true
-            totalBuyAmountThb += localAmount
-          } else if (combination.direction === 'sell') {
-            has_sell = true
-            totalSellAmountThb += localAmount
-          }
+          totalAmountThb += Math.abs(combination.local_amount || 0)
         }
 
         // 如果金额为0，跳过检查
@@ -1047,50 +968,22 @@ export default {
           return
         }
 
-        // 确定交易方向（与测试页面保持一致）
-        let direction = 'buy'  // 默认买入
-        if (has_buy && has_sell) {
-          direction = 'dual_direction'  // 双向交易
-        } else if (has_sell) {
-          direction = 'sell'  // 卖出
-        }
+        console.log('[组合变化] 交易总金额(THB):', totalAmountThb)
 
-        console.log('[组合变化] 交易统计:', {
-          总金额THB: totalAmountThb,
-          买入金额THB: totalBuyAmountThb,
-          卖出金额THB: totalSellAmountThb,
-          外币总金额: totalForeignAmount,
-          币种: currency_code,
-          方向: direction
-        })
-
-        // 构建触发检查数据（与TestTriggerTab.vue保持一致的数据结构）
+        // 构建触发检查数据
         const triggerCheckData = {
           report_type: 'AMLO-1-01',
           data: {
-            // 关键字段 - 与测试页面完全一致
-            total_amount: totalAmountThb,          // ✅ 本币金额
-            amount: totalForeignAmount,             // ✅ 外币金额
-            currency_code: currency_code,           // ✅ 币种代码
-            direction: direction,                   // ✅ 交易方向 (buy/sell/dual_direction)
-            payment_method: this.customerInfo.payment_method || 'cash',  // ✅ 支付方式
-
-            // 客户信息
             customer_id: this.customerInfo.id_number,
             customer_name: this.customerInfo.name || '',
-            customer_country_code: this.customerInfo.country_code || 'TH',  // 修正字段名
-            customer_age: this.customerInfo.age || null,
-
-            // 交易类型
+            customer_country: this.customerInfo.country_code || 'TH',
             transaction_type: 'exchange',
-            transaction_amount_thb: totalAmountThb,  // 兼容旧字段名
-
-            // 扩展信息
+            transaction_amount_thb: totalAmountThb,
+            total_amount: totalAmountThb,
             transaction_details: this.denominationCombinations,
-            payment_is_foreign_account: this.customerInfo.payment_is_foreign_account || false,
-            use_fcd: this.customerInfo.use_fcd || false,
-            exchange_type: this.customerInfo.exchange_type || 'normal',
-            funding_source: this.selectedFundingSource || ''
+            payment_method: this.customerInfo.payment_method || 'cash',
+            customer_age: this.customerInfo.age || null,
+            exchange_type: this.customerInfo.exchange_type || 'normal'
           },
           branch_id: this.getBranchId()
         }
@@ -1148,132 +1041,110 @@ export default {
         return
       }
 
-      // ===== 强制校验：必须填写客户证件号码 =====
-      if (!this.customerInfo.id_number || !this.customerInfo.id_number.trim()) {
-        this.$toast?.error?.(this.$t('exchange.id_number_required') || '请先填写客户证件号码')
-        console.warn('[验证] ❌ 验证失败：未填写客户证件号码')
-        return
-      }
-      console.log('[验证] ✅ 客户证件号码校验通过:', this.customerInfo.id_number)
-
       this.loading = true
       this.validationError = null
 
       try {
-        // ===== 步骤0: 检查是否是已审核预约 (快速兑换模式) =====
-        if (this.selectedReservation && this.selectedReservation.status === 'approved') {
-          console.log('[验证] 已审核预约快速兑换模式，跳过AMLO触发检查')
-          console.log('[验证] 预约编号:', this.selectedReservation.reservation_no)
-          console.log('[验证] 预约状态:', this.selectedReservation.status)
-
-          // 跳过AMLO检查，直接进入余额验证
-          // 注意：如果用户修改了金额，需要在执行交易前检测并生成新预约
-          this.triggerCheckResult = null // 清除触发结果，表示不需要AMLO审核
-        } else {
-          // ===== 步骤1: 检查AMLO/BOT触发条件 =====
-          console.log('[验证] 步骤1: 检查客户证件号:', this.customerInfo.id_number)
-          if (this.customerInfo.id_number && this.customerInfo.id_number.trim()) {
-            console.log('[验证] 步骤1: 检查AMLO/BOT触发条件...')
-
-            // 计算交易总金额（转换为THB）
-            let totalAmountThb = 0
-            for (const combination of this.denominationCombinations) {
-              totalAmountThb += Math.abs(combination.local_amount || 0)
-            }
-
-            console.log('[验证] 交易总金额(THB):', totalAmountThb)
-
-            // 调用AMLO触发检查API
-            try {
-              const triggerCheckData = {
-                report_type: 'AMLO-1-01',
-                data: {
-                  customer_id: this.customerInfo.id_number,
-                  customer_name: this.customerInfo.name,
-                  customer_country: this.customerInfo.country_code || 'TH',
-                  transaction_type: 'exchange',
-                  transaction_amount_thb: totalAmountThb,
-                  total_amount: totalAmountThb,
-                  transaction_details: this.denominationCombinations,
-                  payment_method: this.customerInfo.payment_method || 'cash',
-                  payment_is_foreign_account: this.customerInfo.payment_is_foreign_account || false
-                },
-                branch_id: this.getBranchId()
-              }
-
-              const triggerResponse = await this.$api.post('/repform/check-trigger', triggerCheckData)
-              console.log('[验证] AMLO触发检查响应:', triggerResponse.data)
-
-              // 如果触发了AMLO报告，弹出预约表单
-              if (triggerResponse.data.success && triggerResponse.data.triggers?.amlo?.triggered) {
-                console.log('[验证] 触发了AMLO报告，弹出预约表单')
-
-                // 🔧 判断交易类型：根据组合中的direction判断
-                console.log('[验证] 所有denomination组合:', JSON.stringify(this.denominationCombinations, null, 2))
-
-                // 过滤掉空的或undefined的direction
-                const validDirections = this.denominationCombinations
-                  .map(c => c.direction)
-                  .filter(d => d && d !== '')
-
-                console.log('[验证] 有效的direction值:', validDirections)
-
-                const uniqueDirections = [...new Set(validDirections)]
-                console.log('[验证] 去重后的direction:', uniqueDirections)
-
-                let transaction_type
-                if (uniqueDirections.length === 0) {
-                  // 没有有效的direction信息
-                  console.warn('[验证] ⚠️ 警告：没有找到有效的direction字段！')
-                  transaction_type = 'exchange'  // 默认为普通兑换
-                } else if (uniqueDirections.length === 1) {
-                  // 只有一个方向
-                  transaction_type = uniqueDirections[0] // 直接使用direction值（'buy'或'sell'）
-                  console.log('[验证] ✓ 单一方向交易:', transaction_type)
-                } else {
-                  // 多个方向 = 真正的双向交易
-                  transaction_type = 'dual_direction'
-                  console.log('[验证] ✓ 检测到双向交易')
-                }
-
-                console.log('[验证] 最终交易类型:', transaction_type)
-
-                // 准备预约交易数据
-                const rawTransactionData = {
-                  customer_id: this.customerInfo.id_number,
-                  customer_name: this.customerInfo.name,
-                  customer_country_code: this.customerInfo.country_code || 'TH',
-                  transaction_type: transaction_type,  // 使用动态判断的交易类型
-                  payment_method: this.customerInfo.payment_method,
-                  payment_method_note: this.customerInfo.payment_method_note,
-                  payment_is_foreign_account: !!this.customerInfo.payment_is_foreign_account,
-                  remarks: this.customerInfo.remarks
-                }
-                this.reservationTransactionData = this.convertTransactionDataForModal(rawTransactionData, totalAmountThb)
-
-                // 显示预约模态框
-                this.showReservationModal = true
-
-                this.loading = false
-                return
-              }
-            } catch (triggerError) {
-              console.error('[验证] AMLO触发检查失败:', triggerError)
-              console.error('[验证] 触发检查错误详情:', triggerError.response?.data)
-
-              // 如果是认证错误，提示用户重新登录
-              if (triggerError.response?.status === 401) {
-                console.error('[验证] 认证失败，可能需要重新登录')
-                this.$toast?.error?.('认证失败，请重新登录后再试')
-                this.loading = false
-                return
-              }
-
-              // 其他错误不阻止验证，继续检查库存
-            }
-          } else {
-            console.log('[验证] 跳过AMLO触发检查 - 客户证件号为空')
+        // ===== 步骤1: 检查AMLO/BOT触发条件 =====
+        console.log('[验证] 步骤1: 检查客户证件号:', this.customerInfo.id_number)
+        if (this.customerInfo.id_number && this.customerInfo.id_number.trim()) {
+          console.log('[验证] 步骤1: 检查AMLO/BOT触发条件...')
+          
+          // 计算交易总金额（转换为THB）
+          let totalAmountThb = 0
+          for (const combination of this.denominationCombinations) {
+            totalAmountThb += Math.abs(combination.local_amount || 0)
           }
+          
+          console.log('[验证] 交易总金额(THB):', totalAmountThb)
+          
+          // 调用AMLO触发检查API
+          try {
+            const triggerCheckData = {
+              report_type: 'AMLO-1-01',
+              data: {
+                customer_id: this.customerInfo.id_number,
+                customer_name: this.customerInfo.name,
+                customer_country: this.customerInfo.country_code || 'TH',
+                transaction_type: 'exchange',
+                transaction_amount_thb: totalAmountThb,
+                total_amount: totalAmountThb,
+                transaction_details: this.denominationCombinations,
+                payment_method: this.customerInfo.payment_method || 'cash'
+              },
+              branch_id: this.getBranchId()
+            }
+            
+            const triggerResponse = await this.$api.post('/repform/check-trigger', triggerCheckData)
+            console.log('[验证] AMLO触发检查响应:', triggerResponse.data)
+            
+            // 如果触发了AMLO报告，弹出预约表单
+            if (triggerResponse.data.success && triggerResponse.data.triggers?.amlo?.triggered) {
+              console.log('[验证] 触发了AMLO报告，弹出预约表单')
+
+              // 🔧 判断交易类型：根据组合中的direction判断
+              console.log('[验证] 所有denomination组合:', JSON.stringify(this.denominationCombinations, null, 2))
+
+              // 过滤掉空的或undefined的direction
+              const validDirections = this.denominationCombinations
+                .map(c => c.direction)
+                .filter(d => d && d !== '')
+
+              console.log('[验证] 有效的direction值:', validDirections)
+
+              const uniqueDirections = [...new Set(validDirections)]
+              console.log('[验证] 去重后的direction:', uniqueDirections)
+
+              let transaction_type
+              if (uniqueDirections.length === 0) {
+                // 没有有效的direction信息
+                console.warn('[验证] ⚠️ 警告：没有找到有效的direction字段！')
+                transaction_type = 'exchange'  // 默认为普通兑换
+              } else if (uniqueDirections.length === 1) {
+                // 只有一个方向
+                transaction_type = uniqueDirections[0] // 直接使用direction值（'buy'或'sell'）
+                console.log('[验证] ✓ 单一方向交易:', transaction_type)
+              } else {
+                // 多个方向 = 真正的双向交易
+                transaction_type = 'dual_direction'
+                console.log('[验证] ✓ 检测到双向交易')
+              }
+
+              console.log('[验证] 最终交易类型:', transaction_type)
+
+              // 准备预约交易数据
+              const rawTransactionData = {
+                customer_id: this.customerInfo.id_number,
+                customer_name: this.customerInfo.name,
+                customer_country_code: this.customerInfo.country_code || 'TH',
+                transaction_type: transaction_type,  // 使用动态判断的交易类型
+                payment_method: this.customerInfo.payment_method,
+                remarks: this.customerInfo.remarks
+              }
+              this.reservationTransactionData = this.convertTransactionDataForModal(rawTransactionData, totalAmountThb)
+              
+              // 显示预约模态框
+              this.showReservationModal = true
+              
+              this.loading = false
+              return
+            }
+          } catch (triggerError) {
+            console.error('[验证] AMLO触发检查失败:', triggerError)
+            console.error('[验证] 触发检查错误详情:', triggerError.response?.data)
+            
+            // 如果是认证错误，提示用户重新登录
+            if (triggerError.response?.status === 401) {
+              console.error('[验证] 认证失败，可能需要重新登录')
+              this.$toast?.error?.('认证失败，请重新登录后再试')
+              this.loading = false
+              return
+            }
+            
+            // 其他错误不阻止验证，继续检查库存
+          }
+        } else {
+          console.log('[验证] 跳过AMLO触发检查 - 客户证件号为空')
         }
 
         // ===== 步骤2: 检查库存充足性 =====
@@ -1354,15 +1225,6 @@ export default {
     async confirmTransaction() {
       this.loading = true
       try {
-        // ===== 强制校验：必须填写客户证件号码 =====
-        if (!this.customerInfo.id_number || !this.customerInfo.id_number.trim()) {
-          this.$toast?.error?.(this.$t('exchange.id_number_required') || '请先填写客户证件号码')
-          console.warn('[执行交易] ❌ 执行失败：未填写客户证件号码')
-          this.loading = false
-          return
-        }
-        console.log('[执行交易] ✅ 客户证件号码校验通过:', this.customerInfo.id_number)
-
         // ===== 验证资产抵押交易时必须填写资金来源 =====
         if (this.shouldShowExchangeType && this.exchangeType === 'asset_backed' && !this.selectedFundingSource) {
           this.$toast?.error?.(this.$t('exchange.funding_source_required'))
@@ -1426,8 +1288,7 @@ export default {
                   funding_source: this.selectedFundingSource || null, // 资金来源
                   asset_value: this.exchangeType === 'asset_backed' ? totalAmountThb : null, // 资产价值
                   transaction_details: this.denominationCombinations,
-                  payment_method: this.customerInfo.payment_method || 'cash',
-                  payment_is_foreign_account: this.customerInfo.payment_is_foreign_account || false
+                  payment_method: this.customerInfo.payment_method || 'cash'
                 },
                 branch_id: this.getBranchId()
               }
@@ -1513,8 +1374,6 @@ export default {
                 customer_country_code: this.customerInfo.country_code || 'TH',
                 transaction_type: transaction_type,  // 使用动态判断的交易类型
                 payment_method: this.customerInfo.payment_method,
-                payment_method_note: this.customerInfo.payment_method_note,
-                payment_is_foreign_account: !!this.customerInfo.payment_is_foreign_account,
                 remarks: this.customerInfo.remarks,
                 exchange_type: this.exchangeType || 'normal', // 新增：交易类型
                 funding_source: this.selectedFundingSource || null // 新增：资金来源
@@ -1643,18 +1502,9 @@ export default {
             address: '',
             remarks: '',
             payment_method: 'cash',
-            payment_is_foreign_account: false,
-            use_fcd: false,
             payment_method_note: ''
           }
           this.validationResult = null
-
-          // 清空预约相关状态
-          this.selectedReservation = null
-          this.reservationStatus = null
-          this.reservations = []
-
-          console.log('[交易完成] 已清空客户信息、组合和预约列表')
         } else {
           throw new Error(response.data.message || this.$t('exchange.transaction_failed'))
         }
@@ -1885,6 +1735,21 @@ export default {
     },
 
     /**
+     * 处理来自PDF窗口的消息（签名提交成功）
+     */
+    handlePDFWindowMessage(event) {
+      // 安全检查：确保消息来源可信
+      if (!event.data || !event.data.type) return
+
+      if (event.data.type === 'SIGNATURE_SUBMITTED') {
+        console.log('[DualDirectionExchangeView] 收到签名提交成功消息:', event.data)
+        // 显示通知消息
+        this.$toast?.success?.('AMLO报告已提交预约审核')
+        console.log('[DualDirectionExchangeView] 已显示"AMLO报告已提交预约审核"通知')
+      }
+    },
+
+    /**
      * 处理预约创建成功
      */
     handleReservationCreated(reservation) {
@@ -1905,8 +1770,6 @@ export default {
         address: '',
         remarks: '',
         payment_method: 'cash',
-        payment_is_foreign_account: false,
-        use_fcd: false,
         payment_method_note: ''
       }
       this.validationResult = null
@@ -2040,10 +1903,6 @@ export default {
 
         // 交易详情
         paymentMethod: transactionData.payment_method || this.customerInfo.payment_method || 'cash',
-        paymentIsForeignAccount: typeof transactionData.payment_is_foreign_account === 'boolean'
-          ? transactionData.payment_is_foreign_account
-          : !!this.customerInfo.payment_is_foreign_account,
-        paymentMethodNote: transactionData.payment_method_note || this.customerInfo.payment_method_note || '',
         idType: transactionData.id_type || this.customerInfo.id_type || 'national_id',
         remarks: transactionData.remarks || this.customerInfo.remarks || '',
 
@@ -2080,188 +1939,6 @@ export default {
     handleReservationModalClosed() {
       console.log('[预约模态框] 模态框已关闭')
       this.showReservationModal = false
-    },
-
-    // ===== 历史预约列表相关方法 =====
-
-    /**
-     * 加载历史预约列表
-     */
-    async loadReservations() {
-      this.loadingReservations = true
-      try {
-        const response = await this.$api.get('/amlo/reservations', {
-          params: {
-            page: 1,
-            page_size: 50, // 加载最近50条
-            status: 'approved' // 只显示已审批的预约
-          }
-        })
-
-        if (response.data.success) {
-          this.reservations = response.data.data?.items || []
-          console.log('[loadReservations] 成功加载预约列表:', this.reservations.length, '条')
-        } else {
-          console.error('[loadReservations] 加载失败:', response.data.message)
-          this.reservations = []
-        }
-      } catch (error) {
-        console.error('[loadReservations] 加载预约列表异常:', error)
-        this.reservations = []
-      } finally {
-        this.loadingReservations = false
-      }
-    },
-
-    /**
-     * 搜索预约（防抖处理）
-     */
-    onSearchReservation() {
-      // 实时过滤由computed属性处理，这里不需要额外操作
-    },
-
-    /**
-     * 选择预约
-     */
-    async selectReservation(reservation) {
-      console.log('[selectReservation] 选中预约:', reservation)
-      this.selectedReservation = reservation
-
-      // 根据预约状态执行不同操作
-      if (reservation.status === 'pending') {
-        // 待审核：提示用户先审核
-        this.$toast?.warning?.('该预约尚未审核，请先前往AMLO审计页面进行审核')
-      } else if (reservation.status === 'approved') {
-        // 已审批：自动填充交易表单，完成交易
-        await this.fillTransactionFromReservation(reservation)
-      } else if (reservation.status === 'rejected') {
-        // 已拒绝：提示用户
-        this.$toast?.error?.('该预约已被拒绝，无法继续处理')
-      } else if (reservation.status === 'completed') {
-        // 已完成：可以查看或修改报告
-        this.$toast?.info?.('该预约已完成交易，可以查看或修改AMLO报告')
-        // TODO: 打开报告查看/编辑界面
-      }
-    },
-
-    /**
-     * 从预约填充交易表单
-     */
-    async fillTransactionFromReservation(reservation) {
-      try {
-        console.log('[fillTransactionFromReservation] 开始填充表单，预约数据:', reservation)
-
-        // 1. 填充客户信息
-        this.customerInfo = {
-          name: reservation.customer_name || '',
-          id_number: reservation.customer_id || '',
-          id_type: 'national_id',
-          country_code: reservation.customer_country_code || 'TH',
-          address: reservation.customer_address || '',
-          remarks: '',
-          payment_method: 'cash',
-          payment_is_foreign_account: false,
-          use_fcd: false,
-          payment_method_note: ''
-        }
-
-        // 2. 清空现有组合（REPLACE模式，不是APPEND）
-        if (this.$refs.combinationManager) {
-          this.$refs.combinationManager.clearAllCombinations()
-        }
-        this.denominationCombinations = []
-
-        // 3. 解析denomination_data，填充面值组合
-        if (reservation.denomination_data) {
-          console.log('[fillTransactionFromReservation] 原始denomination_data:', reservation.denomination_data)
-
-          try {
-            // 解析JSON字符串（如果是字符串）
-            const denominationData = typeof reservation.denomination_data === 'string'
-              ? JSON.parse(reservation.denomination_data)
-              : reservation.denomination_data
-
-            console.log('[fillTransactionFromReservation] 解析后的denomination_data:', denominationData)
-
-            // 如果是数组，遍历每个组合
-            if (Array.isArray(denominationData) && denominationData.length > 0) {
-              for (const combination of denominationData) {
-                console.log('[fillTransactionFromReservation] 添加组合:', combination)
-
-                // 使用onAddCombination方法添加组合
-                this.onAddCombination(combination)
-              }
-
-              // 等待Vue更新DOM和状态
-              await this.$nextTick()
-
-              // 如果combinationManager有更新方法，等待它完成
-              if (this.$refs.combinationManager) {
-                await this.$nextTick()
-              }
-
-              console.log('[fillTransactionFromReservation] 所有组合已添加，当前组合数:', this.denominationCombinations.length)
-            } else {
-              console.warn('[fillTransactionFromReservation] denomination_data为空或不是数组')
-            }
-          } catch (error) {
-            console.error('[fillTransactionFromReservation] 解析denomination_data失败:', error)
-            this.$toast?.error?.('解析面值数据失败: ' + error.message)
-          }
-        } else {
-          console.warn('[fillTransactionFromReservation] 预约没有denomination_data，使用简化逻辑')
-
-          // 降级方案: 如果没有denomination_data，从基本字段构建简化组合
-          const { direction, currency_id, amount, local_amount, rate } = reservation
-
-          if (currency_id && amount) {
-            this.onAddCombination({
-              currency_id,
-              currency_code: reservation.currency_code || 'USD',
-              direction: direction || 'buy',
-              subtotal: parseFloat(amount),
-              local_amount: parseFloat(local_amount || 0),
-              rate: parseFloat(rate || 0),
-              denominations: []
-            })
-
-            // 等待状态更新
-            await this.$nextTick()
-          }
-        }
-
-        // 4. 等待所有状态更新完成
-        await this.$nextTick()
-
-        console.log('[fillTransactionFromReservation] 最终组合数:', this.denominationCombinations.length)
-
-        // 5. 提示用户
-        this.$toast?.success?.(`已加载预约 ${reservation.reservation_no}，请检查并完成交易`)
-
-        // 6. 延迟自动验证，确保组合已加载
-        setTimeout(async () => {
-          if (this.denominationCombinations.length > 0) {
-            await this.validateTransaction()
-          }
-        }, 300)
-
-      } catch (error) {
-        console.error('[fillTransactionFromReservation] 填充表单失败:', error)
-        this.$toast?.error?.('加载预约数据失败: ' + error.message)
-      }
-    },
-
-    /**
-     * 获取预约状态文本
-     */
-    getReservationStatusText(status) {
-      const statusMap = {
-        'pending': this.$t('amlo.reservation.pending') || '待审核',
-        'approved': this.$t('amlo.reservation.approved') || '已批准',
-        'rejected': this.$t('amlo.reservation.rejected') || '已拒绝',
-        'completed': this.$t('amlo.reservation.completed') || '已完成'
-      }
-      return statusMap[status] || status
     }
   }
 }
@@ -2338,42 +2015,40 @@ export default {
   font-weight: 600;
 }
 
-/* 历史预约列表卡片样式 */
-.reservation-list-card .card-body {
-  padding: 0.5rem;
+/* 新增的指导卡片样式 */
+.guidance-card .card-body {
+  padding: 1rem;
 }
 
-.reservation-item {
-  transition: all 0.2s;
+.operation-steps .step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
 }
 
-.reservation-item:hover {
-  background-color: #f8f9fa !important;
-  border-color: #1976d2 !important;
-  box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
+.operation-steps .step:last-child {
+  margin-bottom: 0;
 }
 
-.reservation-list {
-  max-height: 300px;
-  overflow-y: auto;
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
 }
 
-.reservation-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.reservation-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.reservation-list::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.reservation-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
+.step-text {
+  color: #495057;
+  line-height: 1.4;
 }
 
 /* 余额信息卡片样式 */
@@ -2443,8 +2118,14 @@ export default {
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .reservation-item {
-    font-size: 0.85rem;
+  .operation-steps .step {
+    font-size: 0.8rem;
+  }
+
+  .step-number {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
   }
 
   .balance-item {

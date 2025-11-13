@@ -705,6 +705,7 @@ export default {
 
       // 国家列表
       countries: [],
+      currentCountryLanguage: 'zh',
       
       // 语音相关
       canSpeak: false,
@@ -756,6 +757,16 @@ export default {
         this.paymentIsForeignAccount = false;
       }
     });
+
+    this.$watch(
+      () => this.$i18n?.locale,
+      (newLocale, oldLocale) => {
+        if (!newLocale || newLocale === oldLocale) {
+          return;
+        }
+        this.loadCountries(newLocale);
+      }
+    );
   },
   methods: {
     isInstrumentPayment(method) {
@@ -823,14 +834,26 @@ export default {
       }
     },
 
-    async loadCountries() {
+    async loadCountries(localeOverride) {
       try {
         console.log('[ExchangeViewWithDenominations] 开始加载国家列表...')
-        const language = this.$i18n.locale || 'zh' // 获取当前语言
+        const locale = localeOverride || this.$i18n?.locale || 'zh-CN'
+        const language = this.resolveCountryLanguage(locale)
+
+        if (this.currentCountryLanguage === language && this.countries.length) {
+          console.log('[ExchangeViewWithDenominations] 国家列表已是最新语言:', language)
+          return
+        }
+
         const response = await this.$api.get(`/system/countries?language=${language}&active_only=true`)
         console.log('[ExchangeViewWithDenominations] 国家API响应:', response.data)
         if (response.data.success) {
-          this.countries = response.data.countries || []
+          const countries = response.data.countries || []
+          this.countries = countries.map(country => ({
+            ...country,
+            country_name: country.country_name || this.getCountryNameByLanguage(country, language)
+          }))
+          this.currentCountryLanguage = language
           console.log('[ExchangeViewWithDenominations] 加载到的国家数量:', this.countries.length)
         }
       } catch (error) {
@@ -838,6 +861,30 @@ export default {
         // 失败时不显示错误提示，使用空列表
         this.countries = []
       }
+    },
+
+    resolveCountryLanguage(locale) {
+      const normalized = (locale || 'zh').toLowerCase()
+      if (normalized.startsWith('en')) {
+        return 'en'
+      }
+      if (normalized.startsWith('th')) {
+        return 'th'
+      }
+      return 'zh'
+    },
+
+    getCountryNameByLanguage(country, language) {
+      if (!country) {
+        return ''
+      }
+      if (language === 'en') {
+        return country.country_name_en || country.country_name_th || country.country_name_zh || country.country_name
+      }
+      if (language === 'th') {
+        return country.country_name_th || country.country_name_en || country.country_name_zh || country.country_name
+      }
+      return country.country_name_zh || country.country_name_en || country.country_name_th || country.country_name
     },
     
     handleForeignCurrencyChange(currencyCode) {

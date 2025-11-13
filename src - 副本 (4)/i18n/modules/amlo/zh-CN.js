@@ -9,8 +9,25 @@ export default {
       "printBlankForm": "打印空白表单",
       "validationFailed": "表单验证失败",
       "pdfNotFound": "未找到PDF模板",
-      "formFields": "表单字段"
+      "formFields": "表单字段",
+      "transactorType": {
+        "label": "交易者类型",
+        "person": "个人",
+        "juristic": "法人"
+      }
     },
+    "uploadReport": "上传报告",
+    "userSignature": "用户签名",
+    "pleaseSubmitFirst": "请先提交预约",
+    "pleaseDownloadFirst": "请先点击【填写报告】按钮提交预约并下载PDF",
+    "downloadSuccess": "PDF下载成功！请填写完成后上传。",
+    "downloadFailed": "下载失败",
+    "pleaseSelectPDF": "请选择PDF文件",
+    "uploadSuccess": "已上传！请点击【用户签名】按钮进行签名。",
+    "uploadFailed": "上传失败",
+    "pleaseUploadFirst": "请先上传填写好的报告",
+    "signaturePageOpened": "签名页面已打开！\n\n提示：按 Win + Shift + → 将窗口移动到扩展屏给客户签名",
+    "openSignatureFailed": "打开签名页面失败",
     "reservation": {
       "title": "AMLO预约查询",
       "id": "报告ID",
